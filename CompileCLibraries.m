@@ -33,9 +33,9 @@ cd(ScriptFolder)
 
 %Compile optimization code
 %Compile lineSearch
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/liblbfgs-master/include','-I./3rd_Party_Code/liblbfgs-master/lib','./Mathematical Functions/Continuous Optimization/lineSearch.c','./3rd_Party_Code/liblbfgs-master/lib/lbfgs.c');
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/liblbfgs/include','-I./3rd_Party_Code/liblbfgs/lib','./Mathematical Functions/Continuous Optimization/lineSearch.c','./3rd_Party_Code/liblbfgs/lib/lbfgs.c');
 %Compile quasiNewtonLBFGS
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/liblbfgs-master/include','-I./3rd_Party_Code/liblbfgs-master/lib','./Mathematical Functions/Continuous Optimization/quasiNewtonLBFGS.c','./3rd_Party_Code/liblbfgs-master/lib/lbfgs.c');
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/liblbfgs/include','-I./3rd_Party_Code/liblbfgs/lib','./Mathematical Functions/Continuous Optimization/quasiNewtonLBFGS.c','./3rd_Party_Code/liblbfgs/lib/lbfgs.c');
 
 %Compile navigation code
 %Compile indirectGeodeticProb
@@ -274,7 +274,7 @@ end
 cd(ScriptFolder)
 
 %%Compile the AIS library
-cd ./3rd_Party_Code/libais-master
+cd ./3rd_Party_Code/libais
 %Run commands on the command line to build the library and place it in a
 %known location.
 if(isunix()||ismac())%*NIX/ Mac OS X
@@ -336,8 +336,8 @@ end
 cd(ScriptFolder)
 
 %Compile the code to process AIS messages.
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/libais-master/','-I./','./Transponders/decodeAISString.cpp',linkCommands{:})
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/libais-master/','-I./','./Transponders/decodeAISPosReports2Mat.cpp',linkCommands{:})
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/libais/','-I./','./Transponders/decodeAISString.cpp',linkCommands{:})
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/libais/','-I./','./Transponders/decodeAISPosReports2Mat.cpp',linkCommands{:})
 
 %Restore the environment values back to what they originally were.
 for curSet=1:numSet

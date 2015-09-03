@@ -1,6 +1,7 @@
 * Introduction
 
 Library for decoding maritime Automatic Identification System messages.
+This URL to the original library is https://github.com/schwehr/libais
 
 * See Also
 
