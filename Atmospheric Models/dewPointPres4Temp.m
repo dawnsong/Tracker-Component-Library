@@ -102,7 +102,7 @@ switch(algChoice)
         %formulation based upon available information regarding water at
         %the triple point.
         
-        %The Koutsoyiannis paper's value of the pressure of H20 at the
+        %The Koutsoyiannis paper's value of the pressure of H2O at the
         %triple point in hectoPascals.
         p0=6.11657;
         T0=273.16;%The temperature at the triple point of water in Kelvin.

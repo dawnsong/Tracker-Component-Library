@@ -34,10 +34,10 @@ function c=speedOfSoundInAir(algorithm,T,input3,input4,CO2Frac)
 %                       method. Unknown constituent elements that are
 %                       passed will be ignored.
 %                     1 This input is not used.
-%                     2 H20Frac The water vapor mole fraction. This is the
-%                       fraction of H20 molecules per cubic meter to total
+%                     2 H2OFrac The water vapor mole fraction. This is the
+%                       fraction of H2O molecules per cubic meter to total
 %                       molecules per cubic meter of air. If this parameter
-%                       is omitted, then a dry (H20Frac=0) atmosphere is
+%                       is omitted, then a dry (H2OFrac=0) atmosphere is
 %                       used.
 %              CO2Frac  This input is only used by algorithm 2. The is the
 %                       The carbox dioxide mole fraction, which is the
@@ -94,7 +94,7 @@ function c=speedOfSoundInAir(algorithm,T,input3,input4,CO2Frac)
 %or
 %c=speedOfSoundInAir(1,T,relHumid);
 %or
-%c=speedOfSoundInAir(2,T,P,H20Frac,CO2Frac);
+%c=speedOfSoundInAir(2,T,P,H2OFrac,CO2Frac);
 %
 %March 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -190,7 +190,7 @@ switch(algorithm)
         return;
     case 2%Use the approximate algorithm of the Cramer paper.
         P=input3;
-        H20Frac=input4;
+        H2OFrac=input4;
         
         %Convert T from degrees Kelvin to degrees Centigrade
         t=T+Constants.absoluteZero;
@@ -202,11 +202,11 @@ switch(algorithm)
             warning('The pressure supplied is outside of the range used (75000-102000 P) in the paper deriving the speed approximation. The results might have reduced accuracy.')
         end
         
-        if(H20Frac<0)
+        if(H2OFrac<0)
             error('Invalid mole fraction of water provided.');
         end
         
-        if(H20Frac>0.06)
+        if(H2OFrac>0.06)
             warning('The pressure supplied is outside of the range used (0-0.06) in the paper deriving the speed approximation. The results might have reduced accuracy.')
         end
         
@@ -237,9 +237,9 @@ switch(algorithm)
               0.000486];
 
     %Equation 15
-        c=a(1)+a(2)*t+a(3)*t^2+(a(4)+a(5)*t+a(6)*t^2)*H20Frac...
+        c=a(1)+a(2)*t+a(3)*t^2+(a(4)+a(5)*t+a(6)*t^2)*H2OFrac...
             +(a(7)+a(8)*t+a(9)*t^2)*P+(a(10)+a(11)*t+a(12)*T^2)*CO2Frac...
-            +a(13)*H20Frac^2+a(14)*P^2+a(15)*CO2Frac^2+a(16)*H20Frac*P*CO2Frac;
+            +a(13)*H2OFrac^2+a(14)*P^2+a(15)*CO2Frac^2+a(16)*H2OFrac*P*CO2Frac;
         return;
     otherwise
         error('Invalid algorithm number entered')

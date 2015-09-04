@@ -16,12 +16,12 @@ function absHumid=relHumid2AbsHumid(relHumid,T,algChoice)
 %                  If algChoice is omitted, then the default value of 0,
 %                  the corrected Clausius-Clapeyron equation is used.
 %
-%OUTPUTS: absHumid The absolute humidity with SI units of kilograms per
-%                  cubic meter.
+%OUTPUTS: absHumid The absolute humidity with SI units of kilograms of 
+%                  water per cubic meter.
 %
 %Given the temperature, the partial pressure of water at saturation (the
 %dew point) can be found (pSat). The actual partial pressure of water in
-%the atmosphere is then just pH20=relHumid*pSat. Next, the Ideal Gas Law,
+%the atmosphere is then just pH2O=relHumid*pSat. Next, the Ideal Gas Law,
 %which one can find in most introductory textbooks on physics is used. The
 %law says that
 %P*V=n*R*T
@@ -51,14 +51,14 @@ end
 PSat=dewPointPres4Temp(T,algChoice);
 
 %The partial pressure of water in the air based on the relative humidity.
-PH20=relHumid*PSat;
+PH2O=relHumid*PSat;
 R=Constants.molarGasConstant;
-%Water is H20, so its molar mass should be 
-M=2*Constants.HAMU+Constants.OAMU;
+%Water is H2O, so its molar mass should be 
+M=2*Constants.elementAMU(1)+Constants.elementAMU(8);
 
 %The extra factor of 1/1000 is to convert the units to kilograms per cubic
 %meter.
-absHumid=(1/1000)*PH20*M/(R*T);
+absHumid=(1/1000)*PH2O*M/(R*T);
 
 end
 

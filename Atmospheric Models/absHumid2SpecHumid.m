@@ -9,8 +9,8 @@ function specHumid=absHumid2SpecHumid(absHumid,mpVDryAir,defChoice)
 %                    of the water in the air to the total mass density of
 %                    the air including the water.
 %
-%INPUTS: absHumid  The absolute humidity with units of kilograms per cubic
-%                  meter.
+%INPUTS:  absHumid The absolute humidity with SI units of kilograms of 
+%                  water per cubic meter.
 %        mpVDryAir The mass density (mass in kilograms per unit volume in
 %                  cubic meters) of dry air (the air not counting the
 %                  water).

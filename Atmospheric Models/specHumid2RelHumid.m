@@ -46,24 +46,24 @@ if(nargin<5)
 end
 
 if(defChoice~=0)
-    mpVH20=mpVDryAir*specHumid/(1-specHumid);
+    mpVH2O=mpVDryAir*specHumid/(1-specHumid);
 else
-    mpVH20=mpVDryAir*specHumid;
+    mpVH2O=mpVDryAir*specHumid;
 end
 
 R=Constants.molarGasConstant;
-%Water is H20, so its molar mass should be 
-MH20=2*Constants.HAMU+Constants.OAMU;
+%Water is H2O, so its molar mass should be 
+MH2O=2*Constants.elementAMU(1)+Constants.elementAMU(8);
 
 %The factor of 1000 converts from kilograms per cubic meter to grams per
 %cubic meter.
-pH20=1000*mpVH20*R*T/MH20;
+pH2O=1000*mpVH2O*R*T/MH2O;
 
 %The partial pressure of water at the dew point for the given temperature.
 PSat=dewPointPres4Temp(T,algChoice);
 
 %The partial pressure of water in the air based on the relative humidity.
-relHumid=pH20/PSat;
+relHumid=pH2O/PSat;
 
 end
 

@@ -15,8 +15,8 @@ function absHumid=specHumid2AbsHumid(specHumid,mpVDryAir,defChoice)
 %                  If defChoice is omitted, then the default value of 0 is
 %                  used.
 %
-%OUTPUTS: absHumid  The absolute humidity with units of kilograms per cubic
-%                  meter.
+%OUTPUTS: absHumid The absolute humidity with SI units of kilograms of 
+%                  water per cubic meter.
 %
 %The specific humidity is just the absolute humidity divided by the
 %mass density of dry air under the first definition and it is the absolute

@@ -64,9 +64,9 @@ rho=rhod+rhow;
 
 %To use the ideal gas law to find the air pressure, the number of water
 %molecules per cubic meter of the atmosphere is needed. This is obtained
-%using the molar mass of water (H20) and Avogadro's constant
+%using the molar mass of water (H2O) and Avogadro's constant
 Av=Constants.AvogadroConstant;
-%The molar mass of water (H20) in atomic mass units (grams per mole).
+%The molar mass of water (H2O) in atomic mass units (grams per mole).
 HAMU=Constants.elementAMU(1);
 OAMU=Constants.elementAMU(8);
 MMWater=HAMU*2+OAMU;

@@ -3,8 +3,8 @@ function relHumid=absHumid2RelHumid(absHumid,T,algChoice)
 %                   the assumption of the validity of the Ideal Gas Law and
 %                   Dalton's Law of Partial Pressures.
 %
-%INPUTS: absHumid The absolute humidity with SI units of kilograms per
-%                  cubic meter.
+%INPUTS:  absHumid The absolute humidity with SI units of kilograms of water
+%                  per cubic meter.
 %        T         The temperature in degrees Kelvin.
 %        algChoice An optional parameter specifying the algorithm used for
 %                  the dew point computation. The choices are
@@ -34,18 +34,18 @@ if(nargin<3)
 end
 
 R=Constants.molarGasConstant;
-%Water is H20, so its molar mass should be 
-M=2*Constants.HAMU+Constants.OAMU;
+%Water is H2O, so its molar mass should be 
+M=2*Constants.elementAMU(1)+Constants.elementAMU(8);
 
 %The extra factor of 1000 is to convert the units to grams per cubic
 %meter.
-PH20=1000*absHumid*R*T/M;
+PH2O=1000*absHumid*R*T/M;
 
 %The partial pressure of water at the dew point for the given temperature.
 PSat=dewPointPres4Temp(T,algChoice);
 
 %The partial pressure of water in the air based on the relative humidity.
-relHumid=PH20/PSat;
+relHumid=PH2O/PSat;
 end
 
 %LICENSE:

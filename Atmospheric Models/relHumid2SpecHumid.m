@@ -38,7 +38,7 @@ function specHumid=relHumid2SpecHumid(relHumid,T,mpVDryAir,defChoice,algChoice)
 %
 %Given the temperature, the partial pressure of water at saturation (the
 %dew point) can be found (pSat). The actual partial pressure of water in
-%the atmosphere is then just pH20=relHumid*pSat. Next, the Ideal Gas Law,
+%the atmosphere is then just pH2O=relHumid*pSat. Next, the Ideal Gas Law,
 %which one can find in most introductory textbooks on physics is used. The
 %law says that
 %P*V=n*R*T
@@ -51,8 +51,8 @@ function specHumid=relHumid2SpecHumid(relHumid,T,mpVDryAir,defChoice,algChoice)
 %
 %When considering only the water in the air, one can use the Ideal Gas Law
 %to write:
-%mH20/V=pH20*MH20/(R*T)
-%where mH20 is the mass of water in volume V and MH20 is the molar mass of
+%mH2O/V=pH2O*MH2O/(R*T)
+%where mH2O is the mass of water in volume V and MH2O is the molar mass of
 %the water. Thus, if one knows the mass per unit volume of the remaining
 %gasses in the air, one can find the specific humidity. The mass per unit
 %volume of dry air and a temperature can be found in a standard atmosphere
@@ -77,19 +77,19 @@ end
 PSat=dewPointPres4Temp(T,algChoice);
 
 %The partial pressure of water in the air based on the relative humidity.
-pH20=relHumid*PSat;
+pH2O=relHumid*PSat;
 R=Constants.molarGasConstant;
-%Water is H20, so its molar mass should be 
-MH20=2*Constants.HAMU+Constants.OAMU;
+%Water is H2O, so its molar mass should be 
+MH2O=2*Constants.elementAMU(1)+Constants.elementAMU(8);
 
 %The factor of 1/1000 converts from grams per cubic meter to kilograms per
 %cubic meter.
-mpVH20=(1/1000)*pH20*MH20/(R*T);
+mpVH2O=(1/1000)*pH2O*MH2O/(R*T);
 
 if(defChoice~=0)
-    specHumid=mpVH20/(mpVDryAir+mpVH20);
+    specHumid=mpVH2O/(mpVDryAir+mpVH2O);
 else
-    specHumid=mpVH20/mpVDryAir;
+    specHumid=mpVH2O/mpVDryAir;
 end
 
 end
