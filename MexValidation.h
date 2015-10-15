@@ -126,6 +126,7 @@
 #ifdef __cplusplus
 //For memcpy
 #include <algorithm>
+#include <cstring>
 //Defines the size_t and ptrdiff_t types
 #include <cstddef>
 #else

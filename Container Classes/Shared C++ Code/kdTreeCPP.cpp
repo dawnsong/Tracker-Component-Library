@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <algorithm>
+#include <cstring>
 #include "mathFuncs.hpp"
 #include "kdTreeCPP.hpp"
 
@@ -129,21 +130,21 @@ kdTreeCPP::kdTreeCPP(const size_t kDes, const size_t NDes) {
     buffer=new char[sizeof(ptrdiff_t)*2*N+sizeof(size_t)*3*N+sizeof(double)*k*N*3];
     basePtr=buffer;
 
-    LOSON=(ptrdiff_t*)basePtr;
+    LOSON=reinterpret_cast<ptrdiff_t*>(basePtr);
     basePtr+=sizeof(ptrdiff_t)*N;
-    HISON=(ptrdiff_t*)basePtr;
+    HISON=reinterpret_cast<ptrdiff_t*>(basePtr);
     basePtr+=sizeof(ptrdiff_t)*N;
-    DATAIDX=(size_t*)basePtr;
+    DATAIDX=reinterpret_cast<size_t*>(basePtr);
     basePtr+=sizeof(size_t)*N;
-    DISC=(size_t*)basePtr;
+    DISC=reinterpret_cast<size_t*>(basePtr);
     basePtr+=sizeof(size_t)*N;
-    subtreeSizes=(size_t*)basePtr;
+    subtreeSizes=reinterpret_cast<size_t*>(basePtr);
     basePtr+=sizeof(size_t)*N;
-    BMin=(double*)basePtr;
+    BMin=reinterpret_cast<double*>(basePtr);
     basePtr+=sizeof(double)*k*N;
-    BMax=(double*)basePtr;
+    BMax=reinterpret_cast<double*>(basePtr);
     basePtr+=sizeof(double)*k*N;
-    data=(double*)basePtr;
+    data=reinterpret_cast<double*>(basePtr);
 }
 
 void kdTreeCPP::buildTreeFromBatch(const double *dataBatch){
@@ -180,7 +181,7 @@ void kdTreeCPP::buildTreeFromBatch(const double *dataBatch){
 
     tempPtr=buffLoc;
     //Store a transposed temporary copy of the dataBatch.
-    dataTrans= (double*)tempPtr;
+    dataTrans= reinterpret_cast<double*>(tempPtr);
     for(i=0;i<k;i++){
         for(j=0;j<N;j++){
             dataTrans[j+i*N]=dataBatch[i+j*k];
@@ -189,11 +190,11 @@ void kdTreeCPP::buildTreeFromBatch(const double *dataBatch){
 
     //Allocate space for a temporary row for sorting.
     tempPtr+=sizeof(double)*k*N;
-    tempSortRow=(double *)tempPtr;
+    tempSortRow=reinterpret_cast<double*>(tempPtr);
 
     //Allocate space for the indices.
     tempPtr+=sizeof(double)*N;
-    idx=(size_t*)(tempPtr);
+    idx=reinterpret_cast<size_t*>(tempPtr);
     //Fill in the indices from 0 to N.
     for(i=0;i<N;i++){
         idx[i]=i;
@@ -265,7 +266,7 @@ size_t kdTreeCPP::treeGrow(double *dataTrans, size_t *idx, double *tempSortRow,c
     if(midIdx==0){
         LOSON[curNode]=-1;//There is no splitting.
     } else {
-        LOSON[curNode]=(ptrdiff_t)nextFreeNode;
+        LOSON[curNode]=static_cast<ptrdiff_t>(nextFreeNode);
         nextNode=this->treeGrow(dataTrans,idx,tempSortRow,nextLevel,nextFreeNode,midIdx);
 
         //Record the minimum and maximum values.
@@ -276,7 +277,7 @@ size_t kdTreeCPP::treeGrow(double *dataTrans, size_t *idx, double *tempSortRow,c
 
     //The HISON node will never be empty, except at a leaf node, since
     //the median is always taken using the floor function.
-    HISON[curNode]=(ptrdiff_t)nextFreeNode;
+    HISON[curNode]=static_cast<ptrdiff_t>(nextFreeNode);
     nextNode=this->treeGrow(dataTrans,idx+midIdx+1,tempSortRow,nextLevel,nextFreeNode,NSubTree-midIdx-1);
     
     //Record the minimum and maximum values due to the child node and
@@ -353,8 +354,8 @@ void kdTreeCPP::rangeQueryRecur(const size_t curNode, const double *rectMin, con
     childNode=HISON[curNode];
     if(childNode!=-1) {
         //If points might be in the child nodes.
-        if(rectsIntersect(BMin+k*(size_t)childNode,BMax+k*(size_t)childNode,rectMin,rectMax,k)) {
-            this->rangeQueryRecur((size_t)childNode, rectMin, rectMax,idxRange, numFound,numInRange);
+        if(rectsIntersect(BMin+k*static_cast<size_t>(childNode),BMax+k*static_cast<size_t>(childNode),rectMin,rectMax,k)) {
+            this->rangeQueryRecur(static_cast<size_t>(childNode), rectMin, rectMax,idxRange, numFound,numInRange);
             if(numFound==numInRange) {
                 return;
             }
@@ -364,8 +365,8 @@ void kdTreeCPP::rangeQueryRecur(const size_t curNode, const double *rectMin, con
     childNode=LOSON[curNode];
     if(childNode!=-1) {
         //If points might be in the child nodes.
-        if(rectsIntersect(BMin+k*(size_t)childNode,BMax+k*(size_t)childNode,rectMin,rectMax,k)) {
-            this->rangeQueryRecur((size_t)childNode, rectMin, rectMax,idxRange, numFound,numInRange);
+        if(rectsIntersect(BMin+k*static_cast<size_t>(childNode),BMax+k*static_cast<size_t>(childNode),rectMin,rectMax,k)) {
+            this->rangeQueryRecur(static_cast<size_t>(childNode), rectMin, rectMax,idxRange, numFound,numInRange);
             if(numFound==numInRange) {
                 return;
             }
@@ -394,16 +395,16 @@ size_t kdTreeCPP::rangeCountRecur(const size_t curNode,const double *rectMin,con
     childNode=HISON[curNode];
     if(childNode!=-1) {
         //If points might be in the child nodes.
-        if(rectsIntersect(BMin+k*(size_t)childNode,BMax+k*(size_t)childNode,rectMin,rectMax,k)) {
-            numInRange+=this->rangeCountRecur((size_t)childNode,rectMin,rectMax);
+        if(rectsIntersect(BMin+k*static_cast<size_t>(childNode),BMax+k*static_cast<size_t>(childNode),rectMin,rectMax,k)) {
+            numInRange+=this->rangeCountRecur(static_cast<size_t>(childNode),rectMin,rectMax);
         }
     }
 
     childNode=LOSON[curNode];
     if(childNode!=-1) {
         //If points might be in the child nodes.
-        if(rectsIntersect(BMin+k*(size_t)childNode,BMax+k*(size_t)childNode,rectMin,rectMax,k)) {
-            numInRange+=this->rangeCountRecur((size_t)childNode,rectMin,rectMax);
+        if(rectsIntersect(BMin+k*static_cast<size_t>(childNode),BMax+k*static_cast<size_t>(childNode),rectMin,rectMax,k)) {
+            numInRange+=this->rangeCountRecur(static_cast<size_t>(childNode),rectMin,rectMax);
         }
     }
     
@@ -449,14 +450,14 @@ void kdTreeCPP::mBestRecur(const size_t curNodeIdx, priority_queue<pair<double,s
     if(point[splitDim]<splitPoint[splitDim]) {
         ptrdiff_t lIdx=LOSON[curNodeIdx];
         if(lIdx!=-1) {
-            this->mBestRecur((size_t)lIdx,mBestQueue,point,m);
+            this->mBestRecur(static_cast<size_t>(lIdx),mBestQueue,point,m);
         }
 
         farNode=HISON[curNodeIdx];
     } else {
         ptrdiff_t hIdx=HISON[curNodeIdx];
         if(hIdx!=-1) {
-            this->mBestRecur((size_t)hIdx,mBestQueue,point,m);
+            this->mBestRecur(static_cast<size_t>(hIdx),mBestQueue,point,m);
         }
 
         farNode=LOSON[curNodeIdx];
@@ -497,8 +498,8 @@ void kdTreeCPP::mBestRecur(const size_t curNodeIdx, priority_queue<pair<double,s
         //is equal to maxDist or if there are fewer than k things in the
         //queue.
         if(farNode!=-1) {
-            if(mBestQueue.size()<m||boundsIntersectBall(point,maxDist,BMin+k*(size_t)farNode,BMax+k*(size_t)farNode,k)) {
-                this->mBestRecur((size_t)farNode,mBestQueue,point,m);
+            if(mBestQueue.size()<m||boundsIntersectBall(point,maxDist,BMin+k*static_cast<size_t>(farNode),BMax+k*static_cast<size_t>(farNode),k)) {
+                this->mBestRecur(static_cast<size_t>(farNode),mBestQueue,point,m);
             }
         }
     }
@@ -511,11 +512,11 @@ void kdTreeCPP::getSubtreeIdx(const size_t nodeIdx, size_t *idxRange, size_t &nu
 
     //Add the child nodes.
     if(HISON[nodeIdx]!=-1) {//If there are children to the right
-        this->getSubtreeIdx((size_t)HISON[nodeIdx], idxRange, numFound);
+        this->getSubtreeIdx(static_cast<size_t>(HISON[nodeIdx]), idxRange, numFound);
     }
 
     if(LOSON[nodeIdx]!=-1) {//If there are children to the left.
-        this->getSubtreeIdx((size_t)LOSON[nodeIdx], idxRange, numFound);
+        this->getSubtreeIdx(static_cast<size_t>(LOSON[nodeIdx]), idxRange, numFound);
     }
 }
 

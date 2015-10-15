@@ -83,6 +83,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     MurtyHyp *problemSol;//To hold the return value of the C-function called.
     bool didFlip=false;
     bool maximize=false;
+    bool isFeasible;
     
     if(nrhs<1){
         mexErrMsgTxt("Not enough inputs.");
@@ -118,7 +119,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         
         //This is freed using mxDestroyArray
         CMat=mxCreateDoubleMatrix(numCol,numRow,mxREAL);
-        mexCallMATLAB(1, &CMat, 1,  (mxArray **)&prhs[0], "transpose");
+        mexCallMATLAB(1, &CMat, 1,  const_cast<mxArray **>(&prhs[0]), "transpose");
         didFlip=true;
     }
     
@@ -136,24 +137,58 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     
     /*The assignment algorithm returns a nonzero value if no valid
      * solutions exist.*/    
-    assign2D(numRow,
+    isFeasible=assign2D(numRow,
              numCol,
              maximize,
-             (double*)mxGetData(CMat),
+             reinterpret_cast<double*>(mxGetData(CMat)),
              workMem,
              problemSol);
    
     mxDestroyArray(CMat);
+
+    if(isFeasible==0) {
+        delete problemSol;
+        //Let Matlab know that these are the return variables for an
+        //infeasible problem
+        plhs[0]=mxCreateNumericMatrix(0,0,mxDOUBLE_CLASS,mxREAL);
+        if(nlhs>1) {
+            plhs[1]=mxCreateNumericMatrix(0,0,mxDOUBLE_CLASS,mxREAL);
+            if(nlhs>2) {
+                plhs[2]=mxCreateDoubleMatrix(1,1,mxREAL);
+                *reinterpret_cast<double*>(mxGetData(plhs[2]))=-1;
+                
+                if(nlhs>3) {
+                    plhs[3]=uMATLAB;
+                    if(nlhs>4) {
+                        plhs[4]=vMATLAB;
+                    }else {
+                       mxDestroyArray(vMATLAB);  
+                    }
+                } else  {
+                    mxDestroyArray(uMATLAB);
+                    mxDestroyArray(vMATLAB);        
+                }
+            } else {
+                mxDestroyArray(uMATLAB);
+                mxDestroyArray(vMATLAB); 
+            }
+        } else {
+            mxDestroyArray(uMATLAB);
+            mxDestroyArray(vMATLAB);
+        }
+
+        return;
+    }
     
     /*Convert C++ indices to Matlab indices*/
     for_each(problemSol->row4col, problemSol->row4col+numCol, increment<ptrdiff_t>);
     for_each(problemSol->col4row, problemSol->col4row+numRow, increment<ptrdiff_t>);
     
     /*Copy the results into the return variables*/
-    copy(problemSol->row4col,problemSol->row4col+numCol,(ptrdiff_t*)mxGetData(row4colMATLAB));
-    copy(problemSol->col4row,problemSol->col4row+numRow,(ptrdiff_t*)mxGetData(col4rowMATLAB));
-    copy(problemSol->u,problemSol->u+numCol,(double*)mxGetData(uMATLAB));
-    copy(problemSol->v,problemSol->v+numRow,(double*)mxGetData(vMATLAB));
+    copy(problemSol->row4col,problemSol->row4col+numCol,reinterpret_cast<ptrdiff_t*>(mxGetData(row4colMATLAB)));
+    copy(problemSol->col4row,problemSol->col4row+numRow,reinterpret_cast<ptrdiff_t*>(mxGetData(col4rowMATLAB)));
+    copy(problemSol->u,problemSol->u+numCol,reinterpret_cast<double*>(mxGetData(uMATLAB)));
+    copy(problemSol->v,problemSol->v+numRow,reinterpret_cast<double*>(mxGetData(vMATLAB)));
     
     /* If a transposed array was used */
     if(didFlip==true) {
@@ -163,20 +198,37 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     }
 
     //Let Matlab know that these are the return variables.
-    switch(nlhs) {
-        case 5:
-            plhs[4]=vMATLAB;
-        case 4:
-            plhs[3]=uMATLAB;
-        case 3:
+    plhs[0]=col4rowMATLAB;
+    if(nlhs>1) {
+        plhs[1]=row4colMATLAB;
+        if(nlhs>2) {
             plhs[2]=mxCreateDoubleMatrix(1,1,mxREAL);
-            *(double*)mxGetData(plhs[2])=problemSol->gain;
-        case 2:
-            plhs[1]=row4colMATLAB;
-        default:
-            plhs[0]=col4rowMATLAB;
+            *reinterpret_cast<double*>(mxGetData(plhs[2]))=problemSol->gain;
+            
+            if(nlhs>3) {
+                plhs[3]=uMATLAB;
+                
+                if(nlhs>4) {
+                    plhs[4]=vMATLAB;
+                }
+                else {
+                  mxDestroyArray(vMATLAB);  
+                }
+                
+            } else {
+                mxDestroyArray(uMATLAB);
+                mxDestroyArray(vMATLAB);
+            }
+        } else {
+            mxDestroyArray(uMATLAB);
+            mxDestroyArray(vMATLAB);
+        }
+    } else {
+        mxDestroyArray(row4colMATLAB);
+        mxDestroyArray(uMATLAB);
+        mxDestroyArray(vMATLAB);
     }
-    
+
     delete problemSol;
     /* Return variables that are not requested and returned will be
      * automatically freed by Matlab when this function exits.*/

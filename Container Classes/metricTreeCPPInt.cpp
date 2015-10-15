@@ -65,7 +65,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         theTree=Matlab2Ptr<metricTreeCPP*>(prhs[1]);   
         
         checkRealDoubleArray(prhs[2]);
-        dataBatch=(double*)mxGetData(prhs[2]);
+        dataBatch=reinterpret_cast<double*>(mxGetData(prhs[2]));
         
         theTree->buildTreeFromBatch(dataBatch);
     } else if(!strcmp("searchRadius",cmd)) {
@@ -80,8 +80,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         theTree=Matlab2Ptr<metricTreeCPP*>(prhs[1]);
         checkRealDoubleArray(prhs[2]);
         checkRealDoubleArray(prhs[3]);
-        point=(double*)mxGetData(prhs[2]);
-        radius=(double*)mxGetData(prhs[3]);
+        point=reinterpret_cast<double*>(mxGetData(prhs[2]));
+        radius=reinterpret_cast<double*>(mxGetData(prhs[3]));
         
         numPoints=mxGetN(prhs[2]);
         if(mxGetM(prhs[2])!=theTree->k){
@@ -122,20 +122,22 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         theTree=Matlab2Ptr<metricTreeCPP*>(prhs[1]);
         N=theTree->N;
         k=theTree->k;
-                
-        switch(nlhs) {
-            case 6:
-                plhs[5]=doubleMat2Matlab(theTree->data,k, N);
-            case 5:
-                plhs[4]=doubleMat2Matlab(theTree->outerRadii,N, 1);
-            case 4:
-                plhs[3]=doubleMat2Matlab(theTree->innerRadii,N, 1);
-            case 3:
+        
+        plhs[0]=unsignedSizeMat2Matlab(theTree->DATAIDX,N, 1);
+        if(nlhs>1) {
+            plhs[1]=signedSizeMat2Matlab(theTree->innerChild,N, 1);
+            if(nlhs>2) {
                 plhs[2]=signedSizeMat2Matlab(theTree->outerChild,N, 1);
-            case 2:
-                plhs[1]=signedSizeMat2Matlab(theTree->innerChild,N, 1);
-            default:
-                plhs[0]=unsignedSizeMat2Matlab(theTree->DATAIDX,N, 1);
+                if(nlhs>3) {
+                    plhs[3]=doubleMat2Matlab(theTree->innerRadii,N, 1);
+                    if(nlhs>4) {
+                        plhs[4]=doubleMat2Matlab(theTree->outerRadii,N, 1);
+                        if(nlhs>5) {
+                            plhs[5]=doubleMat2Matlab(theTree->data,k, N);
+                        }
+                    }
+                }
+            }   
         }
     } else if(!strcmp("getN", cmd)) {
         theTree=Matlab2Ptr<metricTreeCPP*>(prhs[1]);

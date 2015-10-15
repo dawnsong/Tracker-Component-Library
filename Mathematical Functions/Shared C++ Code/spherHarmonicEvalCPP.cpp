@@ -235,7 +235,7 @@ void spherHarmonicEvalCPP(double *V, double *gradV, const ClusterSetCPP<double> 
                 
                 //Use Horner's method to compute the partials.
                 m=M+1;
-                mf=(double)m;
+                mf=static_cast<double>(m);
                 do {
                     m--;
                     mf--;

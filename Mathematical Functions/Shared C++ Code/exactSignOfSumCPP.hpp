@@ -28,15 +28,23 @@
 #ifndef EXACTSIGNOFSUMCPP
 #define EXACTSIGNOFSUMCPP
 
-//Needed for frexp and ldexp
-#include <cmath>
 //Needed for sort
 #include <algorithm>
 //Needed for greater
 #include <functional>
+//If C++11 with type-generic versions of frexp and ldexp are supported.
+#if __cplusplus<=199711L
+//If no type generic version of frexp is available, then that means that
+//we just have to use cmath and deal with an increased possibility of
+//overflows
+#include <cmath>
+#else
+//Needed for type-generic frexp and ldexp
+#include <ctgmath>
+#endif
 
 //Two helper functions for keeping things in order.
-template<class T>
+template<typename T>
 void BuildHeapFromTop(const size_t n, T *ra)
 {
  size_t i=1,m;
@@ -52,7 +60,7 @@ void BuildHeapFromTop(const size_t n, T *ra)
  ra[i]=top;
 }
 
-template<class T>
+template<typename T>
 void BuildHeapFromBelow(const size_t n, T *ra)
 {
  size_t i=n,m;
@@ -67,7 +75,7 @@ void BuildHeapFromBelow(const size_t n, T *ra)
  ra[i]= last;
 }
 
-template<class T>
+template<typename T>
 int exactSignOfSumCPP(const T *S, const size_t nS) {
     int sg;//The return value
     size_t n, m, i;

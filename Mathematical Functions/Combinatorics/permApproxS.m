@@ -7,8 +7,9 @@ function retVal=permApproxS(A,numIter)
 %          consistent with the permanents of A and A' being equal in square
 %          matrices. Empty matrices have a permanent of one by definition.
 %  numIter The number of iterations of the stochastic permanent
-%          approximation algorithm to use. If this parameter is omitted,
-%          then the default value of n*n*m is used. 
+%          approximation algorithm to use. If this parameter is omitted or
+%          an empty matrix is passed, then the default value of n*n*m is
+%          used. 
 %
 %OUTPUTS: val An approxmation of the matrix permanent of A.
 %
@@ -16,6 +17,8 @@ function retVal=permApproxS(A,numIter)
 %A. Barvinok, "Polynomial time algorithms to approximate permanents
 %and mixed discriminants within a simply exponential factor," Random
 %Structures and Algorithms, vol. 14, no. 1, pp. 29-61, Jan. 1999.
+%The algorithm utilizes random sampling, so the results will not be equal
+%when the algorithm is run multiple times.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -36,7 +39,7 @@ function retVal=permApproxS(A,numIter)
         n=temp;
     end
     
-    if(nargin<2)
+    if(nargin<2||isempty(numIter))
         numIter=n*n*m;
     end
     
@@ -50,6 +53,7 @@ function retVal=permApproxS(A,numIter)
 end
 
 function val=permApproxStochSquare(A,numIter)
+    N=size(A,1);
 
     alpha=zeros(numIter,1);
     for curIter=1:numIter

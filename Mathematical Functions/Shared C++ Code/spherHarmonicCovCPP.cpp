@@ -19,23 +19,21 @@
 #include "mathFuncs.hpp"
 #include "CoordFuncs.hpp"
 
-//For the sin and cos.
-#include <math.h>
+//For the sin, cos and infinity.
+#include <cmath>
 #include <limits>
 //for memset
 #include <string.h>
 
-//Windows does not support the isfinite function in C++, so we have to
-//define it if this is compiled under Windows. The _WIN32 macro is defined
-//in both 32-bit as well as 64-bit versions of Windows
-#if defined _WIN32
-template<typename T> bool isfinite(T arg)
+//Many versions of Windows and some other operating systems do not support
+//the isfinite function in C++, so we just define our own isFinite function
+//to take its place in case it is not defined in cmath.
+template<typename T> bool isFinite(T arg)
 {
     return arg == arg && 
            arg != std::numeric_limits<T>::infinity() &&
            arg != -std::numeric_limits<T>::infinity();
 }
-#endif
 
 void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<double> &CStdDev,const ClusterSetCPP<double> &SStdDev, const double *point, const size_t numPoints, const double a, const double c, const double scalFactor) {
     //If a NULL pointer is passed for gradV, then it is assumed that the
@@ -244,14 +242,14 @@ void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<doub
                     //the valid range of double precision numbers. Of course,
                     //the loss of the terms where overflow occurs means that the
                     //covariance matrix will be underestimated.
-                    if(isfinite(Lmn)) {
+                    if(isFinite(Lmn)) {
                         a44Loop+=CProdMN*Lmn*Lmn;
                         a14Loop-=mf*(CCur2*rPrev*rCur+SCur2*iPrev*iCur)*HVal*Lmn;
                         a24Loop-=mf*(-CCur2*iPrev*rCur+SCur2*rPrev*iCur)*HVal*Lmn;
                         a34Loop-=CProdMN*Lmn*dHVal;
                     }
                     
-                    if(isfinite(dHVal)) {
+                    if(isFinite(dHVal)) {
                         a33Loop+=CProdMN*dHVal*dHVal;
                         a13Loop+=mf*(CCur2*rPrev*rCur+SCur2*iPrev*iCur)*HVal*dHVal;
                         a23Loop+=mf*(-CCur2*iPrev*rCur+SCur2*rPrev*iCur)*HVal*dHVal;

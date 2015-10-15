@@ -6,6 +6,8 @@
 #include <cmath>
 #include <vector>
 #include "mathFuncs.hpp"
+//For memcpy
+#include <cstring>
 
 using namespace std;
 
@@ -57,17 +59,17 @@ metricTreeCPP::metricTreeCPP(const size_t kDes, const size_t NDes) {
     buffer=new char[sizeof(size_t)*N+sizeof(ptrdiff_t)*2*N+sizeof(double)*2*N+sizeof(double)*k*N];
     basePtr=buffer;
 
-    DATAIDX=(size_t*)basePtr;
+    DATAIDX=reinterpret_cast<size_t*>(basePtr);
     basePtr+=sizeof(size_t)*N;
-    innerChild=(ptrdiff_t*)basePtr;
+    innerChild=reinterpret_cast<ptrdiff_t*>(basePtr);
     basePtr+=sizeof(ptrdiff_t)*N;
-    outerChild=(ptrdiff_t*)basePtr;
+    outerChild=reinterpret_cast<ptrdiff_t*>(basePtr);
     basePtr+=sizeof(ptrdiff_t)*N;
-    innerRadii=(double*)basePtr;
+    innerRadii=reinterpret_cast<double*>(basePtr);
     basePtr+=sizeof(double)*N;
-    outerRadii=(double*)basePtr;
+    outerRadii=reinterpret_cast<double*>(basePtr);
     basePtr+=sizeof(double)*N;
-    data=(double*)basePtr;
+    data=reinterpret_cast<double*>(basePtr);
 }
 
 
@@ -86,13 +88,13 @@ void metricTreeCPP::buildTreeFromBatch(const double *dataBatch) {
     buffLoc= new char[sizeof(double)*N+sizeof(size_t)*N+sizeof(size_t)*N+max(sizeof(double),sizeof(size_t))*N];
     curPtr=buffLoc;
     
-    adjMat=(double*)curPtr;
+    adjMat=reinterpret_cast<double*>(curPtr);
     curPtr+=sizeof(double)*N;
-    idx=(size_t*)curPtr;
+    idx=reinterpret_cast<size_t*>(curPtr);
     curPtr+=sizeof(size_t)*N;
-    tempSortIdx=(size_t*)curPtr;
+    tempSortIdx=reinterpret_cast<size_t*>(curPtr);
     curPtr+=sizeof(size_t)*N;
-    tempSortRow=(double*)curPtr;
+    tempSortRow=reinterpret_cast<double*>(curPtr);
     
 //Initialize the indices.
     for(i=0;i<N;i++) {
@@ -138,9 +140,9 @@ size_t metricTreeCPP::treeGrow(double *adjMat,const size_t colOffset, size_t *id
     
     //The ordering of tempSortIdx corresponds to how the indicies from
     //idx[colOffset+1] to idx[colOffset+NSubTree] should be rearranged.
-    memcpy((size_t*)tempSortRow,idx+colOffset+1,NSubTree*sizeof(size_t));
+    memcpy(reinterpret_cast<size_t*>(tempSortRow),idx+colOffset+1,NSubTree*sizeof(size_t));
     for(i=0;i<NSubTree;i++) {
-        idx[colOffset+1+i]=((size_t*)tempSortRow)[tempSortIdx[i]];
+        idx[colOffset+1+i]=(reinterpret_cast<size_t*>(tempSortRow))[tempSortIdx[i]];
     }
     
     //Now, rearrange the distances in adjMat according to the same sort
@@ -166,12 +168,12 @@ size_t metricTreeCPP::treeGrow(double *adjMat,const size_t colOffset, size_t *id
     }
 
     //Continue the recursion.
-    outerChild[curNode]=(ptrdiff_t)(curNode+1);
+    outerChild[curNode]=static_cast<ptrdiff_t>(curNode+1);
     nextFreeNode=this->treeGrow(adjMat,colOffset+1+midIdx,idx,tempSortRow,tempSortIdx,curNode+1,NSubTree-midIdx);
 
     //If a full partitioning of the nodes took place
     if(midIdx>0) {
-        innerChild[curNode]=(ptrdiff_t)nextFreeNode;
+        innerChild[curNode]=static_cast<ptrdiff_t>(nextFreeNode);
         nextFreeNode=this->treeGrow(adjMat,colOffset+1,idx,tempSortRow,tempSortIdx,nextFreeNode,midIdx);
     } else {
         innerChild[curNode]=-1;
@@ -234,11 +236,11 @@ void metricTreeCPP::searchRadRecur(vector<size_t> &idxRange,vector<double> &dist
     }
     
     if(distCur+radius>=outerRadii[curNode]&&outerChild[curNode]!=-1) {
-        this->searchRadRecur(idxRange,distList,point,radius,(size_t)outerChild[curNode]);
+        this->searchRadRecur(idxRange,distList,point,radius,static_cast<size_t>(outerChild[curNode]));
     }
 
     if(distCur-radius<=innerRadii[curNode]&&innerChild[curNode]!=-1) {
-        this->searchRadRecur(idxRange,distList,point,radius,(size_t)innerChild[curNode]);
+        this->searchRadRecur(idxRange,distList,point,radius,static_cast<size_t>(innerChild[curNode]));
     }
 }
 

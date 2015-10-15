@@ -17,13 +17,21 @@ double wrapRangeCPP(const double val2Wrap, const double minBound, const double m
     const double a=(val2Wrap-minBound);
     const double m=(maxBound-minBound);
     
+    //Deal with the case where the value is in the primary interval.
+    //Treating this as a special case gets rid of finite precision issues
+    //that can make values very close to the upper bound of the interval
+    //wrap to the bottom. 
+    if(val2Wrap>=minBound&&val2Wrap<maxBound) {
+        return val2Wrap;
+    }
+
     return a-m*floor(a/m)+minBound;
 }
 
 double wrapRangeMirrorCPP(const double val2Wrap, const double minBound, const double maxBound) {
     double retVal,spreadVal=maxBound-minBound;
     const double pi=3.1415926535897932384626433832795028841971693993751;
-    
+     
     //First, shift the values so that the region of wrapping is centered
     //symmetrically around zero.
     retVal=val2Wrap-minBound-spreadVal/2.0;

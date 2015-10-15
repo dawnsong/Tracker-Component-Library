@@ -28,6 +28,8 @@
 
 //For the accumulate function
 #include<numeric>
+//For memcpy
+#include<cstring>
 
 template<typename T>
 class ClusterSetCPP {
@@ -52,16 +54,16 @@ public:
         size_t i;
         
         numClust=numClusters;
-        totalNumEl=std::accumulate(clustSizes,clustSizes+numClusters,(size_t)0);
+        totalNumEl=std::accumulate(clustSizes,clustSizes+numClusters,static_cast<size_t>(0));
         //Allocate space for a ClusterSet of the specified size and then
         //separate out the pointers for the elements and offset array.
         buffer = new char[sizeof(T)*totalNumEl+sizeof(size_t)*numClusters*2];
         curIdx=buffer;
-        clusterEls=(T*)curIdx;
+        clusterEls=reinterpret_cast<T*>(curIdx);
         curIdx+=sizeof(T)*totalNumEl;
-        offsetArray=(size_t*)curIdx;
+        offsetArray=reinterpret_cast<size_t*>(curIdx);
         curIdx+=sizeof(size_t)*numClusters;
-        clusterSizes=(size_t*)curIdx;
+        clusterSizes=reinterpret_cast<size_t*>(curIdx);
         
         memcpy(clusterSizes,clustSizes,numClusters*sizeof(size_t));
 
