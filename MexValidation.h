@@ -125,7 +125,6 @@
 
 #ifdef __cplusplus
 //For memcpy
-#include <algorithm>
 #include <cstring>
 //Defines the size_t and ptrdiff_t types
 #include <cstddef>
@@ -368,6 +367,13 @@ mxArray *convert2DReal2DoubleMat(const mxArray * const val) {
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -496,6 +502,13 @@ mxArray *convert2DReal2SignedIntMat(const mxArray * const val) {
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -624,6 +637,13 @@ mxArray *convert2DReal2UnsignedIntMat(const mxArray * const val) {
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -752,6 +772,13 @@ mxArray *convert2DReal2SignedSizeMat(const mxArray * const val) {
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -880,6 +907,13 @@ mxArray *convert2DReal2UnsignedSizeMat(const mxArray * const val) {
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -934,6 +968,13 @@ int getIntFromMatlab(const mxArray * const val) {
         case mxUINT64_CLASS:
             retVal=(int)*(uint64_T*)mxGetData(val);
             break;
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -1023,6 +1064,13 @@ size_t getSizeTFromMatlab(const mxArray * const val) {
         case mxUINT64_CLASS:
             retVal=(size_t)*(uint64_T*)mxGetData(val);
             break;
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -1205,6 +1253,13 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mxFree(retVal);
             
@@ -1351,6 +1406,13 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mxFree(retVal);
             
@@ -1409,6 +1471,13 @@ double getDoubleFromMatlab(const mxArray * const val) {
         case mxUINT64_CLASS:
             retVal=(double)*(uint64_T*)mxGetData(val);
             break;
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -1462,6 +1531,13 @@ bool getBoolFromMatlab(const mxArray * const val) {
         case mxUINT64_CLASS:
             retVal=*(uint64_T*)mxGetData(val)!=0;
             break;
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
@@ -1662,7 +1738,7 @@ mxArray *ptr2Matlab(T thePointer) {
             mexErrMsgTxt("The integer size of this computer is neither 64 nor 32 bit. Thus, the Matlab data type for pointer conversion could not be determined.");
     }
     
-    *(void**)mxGetData(retArray)=reinterpret_cast<void*>(thePointer);
+    *reinterpret_cast<void**>(mxGetData(retArray))=reinterpret_cast<void*>(thePointer);
     return retArray;
 }
 
@@ -1672,7 +1748,7 @@ T Matlab2Ptr(const mxArray * const matlabPtr){
  *            using ptr2Matlab back into a pointer for use in a mex file.
  */
     T thePtr;
-    thePtr=reinterpret_cast<T>(*(void**)mxGetData(matlabPtr));    
+    thePtr=reinterpret_cast<T>(*reinterpret_cast<void**>(mxGetData(matlabPtr)));    
     return thePtr;
 }
 
