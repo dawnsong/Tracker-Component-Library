@@ -264,13 +264,16 @@ mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-
 cd ./3rd_Party_Code/mice
 %Run commands on the command line to build the library. The files are
 %placed in subdirectories in the mice folder.
-if(isunix()||ismac())%*NIX/ Mac OS X
-    system('sh makeall.csh');
+if(ismac())%Mac OS X
+    system('sh makeallOSX64.csh');
+elseif(isunix())%*NIX
+    system('sh makeallLINUX64.csh');
 elseif(ispc())%Windows
     system('makeall.bat')
 else
     error('Cannot Compile MICE library for unknown operating system')
 end
+cd(ScriptFolder)
 cd(ScriptFolder)
 
 %%Compile the AIS library
