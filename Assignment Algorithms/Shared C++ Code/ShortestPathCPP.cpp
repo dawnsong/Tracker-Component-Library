@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <queue>
 /*This is needed for memcpy*/
+#include <cstring>
 #include <algorithm>
 #include <limits>
 //Needed for isfinite
@@ -49,8 +50,8 @@ MurtyHyp *shortestPathUpdateCPP(const MurtyHyp *parentHyp, ScratchSpace &workMem
 
 inline int compare (const void * a, const void * b) {
 /*This comparison function is needed to use the qsort and bsearch functions
- * that are part of the standard C library.*/
-  return (int)( *(ptrdiff_t*)a - *(ptrdiff_t*)b );
+ *that are part of the standard C library.*/
+  return static_cast<int>(*reinterpret_cast<const ptrdiff_t*>(a) - *reinterpret_cast<const ptrdiff_t*>(b));
 }
 
 void calcGain(MurtyHyp *problemSol,const ScratchSpace &workMem,const size_t numRow,const size_t numCol4Gain) {
@@ -70,7 +71,7 @@ void calcGain(MurtyHyp *problemSol,const ScratchSpace &workMem,const size_t numR
     double gain=0;
     
     for(curCol=0;curCol<numCol4Gain;curCol++){
-       gain=gain+workMem.C[curCol*numRow+(size_t)problemSol->row4col[curCol]];
+       gain=gain+workMem.C[curCol*numRow+static_cast<size_t>(problemSol->row4col[curCol])];
     }
 
     problemSol->gain=gain;
@@ -102,14 +103,14 @@ void updateDualAndAugment(MurtyHyp *problemSol,const ScratchSpace& workMem,const
         }
     }
 //Remove the current node from those that must be assigned.
-    curRow=(size_t)sink;
+    curRow=static_cast<size_t>(sink);
     do{
         ptrdiff_t h;
         curCol=workMem.pred[curRow];
-        problemSol->col4row[curRow]=(ptrdiff_t)curCol;
+        problemSol->col4row[curRow]=static_cast<ptrdiff_t>(curCol);
         h=problemSol->row4col[curCol];
-        problemSol->row4col[curCol]=(ptrdiff_t)curRow;
-        curRow=(size_t)h;
+        problemSol->row4col[curCol]=static_cast<ptrdiff_t>(curRow);
+        curRow=static_cast<size_t>(h);
     } while(curCol!=curUnassignedCol);
 }
 
@@ -150,7 +151,7 @@ int shortestPathCPP(MurtyHyp *problemSol,ScratchSpace &workMem,const size_t numR
         
         /*All rows need to be scanned.*/
         for(curRow=0;curRow<numRow;curRow++){
-            workMem.Row2Scan[curRow]=(ptrdiff_t)curRow;
+            workMem.Row2Scan[curRow]=static_cast<ptrdiff_t>(curRow);
         }
 
         numRow2Scan=numRow;
@@ -176,7 +177,7 @@ int shortestPathCPP(MurtyHyp *problemSol,ScratchSpace &workMem,const size_t numR
             for(curRowScan=0;curRowScan<numRow2Scan;curRowScan++) {
                 double reducedCost;
                 
-                curRow=(size_t)workMem.Row2Scan[curRowScan];
+                curRow=static_cast<size_t>(workMem.Row2Scan[curRowScan]);
                 reducedCost=delta+workMem.C[curRow+curCol*numRow]-problemSol->u[curCol]-problemSol->v[curRow];
                 
                 if(reducedCost<workMem.shortestPathCost[curRow]){
@@ -200,7 +201,7 @@ int shortestPathCPP(MurtyHyp *problemSol,ScratchSpace &workMem,const size_t numR
             
             /* Change the index from the relative column index to the
              * absolute column index.*/
-            closestRow=(size_t)workMem.Row2Scan[closestRowScan];
+            closestRow=static_cast<size_t>(workMem.Row2Scan[closestRowScan]);
         
             /* Add the closest column to the list of scanned columns and
              * delete it from the list of columns to scan by shifting all
@@ -215,9 +216,9 @@ int shortestPathCPP(MurtyHyp *problemSol,ScratchSpace &workMem,const size_t numR
             
             //If we have reached an unassigned row.
             if(problemSol->col4row[closestRow]==-1) {
-                sink=(ptrdiff_t)closestRow;
+                sink=static_cast<ptrdiff_t>(closestRow);
             } else{
-                curCol=(size_t)problemSol->col4row[closestRow];
+                curCol=static_cast<size_t>(problemSol->col4row[closestRow]);
             }            
         } while(sink==-1);
         
@@ -300,7 +301,7 @@ MurtyHyp *shortestPathUpdateCPP(const MurtyHyp *parentHyp, ScratchSpace &workMem
         /*Scan all of the columns that have not already been scanned.*/
         minVal=numeric_limits<double>::infinity();
         for(curRowScan=0;curRowScan<numRow2Scan;curRowScan++) {
-            curRow=(size_t)workMem.Row2Scan[curRowScan];
+            curRow=static_cast<size_t>(workMem.Row2Scan[curRowScan]);
                 
             if(curCol!=curUnassignedCol||workMem.forbiddenActiveRows[curRow]==false) {
                 double reducedCost;
@@ -328,7 +329,7 @@ MurtyHyp *shortestPathUpdateCPP(const MurtyHyp *parentHyp, ScratchSpace &workMem
         }
         /* Change the index from the relative column index to the
          * absolute column index.*/
-        closestRow=(size_t)workMem.Row2Scan[closestRowScan];
+        closestRow=static_cast<size_t>(workMem.Row2Scan[closestRowScan]);
 
         /* Add the closest column to the list of scanned columns and
          * delete it from the list of columns to scan by shifting all
@@ -343,9 +344,9 @@ MurtyHyp *shortestPathUpdateCPP(const MurtyHyp *parentHyp, ScratchSpace &workMem
 
         //If we have reached an unassigned row.
         if(problemSol->col4row[closestRow]==-1) {
-            sink=(ptrdiff_t)closestRow;
+            sink=static_cast<ptrdiff_t>(closestRow);
         } else{
-            curCol=(size_t)problemSol->col4row[closestRow];
+            curCol=static_cast<size_t>(problemSol->col4row[closestRow]);
         }            
     } while(sink==-1);
     
@@ -408,8 +409,8 @@ void split(MurtyHyp *parentHyp,priority_queue<pMurtyHyp> &HypQueue, ScratchSpace
     /* Remove the current assignment from the list of columns that can 
      * be scanned. First, we must find the index of the column that is 
      * to be removed.*/
-    row2RemovePtr=(char*)bsearch(&parentHyp->row4col[activeCol],workMem.Row2ScanParent,numRow2Scan,sizeof(ptrdiff_t),compare);
-    memmove(row2RemovePtr,row2RemovePtr+sizeof(ptrdiff_t),(size_t)((char*)(workMem.Row2ScanParent+numRow2Scan)-row2RemovePtr));
+    row2RemovePtr=reinterpret_cast<char*>(bsearch(&parentHyp->row4col[activeCol],workMem.Row2ScanParent,numRow2Scan,sizeof(ptrdiff_t),compare));
+    memmove(row2RemovePtr,row2RemovePtr+sizeof(ptrdiff_t),static_cast<size_t>(reinterpret_cast<char*>(workMem.Row2ScanParent+numRow2Scan)-row2RemovePtr));
     numRow2Scan--;//One fewer column to scan.
 
     fill_n(workMem.forbiddenActiveRows,numDim,false);
@@ -427,8 +428,8 @@ void split(MurtyHyp *parentHyp,priority_queue<pMurtyHyp> &HypQueue, ScratchSpace
         else {HypQueue.push(pMurtyHyp(newHyp));}
 
         /*Remove the current assignment from the list of columns to be scanned.*/
-        row2RemovePtr=(char*)bsearch(parentHyp->row4col+curCol,workMem.Row2ScanParent,numRow2Scan,sizeof(ptrdiff_t),compare);
-        memmove(row2RemovePtr,row2RemovePtr+sizeof(ptrdiff_t),(size_t)((char*)(workMem.Row2ScanParent+numRow2Scan)-row2RemovePtr));
+        row2RemovePtr=reinterpret_cast<char*>(bsearch(parentHyp->row4col+curCol,workMem.Row2ScanParent,numRow2Scan,sizeof(ptrdiff_t),compare));
+        memmove(row2RemovePtr,row2RemovePtr+sizeof(ptrdiff_t),static_cast<size_t>(reinterpret_cast<char*>(workMem.Row2ScanParent+numRow2Scan)-row2RemovePtr));
         numRow2Scan--;//One fewer column to scan.
 
         //Unforbid the current column.

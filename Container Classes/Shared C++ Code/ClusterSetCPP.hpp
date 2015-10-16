@@ -30,6 +30,8 @@
 #include<numeric>
 //For memcpy
 #include<cstring>
+//For sort
+#include<algorithm>
 
 template<typename T>
 class ClusterSetCPP {

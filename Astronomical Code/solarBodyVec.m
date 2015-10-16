@@ -334,7 +334,7 @@ if(algorithm==0||algorithm==1)
         J2000Position=aberrCorr(J2000Position,obsVelJ2000,sunDist);
         J2000Velocity=[];%Velocity is not returned.
     end
-    %Had the SPICE toolkit actually provided coordiantes in the J2000.0
+    %Had the SPICE toolkit actually provided coordinates in the J2000.0
     %dynamical system, it would be necessary to rotate them. However,
     %despite the labeling, the coordinates are in the ICRS.
     rICRS=[J2000Position;J2000Velocity];
@@ -460,7 +460,7 @@ if(nargout>1)
     if(~(strcmp(stateCoordSys,'ITRS')||strcmp(stateCoordSys,'GCRS')||strcmp(stateCoordSys,'EARTH')))
         rITRS=[];
     else
-        rITRS=GCRS2ITRS(rGCRS,Jul1,Jul2,deltaTTUT1,xpyp,dXdY);
+        rITRS=GCRS2ITRS(rICRS,Jul1,Jul2,deltaTTUT1,xpyp,dXdY);
     end
 end
 

@@ -43,15 +43,15 @@ public:
      * to parts of it for the different variables are saved.*/
        buffer=new char[sizeof(ptrdiff_t)*numRow+sizeof(ptrdiff_t)*numCol+sizeof(double)*numCol+sizeof(double)*numRow+sizeof(bool)*numRow];
        basePtr=buffer;
-       col4row=(ptrdiff_t*)basePtr;
+       col4row=reinterpret_cast<ptrdiff_t*>(basePtr);
        basePtr+=numRow*sizeof(ptrdiff_t);
-       row4col=(ptrdiff_t*)basePtr;
+       row4col=reinterpret_cast<ptrdiff_t*>(basePtr);
        basePtr+=numCol*sizeof(ptrdiff_t);
-       u=(double*)basePtr;
+       u=reinterpret_cast<double*>(basePtr);
        basePtr+=sizeof(double)*numCol;
-       v=(double*)basePtr;
+       v=reinterpret_cast<double*>(basePtr);
        basePtr+=sizeof(double)*numRow;
-       forbiddenActiveRows=(bool*)basePtr;
+       forbiddenActiveRows=reinterpret_cast<bool*>(basePtr);
     }
     
     ~MurtyHyp(){
@@ -95,22 +95,22 @@ public:
      * to parts of it for the different variables are saved.*/
         buffer=new char[numCol*sizeof(size_t)+2*numRow*sizeof(ptrdiff_t)+numRow*sizeof(size_t)+numRow*(1+numCol)*sizeof(double)+2*numRow*sizeof(bool)];
         basePtr=buffer;
-        ScannedColIdx=(size_t*)basePtr;
+        ScannedColIdx=reinterpret_cast<size_t*>(basePtr);
         basePtr+=sizeof(size_t)*numCol;
-        Row2ScanParent=(ptrdiff_t*)basePtr;
+        Row2ScanParent=reinterpret_cast<ptrdiff_t*>(basePtr);
         basePtr+=sizeof(ptrdiff_t)*numRow;
-        Row2Scan=(ptrdiff_t*)basePtr;
+        Row2Scan=reinterpret_cast<ptrdiff_t*>(basePtr);
         basePtr+=sizeof(ptrdiff_t)*numRow;
-        pred=(size_t*)basePtr;
+        pred=reinterpret_cast<size_t*>(basePtr);
         basePtr+=sizeof(size_t)*numRow;
-        shortestPathCost=(double*)basePtr;
+        shortestPathCost=reinterpret_cast<double*>(basePtr);
         basePtr+=sizeof(double)*numRow;
-        ScannedRows=(bool*)basePtr;
+        ScannedRows=reinterpret_cast<bool*>(basePtr);
         basePtr+=sizeof(bool)*numRow;
-        forbiddenActiveRows=(bool*)basePtr;
+        forbiddenActiveRows=reinterpret_cast<bool*>(basePtr);
         basePtr+=sizeof(bool)*numRow;
 
-        C=(double*)basePtr;
+        C=reinterpret_cast<double*>(basePtr);
     }
     
     ~ScratchSpace(){
