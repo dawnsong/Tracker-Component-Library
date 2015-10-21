@@ -50,7 +50,10 @@ function val=perm(A,boolRowsSkip,boolColsSkip)
 %Empty matrices have a permanent of 1 by definition.
     if(isempty(A))
         val=1;
-        return; 
+        return;
+    elseif(numel(A)==1)
+        val=A;
+        return;
     end
 
     m=size(A,1);
