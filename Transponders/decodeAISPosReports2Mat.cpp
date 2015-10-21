@@ -128,6 +128,8 @@
 #include "MexValidation.h"
 //For abs
 #include <cmath>
+//For min/max
+#include <algorithm>
 
 //Multiple a value in degrees by deg2Rad to get its value in radians.
 const double deg2Rad=0.0174532925199432957692369076849;
@@ -145,8 +147,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     bool decodeTimestamps=false;
     bool convert2Metric=true;
     size_t numCells;
-    mxArray *retMat, *timestampMat;
-    double *retData, *timestampData;
+    mxArray *retMat, *timestampMat=NULL;
+    double *retData, *timestampData=NULL;
     size_t i;
     size_t numDecoded;
     const size_t numRowsInOutput=11;
@@ -181,16 +183,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         if(mxIsEmpty(prhs[0])||(numRows!=1&&numRows!=1)) {
             mexErrMsgTxt("A cell array that is passed must be 1-dimensional.");
         }
-        numCells=max(numRows,numCols);
+        //This is numCells=max(numRows,numCols); but some versions of
+        //Windows have issues with the max function not being defined in
+        //the standard libraries.
+        if(numRows>numCols) {
+            numCells=numRows;
+        } else {
+            numCells=numCols;
+        }
     }
 
     //Allocate the maximum necessary space for the return data.
     retMat=mxCreateDoubleMatrix(numRowsInOutput,numCells,mxREAL);
-    retData=(double*)mxGetData(retMat);
+    retData=reinterpret_cast<double*>(mxGetData(retMat));
     plhs[0]=retMat;//Set the return matrix.
     if(decodeTimestamps) {
         timestampMat=mxCreateDoubleMatrix(numCells,1,mxREAL);
-        timestampData=(double*)mxGetData(timestampMat);
+        timestampData=reinterpret_cast<double*>(mxGetData(timestampMat));
         plhs[1]=timestampMat;//Set the return matrix.
     }
     
@@ -262,7 +271,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         //Decode the Message ID
         {
             const string messageHeader(bodyChars, 7);
-            const size_t numBits = msgBody.size()*6-numPadBits;
+            const size_t numBits = msgBody.size()*6-static_cast<size_t>(numPadBits);
             //This is space for the message header after being turned into a bunch
             //of bits. It is 7 characters at 6 bits each.
             bitset<42> bs;
@@ -286,7 +295,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             case 2:
             case 3:
             {   
-                Ais1_2_3 msg(bodyChars, numPadBits);
+                Ais1_2_3 msg(bodyChars, static_cast<size_t>(numPadBits));
                 if (msg.had_error()) {
                     mxFree(msgChars);
                     continue;
@@ -301,8 +310,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     continue;
                 }
                 
-                retData[outputOffset+0]=(double)msg.mmsi;
-                retData[outputOffset+1]=(double)msg.nav_status;
+                retData[outputOffset+0]=static_cast<double>(msg.mmsi);
+                retData[outputOffset+1]=static_cast<double>(msg.nav_status);
                 if(!msg.rot_over_range) {
                     retData[outputOffset+2]=msg.rot;
                 } else {
@@ -315,7 +324,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     retData[outputOffset+3]=numeric_limits<double>::quiet_NaN();
                 }
                 
-                retData[outputOffset+4]=(double)msg.position_accuracy;
+                retData[outputOffset+4]=static_cast<double>(msg.position_accuracy);
 
                 //Latitude
                 retData[outputOffset+5]=msg.y;
@@ -330,7 +339,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 }
                 
                 if(msg.true_heading<360) {
-                    retData[outputOffset+8]=(double)msg.true_heading;
+                    retData[outputOffset+8]=static_cast<double>(msg.true_heading);
                 } else {
                     retData[outputOffset+8]=numeric_limits<double>::quiet_NaN();
                 }
@@ -339,7 +348,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 //incorrect UTC second will be reported when a leapsecond
                 //is added.
                 if(msg.timestamp<60) {
-                    retData[outputOffset+9]=(double)msg.timestamp;
+                    retData[outputOffset+9]=static_cast<double>(msg.timestamp);
                 } else {
                     retData[outputOffset+9]=numeric_limits<double>::quiet_NaN();
                 }
@@ -352,7 +361,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 break;
             case 18:
             {
-                Ais18 msg(bodyChars, numPadBits);
+                Ais18 msg(bodyChars, static_cast<size_t>(numPadBits));
                 if (msg.had_error()) {
                     mxFree(msgChars);
                     continue;
@@ -367,7 +376,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     continue;
                 }
                 
-                retData[outputOffset+0]=(double)msg.mmsi;
+                retData[outputOffset+0]=static_cast<double>(msg.mmsi);
                 //There is no navigation status
                 retData[outputOffset+1]=numeric_limits<double>::quiet_NaN();
                 //There is no turn rate
@@ -379,7 +388,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     retData[outputOffset+3]=numeric_limits<double>::quiet_NaN();
                 }
                 
-                retData[outputOffset+4]=(double)msg.position_accuracy;
+                retData[outputOffset+4]=static_cast<double>(msg.position_accuracy);
 
                 //Latitude
                 if(fabs(msg.y)<=90) {
@@ -402,7 +411,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 }
                 
                 if(msg.true_heading<360) {
-                    retData[outputOffset+8]=(double)msg.true_heading;
+                    retData[outputOffset+8]=static_cast<double>(msg.true_heading);
                 } else {
                     retData[outputOffset+8]=numeric_limits<double>::quiet_NaN();
                 }
@@ -411,7 +420,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 //incorrect UTC second will be reported when a leapsecond
                 //is added.
                 if(msg.timestamp<60) {
-                    retData[outputOffset+9]=(double)msg.timestamp;
+                    retData[outputOffset+9]=static_cast<double>(msg.timestamp);
                 } else {
                     retData[outputOffset+9]=numeric_limits<double>::quiet_NaN();
                 }
@@ -421,7 +430,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 break;
             case 27:
             {
-                Ais27 msg(bodyChars, numPadBits);
+                Ais27 msg(bodyChars, static_cast<size_t>(numPadBits));
                 if (msg.had_error()) {
                     mxFree(msgChars);
                     continue;
@@ -436,8 +445,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     continue;
                 }
                 
-                retData[outputOffset+0]=(double)msg.mmsi;
-                retData[outputOffset+1]=(double)msg.nav_status;
+                retData[outputOffset+0]=static_cast<double>(msg.mmsi);
+                retData[outputOffset+1]=static_cast<double>(msg.nav_status);
                 //There is no turn rate information
                 retData[outputOffset+2]=numeric_limits<double>::quiet_NaN();
                 
@@ -447,7 +456,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     retData[outputOffset+3]=numeric_limits<double>::quiet_NaN();
                 }
                 
-                retData[outputOffset+4]=(double)msg.position_accuracy;
+                retData[outputOffset+4]=static_cast<double>(msg.position_accuracy);
 
                 //Latitude
                 retData[outputOffset+5]=msg.y;
@@ -503,13 +512,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                     for(curIdx++;msgChars[curIdx]!='\0'&&isdigit(msgChars[curIdx]);curIdx++);
                     //If it was successfully parsed
                     if(msgChars[curIdx]=='\0') {
-                        timestampData[numDecoded]=(double)theTimestamp;
+                        timestampData[numDecoded]=static_cast<double>(theTimestamp);
                     } else {
                         timestampData[numDecoded]=numeric_limits<double>::quiet_NaN();
                     }
                 }
             } else {
-                timestampData[numDecoded]=(double)theTimestamp;
+                timestampData[numDecoded]=static_cast<double>(theTimestamp);
             }
         }
         mxFree(msgChars);
