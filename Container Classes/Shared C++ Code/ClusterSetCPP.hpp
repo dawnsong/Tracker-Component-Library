@@ -27,11 +27,12 @@
 //becomes responsible to free.
 
 //For the accumulate function
-#include<numeric>
+#include <numeric>
 //For memcpy
-#include<cstring>
+#include <cstring>
+#include <cstddef>
 //For sort
-#include<algorithm>
+#include <algorithm>
 
 template<typename T>
 class ClusterSetCPP {
