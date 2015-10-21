@@ -14,6 +14,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <cstddef>
 
 using std::bitset;
 using std::ostream;
