@@ -8,7 +8,7 @@ CXXFLAGS :=
 #CXXFLAGS += -ffast-math 
 
 #CXXFLAGS := -g3 -O0 -m32
-CXXFLAGS := 
+CXXFLAGS := -fPIC
 
 WARN := -Wall
 WARN += -Wextra
