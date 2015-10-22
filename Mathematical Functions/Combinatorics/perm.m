@@ -47,11 +47,12 @@ function val=perm(A,boolRowsSkip,boolColsSkip)
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-%Empty matrices have a permanent of 1 by definition.
     if(isempty(A))
+        %Empty matrices have a permanent of 1 by definition.
         val=1;
         return;
     elseif(numel(A)==1)
+        %Scalar values have a permanent equal to that value.
         val=A;
         return;
     end
