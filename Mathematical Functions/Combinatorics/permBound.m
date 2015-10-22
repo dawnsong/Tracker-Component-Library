@@ -39,8 +39,11 @@ function retVal=permBound(A)
     if(isempty(A))
         retVal=1;
         return; 
-    end
-    
+   elseif(numel(A)==1) 
+        val=A; 
+        return; 
+  end 
+   
     m=size(A,1);
     n=size(A,2);
     
