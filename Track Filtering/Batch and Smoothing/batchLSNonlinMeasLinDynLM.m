@@ -251,7 +251,7 @@ function [xEst,PEst,xBatchEst,exitCode]=batchLSNonlinMeasLinDynLM(xInit,z,h,F,R,
             end
 
             %Predict backwards in time
-            for cStep=(kD-1):1
+            for cStep=(kD-1):-1:1
                 xBatchEst(:,cStep)=F(:,:,cStep)\xBatchEst(:,cStep+1);
             end
         end

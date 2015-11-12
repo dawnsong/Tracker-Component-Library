@@ -12,7 +12,7 @@
  *          some eps below pi/2 and a value some eps below -pi/2 will be
  *          mapped to a point some eps above -pi/2.
  *
- *INPUTS: vals  An vector or matrix of real values that should be wrapped
+ *INPUTS: vals A vector or matrix of real values that should be wrapped
  *             to the range minBound->maxBound.
  *    minBound The lower scalar bound of the output parameters.
  *    maxBound A value > minBound that is the upper bound to the allowable
