@@ -24,17 +24,18 @@ function [optCost,xOpt,exitFlag]=linProgRevisedSimplex(A,b,ALeq,bLeq,c,maximize,
 %          constraints.
 %        c The nX1 cost vector.
 % maximize A boolean variable specifying whether the problem is to maximize
-%          or minimize the cost function. The default if omitted is
-%          false.
+%          or minimize the cost function. The default if omitted or an
+%          empty matrix is passed is false.
 %  maxIter An optional parameter specifying the maximum number of
-%          iterations to use. The default is 5000. Complicated problems
-%          might require additional iterations. However, finite
-%          precision problems can also cause large problems to get stuck
-%          and not terminate.
+%          iterations to use. The default if omitted or an empty matrix is
+%          passed is 5000. Complicated problems might require additional
+%          iterations. However, finite precision problems can also cause
+%          large problems to get stuck and not terminate.
 %  epsilon An optional parameter specifying a tolerance for declaring
-%          values zero. The default value is 1e-9. Setting this parameter
-%          to zero can cause the optimization problem to cycle or
-%          fail by incorrectly creating an invalid basis.
+%          values zero. The default value if omitted or an empty matrix is
+%          passed is 1e-9. Setting this parameter to zero can cause the
+%          optimization problem to cycle or fail by incorrectly creating an
+%          invalid basis.
 %
 %OUTPUTS: optCost The optimal cost when the algorithm successfully
 %                 terminates or when it terminates after having reached the
@@ -119,16 +120,16 @@ function [optCost,xOpt,exitFlag]=linProgRevisedSimplex(A,b,ALeq,bLeq,c,maximize,
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<8)
+if(nargin<8||isempty(epsilon))
     epsilon=1e-12;
 end
 
-if(nargin<7)
-    maximize=false;
+if(nargin<7||isempty(maxIter))
+    maxIter=5000;
 end
 
-if(nargin<6)
-    maxIter=5000;
+if(nargin<6||isempty(maximize))
+    maximize=false;
 end
 
 m=size(A,1);
@@ -189,6 +190,13 @@ if(length(indepRows)~=m)
     A=A(indepRows,:);
     b=b(indepRows);
 end
+
+%To meet the requirement in determining the initial basis in Chapter 3.5
+%that all b are positive, we flip the sign of b and the appropriate rows of
+%A accordingly.
+sel=b<0;
+b(sel)=-b(sel);
+A(sel,:)=-A(sel,:);
 
 %Step 1 in the book.
 %The above steps reformulated the problem into
@@ -297,7 +305,6 @@ else
 end
 
 end
-
 
 function [x,basisIdx,exitFlag,foundSol]=solveSimplexGivenBasis(A,b,c,x,basisIdx,epsilon,maxIter)
     n=length(x);
