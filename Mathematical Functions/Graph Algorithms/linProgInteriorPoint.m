@@ -23,13 +23,13 @@ function [optCost,xOpt,exitFlag]=linProgInteriorPoint(A,b,ALeq,bLeq,c,maximize,m
 %          constraints.
 %        c The nX1 cost vector.
 % maximize A boolean variable specifying whether the problem is to maximize
-%          or minimize the cost function. The default if omitted is
-%          false.
+%          or minimize the cost function. The default if omitted or an
+%          empty matrix is passed is false.
 %  maxIter An optional parameter specifying the maximum number of
-%          iterations to use. The default is 5000. Complicated problems
-%          might require additional iterations. However, finite
-%          precision problems can also cause large problems to get stuck
-%          and not terminate.
+%          iterations to use. The default if omitted or an empty matrix is
+%          passed is 5000. Complicated problems might require additional
+%          iterations. However, finite precision limitations can also cause
+%          large problems to get stuck and not terminate.
 %  epsilon An optional parameter specifying a tolerance for declaring the
 %          dot product of a dual vector with x as zero, which defines when
 %          the algorithm has converged. The default value if omitted or an
@@ -115,12 +115,12 @@ if(nargin<8||isempty(epsilon))
     epsilon=1e-12;
 end
 
-if(nargin<7||isempty(maximize))
-    maximize=false;
+if(nargin<7||isempty(maxIter))
+    maxIter=10000;
 end
 
-if(nargin<6||isempty(maxITer))
-    maxIter=10000;
+if(nargin<6||isempty(maximize))
+    maximize=false;
 end
 
 m=size(A,1);
@@ -182,7 +182,6 @@ if(length(indepRows)~=m)
     b=b(indepRows);
 end
 
-
 %Step 1 (Initialization): The infeasible primal dual algorithm is used, so
 %the initialization only has to satify a few non-negativity constraints for
 %x and s.
@@ -200,6 +199,11 @@ p=zeros(m,1);
 rho=1;%An arbitrary initial value.
 
 didConverge=false;
+%If sDotx does not change from one iteration to the next, then the
+%algorithm is likely stuck. In such an instance, we will reduce the rho
+%parameter. As noted in Chapter 9.5, rho is generally only changed if the
+%algorithm gets stuck.
+sDotxOld=Inf;
 for curIter=1:maxIter
     %Step 2 (Optimality Test)
     %Check for convergence
@@ -207,6 +211,14 @@ for curIter=1:maxIter
     if(sDotx<epsilon)
        didConverge=true;
        break;
+    end
+    
+    %If sDotx has not changed enough, then the algorithm is probably stuck.
+    %Thus, this shrinks rho if it gets stuck.
+    if(abs(sDotxOld-sDotx)<=2*eps(sDotx))
+        rho=rho/2;
+    else
+        sDotxOld=sDotx;
     end
     
     %Step 3 (Computation of Newton directions)
