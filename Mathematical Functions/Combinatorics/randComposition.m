@@ -1,12 +1,12 @@
-function q=randComposition(n,m)
-%%RANDCOMPOSITION Generate a random composition of n unlableled items and m
-%                 slots. That is, a  random assignment of putting n
-%                 unlabeled balls into m labeled slots. This will not work
+function q=randComposition(t,n)
+%%RANDCOMPOSITION Generate a random composition of n unlableled items and t
+%                 slots. That is, a random assignment of putting n
+%                 unlabeled balls into t labeled slots. This will not work
 %                 if the total number of possible compositions
-%                 (binomial(n+m-1,m-1)) is so large as to overflow.
+%                 (binomial(n-1,d-1)) is so large as to overflow.
 %
-%INPUTS:     n      The number of items that are composed into slots.
-%            m      The number of slots that can hold items.
+%INPUTS:    m      The number of slots that can hold items.
+%           n      The number of items that are composed into slots.
 %
 %OUTPUTS:    q      An mX1 vector holding the random composition, whose
 %                   elements sum to n. Each element is the number of
@@ -18,13 +18,13 @@ function q=randComposition(n,m)
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-totalCompositions=binomial(n+m-1,m-1);
+totalCompositions=binomial(n-1,d-1);
 
 %The min is for the (presumably zero probability) case that the random
 %variable is 1.
 rank=min(fix(rand(1)*totalCompositions),totalCompositions-1);
 
-q=unrankComposition(rank,n,m);
+q=unrankComposition(rank,n,t);
 end
 
 %LICENSE:
