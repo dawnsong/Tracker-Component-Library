@@ -146,7 +146,7 @@ classdef DisjointSet < handle
             %clusterEls depending on their rank.
             for curItem=1:numTar
                 %Find the root node for the given node.
-                rootNode=find(DSObj.setArray(curItem));
+                rootNode=DSObj.find(curItem);
                 %Find the index of the cluster corresponding to that root
                 %node.
                 [~, clusterIdx]=binSearch(rootIdxList,rootNode);
