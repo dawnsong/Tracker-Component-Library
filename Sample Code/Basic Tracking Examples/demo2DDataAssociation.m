@@ -73,7 +73,7 @@ function demo2DDataAssociation()
 %square root covariance matrix.
 %
 %The trajectories are plotted along with the measurements. Also plotted is
-%the offset from the range estiamtes fo the target and the location of the
+%the offset from the range estimates of the target and the location of the
 %first target. One could plot the mean squared error of the trajectories as
 %well, but this is less informative regarding how well targets are
 %separated as the cross-range errors for a monostatic tracking scenario

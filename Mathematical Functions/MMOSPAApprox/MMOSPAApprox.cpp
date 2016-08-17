@@ -1,6 +1,6 @@
 /**MMOSPAAPPROX  Find the approximate minimum mean optimal sub-pattern
 *                assignment (MMOSPA) estimate from a set of weighted 
-*                discrete sets of target estiamtes using 2D assignment in a
+*                discrete sets of target estimates using 2D assignment in a
 *                forward-backward algorithm.
 *
 * INPUTS:   x        An xDim X numTar X numHyp hypermatrix that holds

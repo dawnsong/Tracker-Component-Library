@@ -11,7 +11,7 @@ function NEES=calcNEES(xTrue,xEst,PEst)
 %        xEst   An xDim X N set of estimates.
 %        PEst   An xDim X xDim XN set of covariance matrices associated
 %               with the estimates. if the covariance matrix is supposed to
-%               be the same for all estiamtes, then PEst is just xDimXxDim.
+%               be the same for all estimates, then PEst is just xDimXxDim.
 %
 %OUTPUTS: NEES  The normalized estimation error squared of the estimates.
 %
