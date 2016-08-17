@@ -84,7 +84,6 @@ function [c,E,exitVal]=minimaxPolyFit(f,xSpan,n,RelTol,maxIter)
 % plot(x,error)
 %
 %REFERENCES:
-%
 %[1] V. K. Dzyadyk and I. A. Shevchuk, Theory of Uniform Approximation
 %    of Functions by Polynomials, 1st ed. Berlin: Walter de Gruyter, 2008.
 %[2] R. B. Platte, L. N. Trefethen, and A. B. Kuijlaars, "Impossibility of

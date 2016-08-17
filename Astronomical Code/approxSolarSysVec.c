@@ -77,11 +77,10 @@
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     double *Jul1,*Jul2;
     double AU2Meters;
-    double *xHelio, *xBary, *exitFlag;
+    double *xHelio, *exitFlag,*xBary=NULL;
     mxArray *xHelioMATLAB, *xBaryMATLAB, *exitFlagMATLAB;
     size_t totalVecs,curVec;
     int solarBody=0;
-    int retVal;
 
     if(nrhs<2||nrhs>3){
         mexErrMsgTxt("Wrong number of inputs");

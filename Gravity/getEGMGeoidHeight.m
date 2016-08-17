@@ -31,7 +31,7 @@ function [geoidHeight,coeffData]=getEGMGeoidHeight(latLon,tideSys,useNGAApprox,m
 %                  T. Using this approximation makes the results match the
 %                  output of the National Geospatial Intelligence Agency's
 %                  (NGA's) code to three places after the decimal point
-%                  --the accuracy at which their Fortran    prints the
+%                  --the accuracy at which their Fortran prints the
 %                  output. If this parameter is omitted, the default is
 %                  false: the more precise method of computing the
 %                  zeroth-order term is used. However, one cannot assume
@@ -66,19 +66,14 @@ function [geoidHeight,coeffData]=getEGMGeoidHeight(latLon,tideSys,useNGAApprox,m
 %using the function ellipsParam2Grav, the potential on the geoid can be
 %found.
 %
-%The formula used is based on Equation 4 in the paper by Rapp:
-%R. H. Rapp, "Use of potential coefficient models for geoid undulation
-%determinations using a spherical harmonic representation of the height
-%anomaly/geoid undulation difference," Journal of Geodesy, vol. 71,
-%no. 5, pp. 282-289, Apr. 1997.
-%where the values of C_1 and C_2 in the paper are provided in terms of
-%spherical harmonic coefficients by the NGA in the file
-%Zeta-to-N_to2160_egm2008 which is loaded using the function
-%getEGMZeta2NCoeffs(). The NGA did not document how the coefficients
-%were determined. However, they require the use of digital elevation data
-%as well as data specifying the location of the coastlines. Additionally,
-%high-precision computations require information on the density of the
-%Earth's crust.
+%The formula used is based on Equation 4 in the paper by Rapp [1], where
+%the values of C_1 and C_2 in the paper are provided in terms of spherical
+%harmonic coefficients by the NGA in the file Zeta-to-N_to2160_egm2008,
+%which is loaded using the function getEGMZeta2NCoeffs(). The NGA did not
+%document how the coefficients were determined. However, they require the,
+%use of digital elevation data as well as data specifying the location of
+%the coastlines. Additionally, high-precision computations require
+%information on the density of the Earth's crust.
 %
 %However, Equation 4 in Rapp's paper can not be directly used because the
 %reference ellipsoid does not use the same values of GM and a for the
@@ -86,36 +81,20 @@ function [geoidHeight,coeffData]=getEGMGeoidHeight(latLon,tideSys,useNGAApprox,m
 %EGM2008 gravitational potential coefficients and the geoid potential is
 %not the same as the potential implied by the WGS-84 reference ellipsoid.
 %Thus, the modified expression for computing the disturbing potential T of
-%Equation 5 in
-%Smith, D. A., "There is no such thing as "The" EGM96 geoid: Subtle points
-%on the use of a global geopotential model" IGeS Bulletin No. 8,
-%International Geoid Service, Milan, Italy, p. 17-28, 1998.
-%http://www.ngs.noaa.gov/PUBS_LIB/EGM96_GEOID_PAPER/egm96_geoid_paper.html
-%is used and the extra term in Brun's equation for the difference between
-%the geoid and ellipsoid potentials of Equation 2 of the Smith paper is
-%also used. The latter equations is also given in Chapter 2.17
-%(Equation 2-347) of
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
+%Equation 5 in [2] is used and the extra term in Brun's equation for the
+%difference between the geoid and ellipsoid potentials of Equation 2 of the
+%Smith paper is also used. The latter equations is also given in Chapter
+%2.17 (Equation 2-347) of [3].
 %
 %This function computes the tide-free geoid height and then uses the
-%conversion equations of
-%M. Ekman, "Impacts of geodynamic phenomena on systems for height
-%and gravity," Bulletin Géodésique, vol. 63, no. 3, pp. 281-296, 1996.
-%to convert to other systems. Note that a loss of precision compared to
-%directly computing the geoid height in the other systems might be present.
-%The differences between the tide models are complicated and are outlined
-%in Figure 1.2 on page 17 in Section 1.2 of 
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
+%conversion equations of [4] to convert to other systems. Note that a loss
+%of precision compared to directly computing the geoid height in the other
+%systems might be present. The differences between the tide models are
+%complicated and are outlined in Figure 1.2 on page 17 in Section 1.2 of 
+%[5].
 %
 %An overview of the math underlying the NGA's method for computing the
-%geoid undulations is given in 
-%F. G. Lemoine, S. Kenyon, J. Factor, R. G. Trimmer, N. K. Pavlis, and
-%et. al., "The development of the joint NASA GSFC and the National
-%Imagery and Mapping Agency (NIMA) geopotential model EGM96,"
-%National Aeronautics and Space Administration, Goddard Space Flight
-%Center, Greenbelt, MD, Tech. Rep. NASA/TP-1998-206861, Jul. 1998.
+%geoid undulations is given in [6].
 %
 %With the EGM96 model, one can verify the routine using the test values
 %from the NGA. These are:
@@ -172,6 +151,27 @@ function [geoidHeight,coeffData]=getEGMGeoidHeight(latLon,tideSys,useNGAApprox,m
 %               14.899;
 %              -30.150;
 %              -30.150];
+%
+%REFERENCES:
+%[1] R. H. Rapp, "Use of potential coefficient models for geoid undulation
+%    determinations using a spherical harmonic representation of the height
+%    anomaly/geoid undulation difference," Journal of Geodesy, vol. 71,
+%    no. 5, pp. 282-289, Apr. 1997.
+%[2] Smith, D. A., "There is no such thing as "The" EGM96 geoid: Subtle
+%    points on the use of a global geopotential model" IGeS Bulletin No. 8,
+%    International Geoid Service, Milan, Italy, p. 17-28, 1998.
+%    http://www.ngs.noaa.gov/PUBS_LIB/EGM96_GEOID_PAPER/egm96_geoid_paper.html
+%[3] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
+%[4] M. Ekman, "Impacts of geodynamic phenomena on systems for height
+%    and gravity," Bulletin Géodésique, vol. 63, no. 3, pp. 281-296, 1996.
+%[5] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
+%[6] F. G. Lemoine, S. Kenyon, J. Factor, R. G. Trimmer, N. K. Pavlis, and
+%    et. al., "The development of the joint NASA GSFC and the National
+%    Imagery and Mapping Agency (NIMA) geopotential model EGM96,"
+%    National Aeronautics and Space Administration, Goddard Space Flight
+%    Center, Greenbelt, MD, Tech. Rep. NASA/TP-1998-206861, Jul. 1998.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -13,6 +13,13 @@ function [Jul1,Jul2]=GPS2TAI(Jul1,Jul2)
 %
 %GPS time is the same as TAI, but is always 19 seconds behind.
 %
+%Many temporal coordinate systems standards are compared in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
+%
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 

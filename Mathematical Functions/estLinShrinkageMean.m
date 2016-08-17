@@ -39,23 +39,13 @@ function [xEst,PML]=estLinShrinkageMean(z,H,R,scaleUnknown)
 %When the dimensionality of x is 2 or less, the unknown scale factor does
 %not matter.
 %
-%The algorithm is implemented from the beginning of
-%J. H. Manton, V. Krishnamurthy, and H. V. Poor, "James-Stein state
-%filtering algorithms," IEEE Transactions on Signal Processing, vol. 46,
-%no. 9, pp. 2431-2447, Sep. 1998.
-%and the equation numbers in the comments refer to equations in that paper.
+%The algorithm is implemented from the beginning of [1] and the equation
+%numbers in the comments refer to equations in that paper.
 %
 %Many do not realize that estimators with lower mean-squared error than the
-%expected value can exist. The first proof of this fact was given in
-%C. Stein, "Inadmissibility of the usual estimator for the mean of a
-%multivariate normal distribution," in Proceedings of the Third Berkeley
-%Symposium on Mathematical Statistics and Probability, vol. I, 1956,
-%pp. 197-206.
+%expected value can exist. The first proof of this fact was given in [2]
 %and surprised many statisticians. The name "James-Stein" for the
-%estimation algorithm is due to the paper
-%W. James and C. Stein, "Estimation with quadratic loss," in Proceedings of
-%the Fourth Berkeley Symposium on Mathematical Statistics and Probability,
-%vol. I, 1961, pp. 361-379.
+%estimation algorithm is due to the paper [3].
 %
 %Note that when just using random measurement and measurement covariance
 %matrices H and R, the algorithm will be the ML estimate, since the
@@ -65,7 +55,7 @@ function [xEst,PML]=estLinShrinkageMean(z,H,R,scaleUnknown)
 % xDim=60;
 % zDim=3*xDim;
 % numRuns=5000;
-% H=repmat(eye(xDim),3,1);
+% H=repmat(eye(xDim),[3,1]);
 % R=eye(zDim);
 % 
 % SErrJS=0;
@@ -90,6 +80,18 @@ function [xEst,PML]=estLinShrinkageMean(z,H,R,scaleUnknown)
 %and
 %SErrML=20.077663028980357
 %As can be seen, the difference is often small.
+%
+%REFERENCES:
+%[1] J. H. Manton, V. Krishnamurthy, and H. V. Poor, "James-Stein state
+%    filtering algorithms," IEEE Transactions on Signal Processing, vol.
+%    46, no. 9, pp. 2431-2447, Sep. 1998.
+%[2] C. Stein, "Inadmissibility of the usual estimator for the mean of a
+%    multivariate normal distribution," in Proceedings of the Third
+%    Berkeley Symposium on Mathematical Statistics and Probability, vol. I,
+%    1956, pp. 197-206.
+%[3] W. James and C. Stein, "Estimation with quadratic loss," in
+%    Proceedings of the Fourth Berkeley Symposium on Mathematical
+%    Statistics and Probability, vol. I, 1961, pp. 361-379.
 %
 %May 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

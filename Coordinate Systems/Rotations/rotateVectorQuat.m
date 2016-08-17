@@ -22,10 +22,7 @@ function vRot=rotateVectorQuat(v,q,handed)
 %OUTPUTS: vRot The 3XN set of vectors v rotated according to the rotation
 %              implied by the unit quaternion with the given handedness.
 %
-%
-%The use of unit-magnitude quaternions for rotation is discussed in 
-%M. D. Shuster, "A survey of attitude representations," The Journal of
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. -Dec. 1993.
+%The use of unit-magnitude quaternions for rotation is discussed in [1],
 %where left-handed quaternions are considered.
 %
 %A quaternion form q(1)+i*q(2)+j*q(3)+k*q(4) that obeys right-handed
@@ -42,6 +39,10 @@ function vRot=rotateVectorQuat(v,q,handed)
 %i -1,-k, j
 %j  k,-1,-i
 %k -j, i,-1
+%
+%REFERENCES:
+%[1] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. -Dec. 1993.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

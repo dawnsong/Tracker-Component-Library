@@ -20,10 +20,12 @@ function beta=calcStarBetasBF(A)
 %               probabilities.
 %
 %The JPDAF* is the same as the JPDAF except certain joint association
-%events are thrown out. The JPDAF* is originally from 
-%H. A. Blom and E. A. Bloem, "Probabilistic data association avoiding track
-%coalescence," IEEE Transactions on Automatic Control, vol. 45, no. 2, pp.
-%247-259, Feb. 2000.
+%events are thrown out. The JPDAF* is originally from [1].
+%
+%REFERENCES:
+%[1] H. A. Blom and E. A. Bloem, "Probabilistic data association avoiding
+%    track coalescence," IEEE Transactions on Automatic Control, vol. 45,
+%    no. 2, pp. 247-259, Feb. 2000.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

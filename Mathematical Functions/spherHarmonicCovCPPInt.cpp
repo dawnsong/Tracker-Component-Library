@@ -20,9 +20,9 @@
  *CompileCLibraries function.
  *
  *The function is called in Matlab using the format:
- *[sigma2,Sigma]=spherHarmonicCovCPPInt(CStdDev,SStdDev,offsetArray,clusterSizes,point,a,c,scalFactor);
+ *[sigma2,Sigma,didOverflow]=spherHarmonicCovCPPInt(CStdDev,SStdDev,point,a,c,scalFactor);
  *or using 
- *[sigma2]=spherHarmonicCovCPPInt(CStdDev,SStdDev,offsetArray,clusterSizes,point,a,c,scalFactor);
+ *[sigma2]=spherHarmonicCovCPPInt(CStdDev,SStdDev,point,a,c,scalFactor);
  *if one only the variance of the potential is desired. The function
  *executes faster if only the variance of the potential and not the
  *covariance matrix of the gradient need be computed.
@@ -37,6 +37,8 @@
  * Matlab matrices.*/
 #include "MexValidation.h"
 #include "mathFuncs.hpp"
+//For sqrt
+#include <cmath>
 
 void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray *prhs[]) {
     double a,c,scalFactor;
@@ -44,44 +46,89 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     ClusterSetCPP<double> CStdDev;
     ClusterSetCPP<double> SStdDev;
     size_t numPoints;
+    size_t i, M, totalNumEls;
     mxArray *sigma2MATLAB;
     //This variable is only used if nlhs>1. It is set to zero here to
     //suppress a warning if compiled using -Wconditional-uninitialized.
     mxArray *SigmaMATLAB=NULL;
     double *sigma2,*Sigma;
+    bool didOverflow;
+    size_t *theOffsetArray, *theClusterSizes;
     
-    if(nrhs!=8) {
+    if(nrhs!=6) {
         mexErrMsgTxt("Wrong number of inputs.");
     }
     
-    CStdDev.clusterEls=(double*)mxGetData(prhs[0]);
-    SStdDev.clusterEls=(double*)mxGetData(prhs[1]);
-    
-    CStdDev.offsetArray=(size_t*)mxGetData(prhs[2]);
-    CStdDev.clusterSizes=(size_t*)mxGetData(prhs[3]);
-    SStdDev.offsetArray=CStdDev.offsetArray;
-    SStdDev.clusterSizes=CStdDev.clusterSizes;
-    
-    CStdDev.numClust=mxGetM(prhs[2]);
-    SStdDev.numClust=CStdDev.numClust;
-    {
-        size_t M;
-        M=CStdDev.numClust-1;
-        CStdDev.totalNumEl=(M+1)*(M+2)/2;
+    if(nlhs>3) {
+        mexErrMsgTxt("Invalid number of outputs.");
     }
-    SStdDev.totalNumEl=CStdDev.totalNumEl;
+    
+    //Check the validity of the ClusterSets
+    checkRealDoubleArray(prhs[0]);
+    checkRealDoubleArray(prhs[1]);
+    
+    //Make sure that both of the coefficient sets have the same number of
+    //elements and are not empty.
+    if(mxIsEmpty(prhs[0])||mxIsEmpty(prhs[1])||mxGetM(prhs[0])!=mxGetM(prhs[1])||mxGetN(prhs[0])!=mxGetN(prhs[1])) {
+        mexErrMsgTxt("Invalid ClusterSet data passed.");
+    }
+
+    CStdDev.clusterEls=reinterpret_cast<double*>(mxGetData(prhs[0]));
+    SStdDev.clusterEls=reinterpret_cast<double*>(mxGetData(prhs[1]));
+
+    //The number of elements in the ClusterSets
+    totalNumEls=mxGetM(prhs[0])*mxGetN(prhs[0]);
+    
+    //We do not want to trust that the offset arrays and the cluster arrays
+    //are valid. Also, the data types of the passed values can vary (e.g.,
+    //might be doubles). Thus, we this function does not take the offset
+    //and number of clusters data from a ClusterSet class. Rather, it
+    //recreates the values based on the length of the data. This avoids
+    //possibly reading past the end of an array.
+    
+    //Since the total number of points in a ClusterSet
+    //is (M+1)*(M+2)/2, where M is the number of clusters -1, we can easily
+    //verify that a valid number of points was passed.
+    //Some versions of Windows SDK have problems with passing an integer
+    //type to the sqrt function, so this explicit typecasting should take
+    //care of the problem.
+    M=(-3+static_cast<size_t>(sqrt(static_cast<double>(1+8*totalNumEls))))/2;        
+    if((M+1)*(M+2)/2!=totalNumEls) {
+        mexErrMsgTxt("The ClusterSets contain an inconsistent number of elements.");
+    }
+    
+    //Otherwise, fill in the values for the cluster sizes and the ofset
+    //array.
+    CStdDev.numClust=M+1;
+    SStdDev.numClust=M+1;
+    
+    theOffsetArray=new size_t[M+1];
+    theClusterSizes=new size_t[M+1];
+    theClusterSizes[0]=1;
+    theOffsetArray[0]=0;
+    for(i=1;i<=M;i++) {
+       theOffsetArray[i]=theOffsetArray[i-1]+theClusterSizes[i-1];
+       theClusterSizes[i]=i+1; 
+    }
+
+    CStdDev.totalNumEl=totalNumEls;
+    SStdDev.totalNumEl=totalNumEls;
+    CStdDev.offsetArray=theOffsetArray;
+    SStdDev.offsetArray=theOffsetArray;
+    CStdDev.clusterSizes=theClusterSizes;
+    SStdDev.clusterSizes=theClusterSizes;
 
     //Get the other parameters.
-    checkRealDoubleArray(prhs[4]);
-    point=(double*)mxGetData(prhs[4]);
-    numPoints=mxGetN(prhs[4]);
-    a=getDoubleFromMatlab(prhs[5]);
-    c=getDoubleFromMatlab(prhs[6]);
-    scalFactor=getDoubleFromMatlab(prhs[7]);
+    checkRealDoubleArray(prhs[2]);
+    point=reinterpret_cast<double*>(mxGetData(prhs[2]));
+    numPoints=mxGetN(prhs[2]);
+    a=getDoubleFromMatlab(prhs[3]);
+    c=getDoubleFromMatlab(prhs[4]);
+    scalFactor=getDoubleFromMatlab(prhs[5]);
     
     //Allocate space for the return values
     sigma2MATLAB=mxCreateDoubleMatrix(numPoints, 1,mxREAL);
-    sigma2=(double*)mxGetData(sigma2MATLAB);
+    sigma2=reinterpret_cast<double*>(mxGetData(sigma2MATLAB));
     
     if(nlhs>1) {
         mwSize dims[3];
@@ -91,16 +138,23 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         dims[2]=numPoints;
         
         SigmaMATLAB=mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
-        Sigma=(double*)mxGetData(SigmaMATLAB);
+        Sigma=reinterpret_cast<double*>(mxGetData(SigmaMATLAB));
     } else {
         Sigma=NULL;
     }
-    spherHarmonicCovCPP(sigma2,Sigma,CStdDev,SStdDev,point,numPoints,a,c,scalFactor);
-
+    didOverflow=spherHarmonicCovCPP(sigma2,Sigma,CStdDev,SStdDev,point,numPoints,a,c,scalFactor);
+            
+    //Free the allocated space for the offet array and cluster sizes
+    delete[] theOffsetArray;
+    delete[] theClusterSizes;
+            
     plhs[0]=sigma2MATLAB;
     
     if(nlhs>1) {
         plhs[1]=SigmaMATLAB;
+        if(nlhs>2) {
+            plhs[2]=boolMat2Matlab(&didOverflow,1,1);
+        }
     }
 }
 

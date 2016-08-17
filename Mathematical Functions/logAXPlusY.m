@@ -18,7 +18,9 @@ function val=logAXPlusY(logA,logX,logY)
 %The algorithm just uses some identities of logarithms and exponentials to
 %minimize overflow and underflow problems. Large enough logarithmic values
 %can still eventually have underflow/ overflow problems, but at values
-%significantly larger than when a, x and y individually would overflow.
+%significantly larger than when a, x and y individually would overflow. The
+%algorithm is still subject to the same loss of precision one would expect
+%to see when evaluating log(x+1) and x is close to zero (e.g x=eps(1)).
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

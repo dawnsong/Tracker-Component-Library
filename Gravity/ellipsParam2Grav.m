@@ -36,7 +36,7 @@ function [U,g]=ellipsParam2Grav(cartPoint,omega,a,f,GM)
 %             given. The gravity potential has units of m^2/s^2 and
 %             includes the effects of the rotation of the Earth. 
 %           g The 3XN matrix of acceleration vectors due to gravity at the
-%             desired points in Cartesian coordiantes, including the
+%             desired points in Cartesian coordinates, including the
 %             acceleration due to the Earth's rotation. This is the
 %             gradient of U and points toward the Earth. This parameter
 %             cannot be returned if cartPoint is empty or omitted.
@@ -46,13 +46,15 @@ function [U,g]=ellipsParam2Grav(cartPoint,omega,a,f,GM)
 %the surface of the ellipsoid.
 %
 %The formula for the potential on the surface of the reference ellipsoid
-%is Equation 2-123 in Chapter 2-7 of
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
-%The formula for the gravity potential at an arbitrary
-%point is Equation 2-126. The formula for the acceleration due to gravity
-%is Equation 2-132 in Chapter 2.8, which is given in terms of ellipsoidal
-%parameters that are then converted to Cartesian coordinates.
+%is Equation 2-123 in Chapter 2-7 of [1]. The formula for the gravity
+%potential at an arbitrary point is Equation 2-126. The formula for the
+%acceleration due to gravity is Equation 2-132 in Chapter 2.8, which is
+%given in terms of ellipsoidal parameters that are then converted to
+%Cartesian coordinates.
+%
+%REFERENCES:
+%[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -1,5 +1,5 @@
 function J2=numDiff2(x,f,fDim,N,epsilon)
-%%NUMDIFF2 Numerically compute the second derivatives usign central
+%%NUMDIFF2 Numerically compute the second derivatives using central
 %          difference formulae based on Lagrange interpolating polynomials.
 %          The algorithm is made to alert (and not crash) in the event that
 %          f fails. Specifically, if f returns an empty matrix or it any of
@@ -36,15 +36,17 @@ function J2=numDiff2(x,f,fDim,N,epsilon)
 %
 %The function is similar to the numDiff function. Central-difference
 %numerical differentiation is discussed in terms of Lagrange interpolating
-%polynomials in Chapter 4.1 of
-%R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
-%Brooks/ Cole, 2011.
-%The Lagrange interpolating polynomials themselves are discussed in Chapter
-%3 of the book. In general, the coefficients of the interpolating
-%polynomial for first derivative central difference numerical
-%differentiation come from Equation 4.2, which  expresses them in terms of
-%the first derivative of a Lagrange interpolating polynomial. This function
-%just extends the concept by using the second-derivative coefficients.
+%polynomials in Chapter 4.1 of [1]. The Lagrange interpolating polynomials
+%themselves are discussed in Chapter 3 of [1]. In general, the coefficients
+%of the interpolating polynomial for first derivative central difference
+%numerical differentiation come from Equation 4.2, which  expresses them in
+%terms of the first derivative of a Lagrange interpolating polynomial. This
+%function just extends the concept by using the second-derivative
+%coefficients.
+%
+%REFERENCES:
+%[1] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
+%    Brooks/ Cole, 2011.
 %
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

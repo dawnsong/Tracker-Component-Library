@@ -12,7 +12,7 @@ function hashVal=hashPoint2Grid(point,cellSizes,numCellsPerDim)
 %                a very large area, this can be much more efficient than
 %                trying to gate all targets with all measurements.
 %
-%INPUTS: point A numDImXN set of N points that one wishes to hash onto a
+%INPUTS: point A numDimXN set of N points that one wishes to hash onto a
 %               grid.
 %     cellSizes A numDimX1 or 1XnumDim array of the widths of the cells in
 %               each dimension of the grid.
@@ -24,11 +24,7 @@ function hashVal=hashPoint2Grid(point,cellSizes,numCellsPerDim)
 %
 %The idea of spatial hashing arises when performing collision detection in
 %computer graphics, among many other applications. A simple explanation is
-%in
-%E. J. Hastings, J. Mesit, and R. K. Guha, "Optimization of large-scale,
-%real-time simulation by spatial hashing," in Proceedings of the 2005
-%Summer Computer Simulation Conference, vol. 37, no. 4, Philadelphia, PA,
-%24?28 Jul. 2005.
+%in [1].
 %
 %Dimension of the point is gridded to a region of size cellSizes(i). This
 %can be done using fix(point(i)/cellSizes(i)). However, a maximum number of
@@ -43,6 +39,25 @@ function hashVal=hashPoint2Grid(point,cellSizes,numCellsPerDim)
 %z-axis, the multiplicative offset for higher dimensions is the product of
 %numCellsPerDim for the lower dimensions. 1 is added to the final hash
 %value so that it starts from 1 instead of 0.
+%
+%Note that the mod operation can produce an undesired behaviour if one is
+%not careful. For example, suppose that point contains scalar values from
+%minVal to maxVal. One might want to put the values in point into numBins
+%bins between minVal and maxVal. One might initially try
+% points=points-min(point);
+% delta=max(points);
+% cellSizes=delta/numBins;
+% hashVal=hashPoint2Grid(points,cellSizes,numBins);
+%However, this would alias the uppermost point into the same bin as the
+%lowermost point. The solution to this is to use
+% hashVal=hashPoint2Grid(points,cellSizes+eps(cellSizes),numBins);
+%so that the final bin ends just slightly after the final point.
+%
+%REFERENCES:
+%[1] E. J. Hastings, J. Mesit, and R. K. Guha, "Optimization of large-
+%    scale, real-time simulation by spatial hashing," in Proceedings of the
+%    2005 Summer Computer Simulation Conference, vol. 37, no. 4,
+%    Philadelphia, PA, 24-28 Jul. 2005.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

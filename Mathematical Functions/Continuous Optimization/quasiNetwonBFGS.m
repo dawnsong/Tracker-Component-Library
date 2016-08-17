@@ -10,18 +10,20 @@ function [xMin,fMin,exitCode]=quasiNetwonBFGS(f,x0,D0,epsilon,deltaTestDist,delt
 %                 algorithm, quasiNetwonLBFGS, is more appropriate for use
 %                 with very large matrices. The L-BFGS algorithm also
 %                 supports an additional L1 norm term in the objective
-%                 function.
+%                 function. If one wishes to zero a vector (not a scalar),
+%                 then NewtonsMethod is more appropriate as this function
+%                 assumes the Hessian matrix is symmetric.
 %
 %INPUTS:            f A handle to the function (and its gradient) over
 %                     which the minimization is to be performed. The
 %                     function [fVal,gVal]=f(x) takes the NX1 x vector
 %                     returns the real scalar function value fVal and
-%                     gradient gVal at the point x. 
+%                     gradient gVal at the point x.
 %                  x0 The NX1-dimensional point from which the
 %                     minimization starts.
 %                  D0 An estimate of the inverse Hessian matrix at x0. If
 %                     omitted or an empty matrix is passed, then the
-%                     idenitty matrix is used.
+%                     identity matrix is used.
 %             epsilon The parameter determining the accuracy of the
 %                     desired solution in terms of the gradient. The
 %                     function terminates when
@@ -75,20 +77,19 @@ function [xMin,fMin,exitCode]=quasiNetwonBFGS(f,x0,D0,epsilon,deltaTestDist,delt
 %                  1 The algorithm terminated successfully based on the
 %                    accuracy criterion.
 %                 -1 The maximum number of overall iterations was reached.
-%                  -1023 A logical error in the code occurred.
-%                  -1001 A finite precision error occurred or no
-%                        line-search step satisfies the sufficient
-%                        decrease and curvature conditions.
-%                  -1000 The line-search step size became less than
-%                        minStep.
-%                   -999 The line-search step size became larger than
-%                        maxStep.
-%                   -998 The maximum number of iterations was reached.
-%                   -996 The relative width of the interval of uncertainty
-%                        is at most xTol
-%                   -995 A negative line-search step occurred.
-%                   -994 The current search direction increases the
-%                        objective function.
+%              -1023 A logical error in the line search code occurred.
+%              -1001 A finite precision error occurred or no line-search
+%                    step satisfies the sufficient decrease and curvature
+%                    conditions.
+%              -1000 The line-search step size became less than minStep.
+%               -999 The line-search step size became larger than maxStep.
+%               -998 The maximum number of line search iterations was
+%                    reached.
+%               -996 The relative width of the interval of uncertainty in
+%                    the line search algorithm is at most xTol.
+%               -995 A negative line-search step occurred.
+%               -994 The current search direction increases the objective
+%                    function.
 %
 %The algorithm is implemented based on the description in Chapter 1.7 of
 %[1]. However, the line search methods are performed using the lineSearch
@@ -204,7 +205,6 @@ if(nargin>=7&&~isempty(lineSearchParams))
     
     if(isfield(lineSearchParams,'minStep'))
         minStep=lineSearchParams.minStep;
-
     end
     
     if(isfield(lineSearchParams,'maxStep'))

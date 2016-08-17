@@ -19,10 +19,12 @@ function val=fallingFactorial(x,n)
 %             n/ for each n and a single x depending on what is a matrix
 %             and what is scalar. 
 %
-%The falling factorial is discussed in 
-%Weisstein, Eric W. "Falling Factorial." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/FallingFactorial.html
-%Note that fallingFactorial(n,n)=factorial(n);
+%The falling factorial is discussed in [1]. Note that
+%fallingFactorial(n,n)=factorial(n);
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Falling Factorial." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/FallingFactorial.html
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

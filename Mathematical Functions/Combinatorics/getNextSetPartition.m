@@ -1,34 +1,46 @@
-function [q,p,nc]=getNextSetPartition(n,q,p,nc)
+function [q,recurVals]=getNextSetPartition(param1,recurVals)
 %%GETNEXTSETPARTITION Get the next way of partitioning a set of n unique
-%                  items. The partition is a length-n vector q that
-%                  specifies which partition each item belongs to. The
-%                  order of the items in the partitions is not important
-%                  and the order of the partitions themselves is not
-%                  important. If only n is passed, then the values for the
-%                  first partition in the sequence are returned.
+%                  items in lexicographic order. The partition is a
+%                  length-n vector q that specifies which partition each
+%                  item belongs to. The order of the items in the
+%                  partitions is not important and the order of the
+%                  partitions themselves is not important. If only n is
+%                  passed, then the values for the first partition in the
+%                  sequence are returned.
 %
-%INPUTS: n The number of items in the set to be partitioned. If this
-%          parameter is passed alone, then the values in the first
-%          partition are returned.
-%        q The current set partition that should be updated to get the next
-%          set partition.
-%        p A return value for the current partition; p(i) is the number of
-%          elements in the ith class of the output partition for i=1 to nc.
-%       nc A return value for the current partition; the number of classes
-%          in the output partition (the number of subsets).
+%INPUTS: param1 If only this parameter is passed, and nothing else, then
+%               this is
+%               n The number of items in the set to be partitioned. Given
+%                 only this input, the function will return the values in
+%                 the first partition.
+%                 this instance,
+%               If two inputs are provided, then param 1 is
+%               q The current set partition that should be updated to get
+%                 the next set partition.
+%recurVals A structure containing elements p and nc, which are necessary
+%          to get the next item in the sequence (these values would be
+%          supplied by the previous iteration). The elements of the
+%          structure are
+%          p A return value for the current partition; p(i) is the number
+%            of elements in the ith class of the output partition for i=1
+%            to nc.
+%         nc A return value for the current partition; the number of
+%            classes in the output partition (the number of subsets).
 %
 %OUTPUTS: q The updated partition. If the final partition was passed, then
 %           q will be an empty matrix. If only n was passed, then q will be
-%           the first partition.
-%      p,nc The updated values of p and nc so that the function
-%           nextSetPartition can be called again to get the next set
-%           partition if q was not empty. If nc==n, then the returned
-%           partition is the final partition and a subsequent call will
-%           return an empty matrix.
+%           the first partition. Paritions are numbered in increasing
+%           order. That is, the first occurence of partition numbered i in
+%           q is always before the first occurences of partitions numbered
+%           j>1.
+% recurVals The updated value in recurValues the function nextSetPartition
+%           can be called again to get the next set partition if q was not
+%           empty. If recurVals.nc==n, then the returned partition is the
+%           final partition and a subsequent call will return an empty
+%           matrix.
 %
-%The algorithm is NEXEQU in Chapter 11 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
+%The algorithm is NEXEQU in Chapter 11 of [1]. There is a total of
+%BellNumber(n) set partitions for a particular n.
 %
 %Given a set (1,2,3), the possible partitions and the corresponding values
 %of q are
@@ -42,28 +54,38 @@ function [q,p,nc]=getNextSetPartition(n,q,p,nc)
 %q=[1;2;1], but this function will only return the latter.
 %
 %%The function is either called as
-%[q,p,nc]=getNextSetPartition(n);
+%[q,recurVals]=getNextSetPartition(n);
 %to get the first set parition or as
-%[q,p,nc]=getNextSetPartition(n,q,p,nc);
+%[q,recurVals]=getNextSetPartition(q,recurVals);
 %to get subsequent set partitions.
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 %If only n was passed, get the first set partition.
 if(nargin==1)
-    p(1)=n;
-    nc=1;
+    n=param1;
+    recurVals.p(1)=n;
+    recurVals.nc=1;
     q=ones(n,1);
     return;
 end
+
+q=param1;
+n=length(q);
+
+p=recurVals.p;
+nc=recurVals.nc;
 
 %If the final set partition was passed, return the empty matrix.
 if(nc==n)
    q=[];
    return;
 end
-
 
 %Step B.
 m=n;
@@ -90,6 +112,9 @@ end
 q(m)=L+1;
 p(L)=p(L)-1;
 p(L+1)=p(L+1)+1;
+
+recurVals.p=p;
+recurVals.nc=nc;
 
 end
 

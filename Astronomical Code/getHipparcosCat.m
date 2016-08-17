@@ -5,7 +5,7 @@ function dataFile=getHipparcosCat(rectBound,magThresh,onlySingleStars,formatObsP
 %                 are loaded. The specific catalog used in I/311:
 %                 Hipparcos, the New Reduction from
 %                 http://cdsarc.u-strasbg.fr/viz-bin/Cat?I/311
-%                 The units are converted to 
+%                 The units are converted as given below.
 %
 %INPUTS: rectBound  Specifies a rectangular region (in radians) at the
 %                   1991.25 epoch in which stars are returned. rectBound
@@ -81,18 +81,18 @@ function dataFile=getHipparcosCat(rectBound,magThresh,onlySingleStars,formatObsP
 %
 %The documentation at
 %http://cdsarc.u-strasbg.fr/viz-bin/Cat?I/311
-%similarly describes the field.
+%similarly describes the fields.
 %Some insight into the meaning of the fields can be found at
 %http://www.rssd.esa.int/SA-general/Projects/Hipparcos/pstex/sect2_01.pdf
 %However, that document was made for an older version of the catalog.
 %
-%The Johnson UBV system specifies the color fo the star and is described in
-%Fundamental stellar photometry for standards of spectral type on the
-%revised system of the Yerkes spectral atlas	
-%Johnson, H. L.; Morgan, W. W.	
-%Astrophysical Journal, 117, 313 (ApJ Homepage)	
-%05/1953
-%http://dx.doi.org/10.1086/145697
+%The Johnson UBV system specifies the color of the star and is described in
+%[1].
+%
+%REFERENCES:
+%[1] Johnson, H. L. and Morgan, W. W., "Fundamental stellar photometry for
+%    standards of spectral type on the revised system of the Yerkes
+%    spectral atlas," Astrophysical Journal, 117, 313, May 1953.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

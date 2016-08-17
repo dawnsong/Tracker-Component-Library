@@ -18,18 +18,20 @@ function X=RiccatiSolveC(A,B,Q,R,S,E)
 %A'*X*E+E'*X*A-(E'*X*B+S)*inv(R)*(B'*X*E+S')+Q=0
 %or, if R, S, and E are omitted, the equation under consideration becomes
 %A'*X+X*A-X*B*B'*X+Q=0
-%The algorithm of 
-%W. F. Arnold III and A. J. Laub, "Generalized eigenproblem algorithms and
-%software for algebraic Riccati equations," Proceedings of the IEEE,
-%vol. 72, no. 12, pp. 1746-1754, Dec. 1984.
-%is used. Note that this function does not work with problems of the form
-%-X*B*B'*X+Q=0 due to numerical issues.
+%The algorithm of  [1] is used. Note that this function does not work with
+%problems of the form -X*B*B'*X+Q=0 due to numerical issues.
 %
 %The continuous-time Ricatti equation arises when solving for the  steady-
 %state covariance of a continuous-time linear Kalman filter, as described
-%in Chapter 9.2.3 of
-%Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications
-%to Tracking and Navigation. New York: John Wiley and Sons, Inc, 2001.
+%in Chapter 9.2.3 of [2].
+%
+%REFERENCES:
+%[1] W. F. Arnold III and A. J. Laub, "Generalized eigenproblem algorithms
+%    and software for algebraic Riccati equations," Proceedings of the
+%    IEEE, vol. 72, no. 12, pp. 1746-1754, Dec. 1984.
+%[2] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with
+%    Applications to Tracking and Navigation. New York: John Wiley and
+%    Sons, Inc, 2001.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

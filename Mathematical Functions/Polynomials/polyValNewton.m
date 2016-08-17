@@ -23,18 +23,20 @@ function v=polyValNewton(z,a,c)
 %y(z)=a(1)+sum_{k=1}^{n-1}a(k+1)(z-c(1))*(z-c(2))*...*(z-c(k))
 %This function just evaluates multiple scalar polynomials.
 %
-%The algorithm is VALUE taken from Chapter 19 of 
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%To handle vector values, a loop is used.
+%The algorithm is VALUE taken from Chapter 19 of [1] to handle vector
+%values, a loop is used.
 %
 %Newton's polynomial form arises when dealing with Hermite interpolating
-%polynomials as is discussed in Section 2.1.3 of
-%J. Stoer and R. Bulirsch, Introduction to Numerical Analysis, 3rd ed.
-%New York: Springer, 2002.
-%and in  Chapters 3.3 and 3.4 of 
-%R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
-%Brooks/Cole, 2011.
+%polynomials as is discussed in Section 2.1.3 of [2] and in Chapters 3.3
+%and 3.4 of [3].
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
+%[2] J. Stoer and R. Bulirsch, Introduction to Numerical Analysis, 3rd ed.
+%    New York: Springer, 2002.
+%[3] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
+%    Brooks/Cole, 2011.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

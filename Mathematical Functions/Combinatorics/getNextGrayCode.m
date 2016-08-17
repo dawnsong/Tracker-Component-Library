@@ -31,13 +31,15 @@ function [code,nCard,isLast,j]=getNextGrayCode(code,nCard)
 %                  function call. If this is the first function call and
 %                  code was just created, then j is an empty matrix.
 %
-%The algorithm is NEXSUB taken from Chapter 1 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%Gray codes are also discussed in Chapter 7.2.1.1 of
-%D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 2:
-%Generating all Tuples and Permutations, Upper Saddle River, NJ:
-%Addison-Wesley, 2009.
+%The algorithm is NEXSUB taken from Chapter 1 of [1]. Gray codes are also
+%discussed in Chapter 7.2.1.1 of [2].
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
+%[2] D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 2:
+%    Generating all Tuples and Permutations, Upper Saddle River, NJ:
+%    Addison-Wesley, 2009.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

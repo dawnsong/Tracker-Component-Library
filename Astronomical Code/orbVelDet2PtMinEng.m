@@ -29,11 +29,13 @@ function [vMinStartEllip,tMinEllip,tMinParab]=orbVelDet2PtMinEng(r1Vec,r2Vec,GM)
 %              tMinParab The time needed to traverse the minimum energy
 %                        parabolic trajectory between r1Vec and r2Vec.
 %
-%The algorithm is described step-by-step in Chapter 7.6.1 of 
-%D. A. Vallado and W. D. McClain, Fundamentals of Astrodynamics and
-%Applications, 4th ed. Hawthorne, CA: Microcosm press, 2013.
-%and with a more detailed derivation in Chapter 3.3 of 
-%R. H. Battin, Astronautical Guidance. New York: McGraw Hill, 1964.
+%The algorithm is described step-by-step in Chapter 7.6.1 of [1] and with a
+%more detailed derivation in Chapter 3.3 of [2].
+%
+%REFERENCES:
+%[1] D. A. Vallado and W. D. McClain, Fundamentals of Astrodynamics and
+%    Applications, 4th ed. Hawthorne, CA: Microcosm press, 2013.
+%[2] R. H. Battin, Astronautical Guidance. New York: McGraw Hill, 1964.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

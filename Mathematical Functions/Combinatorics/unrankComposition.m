@@ -1,60 +1,78 @@
-function q=unrankComposition(rank,n,m)
-%%UNRANKCOMPOSITION Return the composition of the given rank, starting from
-%                   zero, of n unlabeled items in m parts. That is, a
-%                   method of putting n unlabeled balls into m labeled
-%                   slots.
+function p=unrankComposition(theRank,t,n,firstElMostSig)
+%%UNRANKCOMPOSITION Return the composition of the given theRank, starting
+%                   from zero, of n unlabeled items in m parts. That is, a
+%                   method of putting n unlabeled balls into t labeled
+%                   slots. Compositions are tuples of n integers >=1 that
+%                   sum to t. Compositions are given in lexicographic order
+%                   where the first element is the least significant unless
+%                   otherwise specified.
 %
-%INPUTS:     rank   The rank (position in an ordered sequence) of the
+%INPUTS:  theRank   The theRank (position in an ordered sequence) of the
 %                   desired composition starting from zero. There is a
-%                   total of binomial(n+m-1,m-1) compositions.
+%                   total of binomial(n-1,t-1) compositions.
+%            t      The number of slots that can hold items, >=1.
 %            n      The number of items that are composed into slots, >=1.
-%            m      The number of slots that can hold items, >=1.
+%    firstElMostSig An optional parameter specifying whether the first
+%                   element is the most or least significant. The default
+%                   if omitted or an empty matrix is passed is false (the
+%                   first element is the least significant).
 %
-%OUTPUTS:    q      An mX1 vector holding the current composition, whose
+%OUTPUTS:    p      An mX1 vector holding the current composition, whose
 %                   elements sum to n. Each element is the number of
-%                   "balls" in that slot. If rank is larger than the
+%                   "balls" in that slot. If theRank is larger than the
 %                   maximum number of compositions, an empty matrix is
 %                   returned. The values of q can range from 0 to n.
 %
 %This is an implementation of the relation described in Chapter 7.2.1.3 of
-%D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
-%Generating all Combinations and Partitions, Upper Saddle River, NJ:
-%Addison-Wesley, 2009.
-%for mapping combinations to compositions. rank is used to obtain a
-%combination in Lexicographic order and the elements of the combination are
-%mapped to the equivalent composition.
+%[1] for mapping combinations to compositions. theRank is used to obtain a
+%combination in lexicographic order (p(1) is the least significant
+%element) and the elements of the combination are mapped to the equivalent
+%composition. However, a special case is if the input is one-dimensional,
+%in which case the only composition is for theRank=0 and the value is n.
+%
+%REFERENCES:
+%[1] D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
+%    Generating all Combinations and Partitions, Upper Saddle River, NJ:
+%    Addison-Wesley, 2009.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-nCombo=n+m-1;
-mCombo=m-1;
+if(nargin<4||isempty(firstElMostSig))
+    firstElMostSig=false;
+end
 
-if(mCombo>0)
-    c=unrankCombination(rank,nCombo,mCombo);
+n=n-1;
+nCombo=n;
+tCombo=t-1;
+
+if(tCombo>0)
+    c=unrankCombination(theRank,nCombo,tCombo);
 
     if(isempty(c))
-        q=[];
+        p=[];
         return;
     end
 
-    d=c-(1:mCombo)'+1;
-
     %Transform the combination into a valid composition.
-    q=zeros(m,1);
-    q(1)=d(1);
-    for curIdx=2:(m-1)
-        q(curIdx)=d(curIdx)-d(curIdx-1);
+    p=zeros(t,1);
+    p(1)=c(1)+1;
+    for curIdx=2:tCombo
+        p(curIdx)=c(curIdx)-c(curIdx-1);
     end
-    q(m)=n-d(mCombo);
+    p(t)=n-c(tCombo);
 else%The m=1 case has to be handled separately.
-    
-    if(rank==0)
-        q=n;
+    if(theRank==0)
+        p=n+1;
     else
-       q=[]; 
+        p=[]; 
     end
 end
+
+if(firstElMostSig)
+   p=flipud(p(:)); 
+end
+
 end
 
 %LICENSE:

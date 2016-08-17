@@ -29,11 +29,13 @@ function a=ChebyshevPolyLSFit(tauList,n,fList,dfList,w)
 %                 tauEnd=tauList(end) and the points tau is within the star
 %                 and end bounds.
 %
-%The algorithm implemented is taken from
-%X. X. Newhall, "Numerical representation of planetary ephemerides,"
-%Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
-%There it is suggested that when performing least squares Chebyshev
-%polynomial fitting with ephemerides, one use w(1)=1 and w(2)=0.16.
+%The algorithm implemented is taken from [1]. There it is suggested that
+%when performing least squares Chebyshev polynomial fitting with
+%ephemerides, one use w(1)=1 and w(2)=0.16.
+%
+%REFERENCES:
+%[1] X. X. Newhall, "Numerical representation of planetary ephemerides,"
+%    Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

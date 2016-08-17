@@ -231,6 +231,7 @@
 #define  LBFGS_FLOAT 64
 #include "lbfgs.h"
 #include "MexValidation.h"
+#include <limits.h>
  
 //Prototype for the callback function wrapper.
 static double MatlabCallback(void *MatlabFunctionHandle,
@@ -241,7 +242,7 @@ static double MatlabCallback(void *MatlabFunctionHandle,
             );
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-    size_t xDim,i;
+    size_t xDim;
     //This will contain the information needed for the callback to the
     //Matlab function for the function value and gradient. 
     callback_data_t callbackData;
@@ -273,6 +274,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("The point x has the wrong dimensionality."); 
     }
     
+    //The function in the library only uses integers for dimensions.
+    if(xDim>INT_MAX) {
+        mexErrMsgTxt("The problem has too many dimensions to be solved using this function.");
+    }
+    
     //Check that a valid descent direction was passed.
     checkRealDoubleArray(prhs[2]);
     if(mxGetM(prhs[2])!=xDim||mxGetN(prhs[2])!=1) {
@@ -281,7 +287,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     //Make a function wrapper for the Matlab callback to get the function
     //value and gradient.
-    callbackData.n=xDim;
+    callbackData.n=(int)xDim;
     callbackData.instance=(void *)prhs[0];//The Matlab callback function handle.
     callbackData.proc_evaluate=&MatlabCallback;
     callbackData.proc_progress=NULL;
@@ -380,7 +386,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     if(nrhs>11&&!mxIsEmpty(prhs[11])) {
-        param.max_linesearch=getDoubleFromMatlab(prhs[11]);
+        param.max_linesearch=getIntFromMatlab(prhs[11]);
+        
+        if(param.max_linesearch<0) {
+           mexErrMsgTxt("param.max_linesearch must be positive."); 
+        }
     } else {
         param.max_linesearch=20;
     }
@@ -415,7 +425,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         param.orthantwise_end=(int)(indexMax)-1;
     } else {
         param.orthantwise_start=0;
-        param.orthantwise_end=xDim-1;
+        param.orthantwise_end=(int)xDim-1;
     }
     
     //Check for the validity of the parameters used.
@@ -452,7 +462,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     //Fill in the initial value of the function and the gradient.
-    fVal=MatlabCallback(callbackData.instance,x,gVal,xDim,0);
+    fVal=MatlabCallback(callbackData.instance,x,gVal,(int)xDim,0);
     //Put the current position and gradient vectors into the temporary
     //storage space.
     memcpy(xp, x, sizeof(double)*xDim);
@@ -460,7 +470,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         
     switch(param.linesearch){
         case LBFGS_LINESEARCH_MORETHUENTE:
-            exitCode=line_search_morethuente(xDim,//The size of x.
+            exitCode=line_search_morethuente((int)xDim,//The size of x.
                      x,//The current (returned final) estimate.
                      &fVal,//The returned final function value.
                      gVal,//The gradient of the function at x.
@@ -478,7 +488,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         case LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE:
             //If there is no l1 norm optimization term.
             if(param.orthantwise_c==0) {
-                exitCode=line_search_backtracking(xDim,//The size of x
+                exitCode=line_search_backtracking((int)xDim,//The size of x
                          x,//The current (returned final) estimate.
                          //The returned final function value.
                          &fVal,
@@ -497,7 +507,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 //Allocate space for the orthant.
                 double *wp=mxCalloc(xDim, sizeof(double));
 
-                exitCode=line_search_backtracking_owlqn(xDim,//The size of x
+                exitCode=line_search_backtracking_owlqn((int)xDim,//The size of x
                          x,//The current (returned final) estimate.
                          //The returned final function value.
                          &fVal,
@@ -576,7 +586,6 @@ static double MatlabCallback(void *MatlabFunctionHandle,
     mxArray *lhs[2];
     double *oldPtr;
     double fVal;
-    size_t i;
     
     //feval in Matlab will take the function handle and the state as
     //inputs.
@@ -588,18 +597,18 @@ static double MatlabCallback(void *MatlabFunctionHandle,
     //x will not be modified, but the const must be typecast away to use
     //the mxSetPr function.
     mxSetPr(rhs[1], (double*)x);
-    mxSetM(rhs[1], n);
+    mxSetM(rhs[1], (size_t)n);
     mxSetN(rhs[1], 1);
 
     //Get the function value and gradient.
     mexCallMATLAB(2,lhs,2,rhs,"feval");
-    
+
     //Get the function value.
     fVal=getDoubleFromMatlab(lhs[0]);
 
     //Copy the gradient into gVal, checking for errors.
-    verifySizeReal(n,1,lhs[1]);
-    memcpy(gVal, mxGetData(lhs[1]), sizeof(double)*n);
+    verifySizeReal((size_t)n,1,lhs[1]);
+    memcpy(gVal, mxGetData(lhs[1]), sizeof(double)*(size_t)n);
 
     //Set the data pointer back to what it was during allocation that
     //mxDestroyArray does not have a problem. 

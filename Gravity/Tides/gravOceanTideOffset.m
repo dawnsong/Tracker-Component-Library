@@ -21,16 +21,19 @@ function [deltaC,deltaS]=gravOceanTideOffset(TT1,TT2)
 %               multiplied by sines in the harmonic expansion. The
 %               format of S is the same as that of C.
 %
-%This implements the FES2004 tide model that is described in
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%The FES2004 coefficients are loaded from the file fes2004 Cnm-Snm.dat that
+%This implements the FES2004 tide model that is described in [1]. The
+%FES2004 coefficients are loaded from the file fes2004 Cnm-Snm.dat that
 %was downloaded from
-%ftp://tai.bipm.org/iers/convupdt/chapter6/tidemodels/fes2004_Cnm-Snm.dat
+%http://maia.usno.navy.mil/conv2010/convupdt/chapter6/tidemodels/fes2004_Cnm-Snm.dat
+%and placed in the ./data folder.
 %
 %To get the full offset in the gravitational coefficients due to tides,
 %the functions gravSolidTideOffset, gravOceanTideOffset and
 %gravPoleTideOffset have to be combined.
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

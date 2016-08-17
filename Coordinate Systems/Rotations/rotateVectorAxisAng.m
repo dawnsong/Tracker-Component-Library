@@ -22,11 +22,12 @@ function vRot=rotateVectorAxisAng(v,u,theta,handed)
 %                    about the axis u according to the given handedness.
 %
 %This simply implements the Rodrigues' rotation formula. The formula is
-%given in equations (96) and (97) in
-%M. D. Shuster, "A survey of attitude representations," The Journal of the
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.-Dec. 1993.
-%where changes to allow for both left and right-handed rotations have been
-%made.
+%given in equations (96) and (97) in [1], where changes to allow for both
+%left and right-handed rotations have been made.
+%
+%REFERENCES:
+%[1] M. D. Shuster, "A survey of attitude representations," The Journal of
+%the Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.-Dec. 1993.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -18,7 +18,7 @@ function D=DCoordTurn2D(x,t,q0,qTurn,qLin)
 %            x=[x;y;xdot;ydot;omega;al] where omega is the turn rate and al
 %            is the linear acceleration or the target state is
 %            x=[x;y;xdot;ydot;at;al] if the turn is expressed in terms of a
-%            transversal acceleration. The dimensionality fo the state is
+%            transversal acceleration. The dimensionality of the state is
 %            used to determine whether a linear acceleration component is
 %            present. The linear acceleration component changes the speed.
 %            That means that it acts in the direction of the velocity
@@ -30,7 +30,7 @@ function D=DCoordTurn2D(x,t,q0,qTurn,qLin)
 %        q0  The power spectral density of the process noise of the
 %            velocity components. It is assumed to be the same in both
 %            dimensions. It covers perturbations from an ideal
-%            coordianted turn trajectory and has units of m^2/s^3. If no
+%            coordinated turn trajectory and has units of m^2/s^3. If no
 %            process noise is desired for the velocity (i.e. all
 %            perturbations should be covered by noise on the turn component
 %            and on the linear acceleration), then a value of zero should
@@ -51,38 +51,22 @@ function D=DCoordTurn2D(x,t,q0,qTurn,qLin)
 %           the ith one.
 %
 %The basic 2D coordinated turn model in Cartesian coordinates is described
-%in Section VA of
-%X. R. Li and V. P. Jilkov, "Survey of maneuvering target tracking. part I:
-%Dynamic models," IEEE Transactions on Aerospace and Electronic Systems,
-%vol. 39, no. 4, pp. 1333-1364, Oct. 2003.
-%When the turn rate is something that must be estimated, it is assumed that
-%the continuous-time turn rate model is
+%in Section VA of [1]. When the turn rate is something that must be
+%estimated, it is assumed that the continuous-time turn rate model is
 %omegaDot=-(1/tau)*Omega+noise
 %Note that the ordering of the state elements assumed by this function
 %differs from the ordering of the state elements assumed in the paper.
 %
-%The 2D coordiantes turn model in Cartesian coordiantes is also described
-%in 
-%Chapter 4.2.3 of
-%S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
-%Systems. Norwood, MA: Artech House, 1999.
+%The 2D coordinates turn model in Cartesian coordinates is also described
+%in  Chapter 4.2.3 of [2].
 %
 %The concept of using the transversal acceleration instead of the turn rate
 %is not discussed in either of those references. It is, however, mentioned
-%in
-%P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
-%for an advanced ATC system," in Multitarget-Multisensor Tracking:
-%Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
-%House, 1992, vol. II, ch. 1.
-%Though no differential equations are given and a more detailed reference
-%cited therein is a hard-to-get dissertation in French. The use of
-%transversal acceleration is discussed in more detail in 
-%H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
-%of a multisensor tracking system for advanced air traffic control," in
-%Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
-%Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
-%though expressions are given when considering the 2D velocity are broken
-%into components of heading and speed rather than in Cartesian space. The
+%in [3], though no differential equations are given and a more detailed
+%reference cited therein is a hard-to-get dissertation in French. The use
+%of transversal acceleration is discussed in more detail in [4], though
+%expressions are given when considering the 2D velocity are broken into
+%components of heading and speed rather than in Cartesian space. The
 %generalization to Cartesian space is not difficult and is done here.
 %
 %A starting point for setting q0 is to use processNoiseSuggest with
@@ -99,6 +83,21 @@ function D=DCoordTurn2D(x,t,q0,qTurn,qLin)
 %QCoordTurn2D. However, note that the discrete-time functions with
 %unknown noise is a direct-discrete model and not a discretization of the
 %continuous-time model.
+%
+%REFERENCES:
+%[1] X. R. Li and V. P. Jilkov, "Survey of maneuvering target tracking.
+%    Part I: Dynamic models," IEEE Transactions on Aerospace and Electronic
+%    Systems, vol. 39, no. 4, pp. 1333-1364, Oct. 2003.
+%[2] S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
+%    Systems. Norwood, MA: Artech House, 1999.
+%[3] P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
+%    for an advanced ATC system," in Multitarget-Multisensor Tracking:
+%    Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
+%    House, 1992, vol. II, ch. 1.
+%[4] H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
+%    of a multisensor tracking system for advanced air traffic control," in
+%    Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
+%    Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

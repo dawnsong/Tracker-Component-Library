@@ -9,18 +9,20 @@ function w=LambW(z)
 %
 %OUTPUTS: w The solutions to z=w*exp(w) for all elements in z.
 %
-%The origin of the algorithm is
-%R. M. Corless, G. H. Gonnet, D. E. G. Hare, and D. J. Jefrey, "On the
-%Lambert W Function," Advances in Computational Mathematics" vol. 5, no. 1,
-%pp. 329-359, 1996.
-%Where the main algorithm is Halley's method from equation 5.9. For
-%negative values, an initial value of the first few terms of Equation 4.22
-%is used. For positive values less than 1.1, an initial value of 0 is used.
-%For positive values greater than or equal to 1.1, the first two perms of
-%Equation 4.18 are used. This differs from the suggested method in
-%the paper in that a Padé approximation is not used for terms near zero.
-%Rather, a constant initial estimate of 0 is used. 15 iterations are
-%performed, which should be more than enough to converge.
+%The origin of the algorithm is [1], where the main algorithm is Halley's
+%method from Equation 5.9. For negative values, an initial value of the
+%first few terms of Equation 4.22 is used. For positive values less than
+%1.1, an initial value of 0 is used. For positive values greater than or
+%equal to 1.1, the first two perms of Equation 4.18 are used. This differs
+%from the suggested method in the paper in that a Padé approximation is not
+%used for terms near zero. Rather, a constant initial estimate of 0 is
+%used. 15 iterations are performed, which should be more than enough to
+%converge.
+%
+%REFERENCES:
+%[1] R. M. Corless, G. H. Gonnet, D. E. G. Hare, and D. J. Jefrey, "On the
+%    Lambert W Function," Advances in Computational Mathematics" vol. 5,
+%    no. 1, pp. 329-359, 1996.
 %
 %February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

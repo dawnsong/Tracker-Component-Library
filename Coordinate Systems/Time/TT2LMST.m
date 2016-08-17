@@ -34,12 +34,15 @@ function LMST=TT2LMST(Jul1,Jul2,rObsITRS,version,deltaT,xpyp)
 %OUTPUTS: LMST     The local mean sidereal time in radians.
 %
 %The relation between LMST and Greenwhich mean sidereal time (GMST) is
-%documented in
-%G. H. Kaplan, ?The IAU resolutions on astronomical reference systems, time
-%scales, and Earth rotation models: Explanation and implementation,?
-%U.S. Naval Observatory, Tech. Rep. 179, 20 Oct. 2005. [Online].
-%Available: http://aa:usno:navy:mil/publications/docs/Circular 179:pdf
-%LMST is GMST added the the East longitude of the observer in the TIRS.
+%documented in [1]. LMST is GMST added the the East longitude of the
+%observer in the TIRS.
+%
+%REFERENCES:
+%[1] G. H. Kaplan, "The IAU resolutions on astronomical reference systems,
+%    time scales, and Earth rotation models: Explanation and
+%    implementation," U.S. Naval Observatory, Tech. Rep. 179, 20 Oct. 2005.
+%    [Online].
+%    Available: http://aa:usno:navy:mil/publications/docs/Circular 179:pdf
 %
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

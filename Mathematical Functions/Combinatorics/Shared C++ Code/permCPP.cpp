@@ -97,7 +97,7 @@ double permSquareCPP(const double *A, const size_t n, double * buffer) {
         p+=sgn*prodVal;
     } while(isLast==false);
     
-    return 2.0*(2.0*(double)(n%2)-1.0)*p;
+    return 2.0*(2.0*static_cast<double>(n%2)-1.0)*p;
 }
 
 //Compute the matrix permanent using Ryser's method.

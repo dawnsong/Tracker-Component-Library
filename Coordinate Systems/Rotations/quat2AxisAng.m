@@ -17,10 +17,12 @@ function [u,theta]=quat2AxisAng(q)
 %                   rotated is to be rotated about the axis u.
 %
 %The relation between an rotation about a given axis by a given angle and a
-%quaternion is described in 
-%M. D. Shuster, "A survey of attitude representations," The Journal of
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. - Dec. 1993.
-%wherein the convention for the quaternions is left-handed.
+%quaternion is described in [1].
+%
+%REFERENCES:
+%[1] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. - Dec. 1993.
+%    wherein the convention for the quaternions is left-handed.
 %
 %August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

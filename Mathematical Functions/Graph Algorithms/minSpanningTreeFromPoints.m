@@ -15,15 +15,17 @@ function treeEdgeIdx=minSpanningTreeFromPoints(distMat)
 %                     refers to the ith point and treeEdgeIdx(i) provides
 %                     the index of the point to which the edge connects.
 %
-%The algorithm is MINSPT from
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%and is essentially an implementation of Prim's algorithm for dense graphs.
-%When given sparse graphs, Prim's algorithm using a priority queue, as
-%described in Chapter 23.2 of
-%T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, Introduction to
-%Algorithms, 2nd ed. Cambridge, MA: The MIT Press, 2001.
-%is more efficient.
+%The algorithm is MINSPT from [1] and is essentially an implementation of
+%Prim's algorithm for dense graphs. When given sparse graphs, Prim's
+%algorithm using a priority queue, as described in Chapter 23.2 of [2] is
+%more efficient.
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
+%[2] T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein,
+%    Introduction to Algorithms, 2nd ed. Cambridge, MA: The MIT Press,
+%    2001.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

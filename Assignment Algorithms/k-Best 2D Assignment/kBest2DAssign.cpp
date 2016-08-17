@@ -32,24 +32,16 @@
  *               ShortestPathCPP.hpp
  *               ShortestPathCPP.cpp
  *
- * This is an implementation of Murty's method, which is described in 
- * K. G. Murty, "An algorithm for ranking all the assignments in order of
- * increasing cost," Operations Research, vol. 16, no. 3, pp. 682-687,
- * May-Jun. 1968.
- * The algorithm relies on the existence of a 2D assignment algorithm. The
- * 2D assignment algorithm of
- * D. F. Crouse, "Advances in displaying uncertain estimates of multiple
- * targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion, and
- * Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
- * is used. Additionally, the dual variable inheritance methods described
- * in
- * M. L. Miller, H. S. Stone, and I. J. Cox, "Optimizing Murty's ranked
- * assignment method," IEEE Transactions on Aerospace and Electronic
- * Systems, vol. 33, no. 3, pp. 851-862, Jul. 1997.
- * is used to reduce the computational complexity of the technique.
+ *This is an implementation of Murty's method, which is described in [1].
+ *The algorithm relies on the existence of a 2D assignment algorithm. The
+ *2D assignment algorithm of [2] is used. Additionally, the dual variable
+ *inheritance methods described in [3] is used to reduce the computational
+ *complexity of the technique.
  *
- * Murty's algorithm runs 2D assignment algorithms a number of times with an
- * an increasing number of constraints.
+ *Murty's algorithm runs 2D assignment algorithms a number of times with an
+ *increasing number of constraints. Much of the assignment code is in the
+ *handle subclass MurtyData. Instances of MurtyData are stored in an
+ *ordered list implemented using the BinaryHeap class.
  *
  * The algorithm can be compiled for use in Matlab  using the command
  * mex('-v','-largeArrayDims','kBest2DAssign.cpp','ShortestPathCPP.cpp')
@@ -65,6 +57,17 @@
  *
  * The algorithm is run in Matlab using the command format
  * [col4row,row4col,gain]=kBest2DAssign(C,k,maximize)
+ *
+ *REFERENCES:
+ *[1] K. G. Murty, "An algorithm for ranking all the assignments in order 
+ *    of increasing cost," Operations Research, vol. 16, no. 3, pp. 682-
+ *    687, May-Jun. 1968.
+ *[2] D. F. Crouse, "On Implementing 2D Rectangular Assignment Algorithms,"
+ *    IEEE Transactions on Aerospace and Electronic Systems, vol. 52, no.
+ *    4, pp. 1679-1696, Aug. 2016.
+ *[3] M. L. Miller, H. S. Stone, and J. Cox, Ingemar, "Optimizing Murty's
+ *    ranked assignment method," IEEE Transactions on Aerospace and
+ *    Electronic Systems, vol. 33, no. 3, pp. 851-862, Jul. 1997.
  *
  *November 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */

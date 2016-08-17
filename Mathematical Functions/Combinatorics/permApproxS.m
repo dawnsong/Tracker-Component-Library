@@ -13,12 +13,14 @@ function retVal=permApproxS(A,numIter)
 %
 %OUTPUTS: val An approxmation of the matrix permanent of A.
 %
-%The algorithm is the real algorithm described in
-%A. Barvinok, "Polynomial time algorithms to approximate permanents
-%and mixed discriminants within a simply exponential factor," Random
-%Structures and Algorithms, vol. 14, no. 1, pp. 29-61, Jan. 1999.
-%The algorithm utilizes random sampling, so the results will not be equal
-%when the algorithm is run multiple times.
+%The algorithm is the real algorithm described in [1]. The algorithm
+%utilizes random sampling, so the results will not be equal when the
+%algorithm is run multiple times.
+%
+%REFERENCES:
+%[1] A. Barvinok, "Polynomial time algorithms to approximate permanents
+%    and mixed discriminants within a simply exponential factor," Random
+%    Structures and Algorithms, vol. 14, no. 1, pp. 29-61, Jan. 1999.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

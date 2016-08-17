@@ -1,10 +1,10 @@
-function [xList,uList]=RKAdaptiveCurvedAtTimes(xInit,uInit,times,aDyn,uFunc,initStepSize,order,RelTol,AbsTol,maxSteps)
+function [xList,uList]=RKAdaptiveCurvedAtTimes(xInit,uInit,times,aDyn,uFunc,initStepSize,order,solutionChoice,RelTol,AbsTol,maxSteps)
 %%RKADAPTIVECURVEDATTIMES Perform multiple steps of Runge-Kutta propagation
 %                     using an adaptive step size given that the axes of
 %                     the local coordinate system change at the target
 %                     moves. The position components of the state are kept
 %                     in the global coordinate system whereas the rest of
-%                     the components are kept in the local coordiante
+%                     the components are kept in the local coordinate
 %                     system. This Runge-Kutta method is used to integrate
 %                     flat-Earth models on a curved Earth.
 %
@@ -14,12 +14,12 @@ function [xList,uList]=RKAdaptiveCurvedAtTimes(xInit,uInit,times,aDyn,uFunc,init
 %                    Cartesian coordinates. The next 3 components must be
 %                    the target velocity in local (flat) Cartesian
 %                    coordinates. The other components are arbitrary in the
-%                    local coordiante system.
+%                    local coordinate system.
 %           uInit    If the basis vectors evolve according to a
 %                    differential equation, as is the case when moving
 %                    along geodesics on the surface of the Earth, then this
 %                    is a 3X 3 matrix of vectors specifying the local
-%                    coordiante axes. uInit(:,i) coresponds to the ith
+%                    coordinate axes. uInit(:,i) coresponds to the ith
 %                    position component in xInite. That is xInit(i) for i
 %                    from 1 to 3. On the other hand, if the basis vectors
 %                    are deterministically known at all locations as a
@@ -79,13 +79,17 @@ function [xList,uList]=RKAdaptiveCurvedAtTimes(xInit,uInit,times,aDyn,uFunc,init
 %
 %This function maps an arbitrary continuous-time, deterministic flat-Earth
 %dynamic model to curvature of the WGS-84 ellipsoid. The algorithm is
-%described in "Simulating Aerial Targets in 3D Accounting for the
-%Earth's Curvature" by David F. Crouse
+%described in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %May 2015 David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<11)
+if(nargin<11||isempty(maxSteps))
     maxSteps=1024;
 end
 
@@ -97,19 +101,19 @@ if(nargin<9||isempty(RelTol))
     RelTol=1e-3;
 end
 
-if(nargin<8)
+if(nargin<8||isempty(solutionChoice))
     solutionChoice=0;
 end
 
-if(nargin<7)
+if(nargin<7||isempty(order))
     order=4;
 end
 
-if(nargin<6)
+if(nargin<6||isempty(initStepSize))
     initStepSize=[];
 end
 
-if(nargin<5)
+if(nargin<5||isempty(uFunc))
     %If the basis vectors are deterministic
     if(isempty(uInit))
         uFunc=@(x,t)getENUAxes(Cart2Ellipse(x(1:3)));

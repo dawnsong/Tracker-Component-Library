@@ -26,9 +26,12 @@ function statePred=KeplerOrbitProp(stateOrig,deltaT,GM,epsVal)
 %                   mass-producing point object) is not well defined in
 %                   terms of the physics.
 %
-%The algorithm is an implementation of
-%D. Condurache and V. Martinusi "A complete closed form vectorial solution
-%to the Kepler problem," vol. 42, no. 5, Oct. 2007, pp. 465-476.
+%The algorithm is an implementation of [1].
+%
+%REFERENCES:
+%[1] D. Condurache and V. Martinusi "A complete closed form vectorial
+%    solution to the Kepler problem," vol. 42, no. 5, Oct. 2007, pp.
+%    465-476.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

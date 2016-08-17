@@ -148,7 +148,7 @@ kdTreeCPP::kdTreeCPP(const size_t kDes, const size_t NDes) {
 }
 
 void kdTreeCPP::buildTreeFromBatch(const double *dataBatch){
-/* This builds a balaneced kd tree from a batch of data. Much of the
+/* This builds a balanced kd tree from a batch of data. Much of the
  * complexity comes from having to repeatedly sort the data to
  * determine the median element to use.
  * 

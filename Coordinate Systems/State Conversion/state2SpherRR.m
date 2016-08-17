@@ -4,7 +4,7 @@ function z=state2SpherRR(xTar,systemType,useHalfRange,xTx,xRx,M)
 %               with non-relativistic range rate. An option allows for the
 %               angles to be specified from different axes. Optionally, a
 %               bistatic range can be used when considering bistatic
-%               measurements in a local spherical coordiante system.
+%               measurements in a local spherical coordinate system.
 %
 %INPUTS:    xTar A xDimXN matrix of N target states consisting of 3D
 %                position and velocity components in the order
@@ -57,8 +57,12 @@ function z=state2SpherRR(xTar,systemType,useHalfRange,xTx,xRx,M)
 %             useHalfRange=true, then the r component is half the bistatic
 %             range and the range rate is correspondingly halved.
 %
-%Details of the conversions are given in "Basic Tracking Using
-%Nonlinear 3D Monostatic and Bistatic Measurements" by David F. Crouse.
+%Details of the conversions are given in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems
+%    Magazine, vol. 29, no. 8, Part II, pp. 4?53, Aug. 2014.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

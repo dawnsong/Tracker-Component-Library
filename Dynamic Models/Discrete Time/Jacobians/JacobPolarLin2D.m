@@ -31,6 +31,8 @@ function J=JacobPolarLin2D(T,x,qTheta)
 %           consists of partial derivatives with respect to element i of
 %           the x vector.
 %
+%More comments on the model are given in the function fTransPolarLin2D.
+%
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 

@@ -14,10 +14,12 @@ function qC=quatConj(q)
 %
 %OUTPUTS: qC The 4XN set of complex conjugates of the N quaternions
 %
-%Properties of quaternions including conjugattion are described in 
-%Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/Quaternion.html
-%When a quaternion has unit magnitude, its conjugate it also its inverse.
+%Properties of quaternions including conjugation are described in [1]. When
+%a quaternion has unit magnitude, its conjugate it also its inverse.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/Quaternion.html
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

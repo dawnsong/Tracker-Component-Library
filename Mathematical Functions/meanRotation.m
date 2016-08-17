@@ -19,13 +19,10 @@ function meanRot=meanRotation(param1,w)
 %OUTPUTS: meanRot The weighted mean 3X3 rotation matrix or 4X1 rotation
 %                 quaternion, depending on the data type passed in param1.
 %
-%The algorithms of
-%F. L. Markley, Y. Cheng, J. L. Crassidis, and Y. Oshman, "Averaging
-%quaternions," Journal of Guidance, Control, and Dynamics, vol. 30,
-%no. 4, pp. 1193-1196, Jul. - Aug. 2007.
-%for performing a weighted average of quaternions or rotation matrices is
-%used. Note that the paper contains an additional technique for averaging
-%quaternions with non-scalar weights, which is not implemented here.
+%The algorithm of [1] for performing a weighted average of quaternions or
+%rotation matrices is used. Note that the paper contains an additional
+%technique for averaging quaternions with non-scalar weights, which is not
+%implemented here.
 %
 %A quaternion can represent an orientation (rotation) in space as a 4X1
 %unit vector. However, one cannot simply take the weighted average of a
@@ -34,6 +31,11 @@ function meanRot=meanRotation(param1,w)
 %is not unique. Thus, while q and -q represent the same rotation, they
 %affect such an average differently, which is bad. This is why the more
 %complicated algorithms of the above paper are used.
+%
+%REFERENCES:
+%[1] F. L. Markley, Y. Cheng, J. L. Crassidis, and Y. Oshman, "Averaging
+%    quaternions," Journal of Guidance, Control, and Dynamics, vol. 30,
+%    no. 4, pp. 1193-1196, Jul. - Aug. 2007.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

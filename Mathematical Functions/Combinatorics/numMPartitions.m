@@ -1,9 +1,11 @@
 function val=numMPartitions(n,m)
 %%NUMMPARTITIONS  Get the number of ways of partitioning the integer n
-%                 into m parts. That is the number of ways of getting m
-%                 nonzero integers that sum to n. The amount of memory for
-%                 this problem is proportional to n*m and thus the solution
-%                 becomes slow for very large n and m values.
+%                 into m parts, where order does not matter (unlike
+%                 compositions, where order matters). That is the number of
+%                 ways of getting m nonzero integers that sum to n. The
+%                 amount of memory for this implementation  is proportional
+%                 to n*m and thus the solution becomes slow for very large
+%                 n and m values.
 %
 %INPUTS: n  The integer to be partitioned.
 %        m  The number of parts into which the integer is to be
@@ -13,13 +15,14 @@ function val=numMPartitions(n,m)
 %             parts.
 %
 %The counting method is based on the recurrence relation in Chapter 7.2.1.4
-%of
-%D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
-%Generating all Combinations and Partitions, Upper Saddle River, NJ:
-%Addison-Wesley, 2009.
-%The algorithm could be implemented to use less memory. However, that would
-%require shifting rows in a table up (to reuse memory) and would make the
-%code a lot more complicated.
+%of [1]. The algorithm could be implemented to use less memory. However,
+%that would require shifting rows in a table up (to reuse memory) and would
+%make the code a lot more complicated.
+%
+%REFERENCES:
+%[1] D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
+%    Generating all Combinations and Partitions, Upper Saddle River, NJ:
+%    Addison-Wesley, 2009.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

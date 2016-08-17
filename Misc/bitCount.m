@@ -1,27 +1,32 @@
 function n=bitCount(intVal)
 %%BITCOUNT Count the number of ones in a positive, non-negative integer
-%          value less than 2^52.
+%          value less than 2^53 (assuming that intVal is stored as a
+%          floating point double).
 %
-%INPUTS: intVal  A non-negative integer value less than 2^52. Non-integers
+%INPUTS: intVal  A non-negative integer value less than 2^53. Non-integers
 %                are truncated and negative numbers return an error.
 %
 %OUTPUTS:     n  The number of one-bits in a non-floating point binary
 %                representation of intVal that are set to 1.
 %
-%Though many creative, efficient techniques exist for counting the number
-%of ones in a number when using C, this function just calls dec2bin and
-%sums the result. Because Matlab's default input to functions is a
-%double-precision floating point number, even if a computer supports 64-bit
-%integer arithmetic, the resolution of the numbers is limited by the
-%number of bits in the mantissa of a double-precision floating point
-%number.
+%The function just extracts the 1's place using a boolean AND, shifts the
+%integer so the next highest bit is in the 1's place, and then repeats
+%until the shifted integer is zero (all bits have been shifted out).
+%
+%Because Matlab's default input to functions is a double-precision
+%floating point number, even if a computer supports 64-bit integer
+%arithmetic, the resolution of the numbers is limited by the number of
+%bits in the mantissa of a double-precision floating point number.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-%The dec2bin function returns characters, so a comparison to the character
-%'1' must be performed to get actual binary numbers that can be summed.
-n=sum(dec2bin(intVal)=='1');
+n=0;
+
+while(intVal~=0)
+    n=n+bitand(intVal,1);
+    intVal=bitshift(intVal,-1);
+end
 end
 
 %LICENSE:

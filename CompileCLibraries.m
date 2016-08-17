@@ -18,7 +18,7 @@
 %get rid of an error that can occur when using older versions of Matlab
 %under Mac OS X.
 %
-%July 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
+%June 2016 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 function CompileCLibraries()
@@ -32,16 +32,44 @@ curDir=pwd;
 cd(ScriptFolder)
 
 %Compile optimization code
+%Compile the SCS library
+cd('./3rd_Party_Libraries/scs-1.2.6/matlab')
+make_scs
+
+%Move the compiled code into the proper location.
+if(isunix()||ismac())%*NIX/ Mac OS X
+    ext=mexext();
+    system(['mv ./scs_indirect.',ext,' ../../../0_Compiled_Code/scs_indirect.',ext])
+    system(['mv ./scs_version.',ext,' ../../../0_Compiled_Code/scs_version.',ext]);
+else%Windows
+    ext=mexext();
+    system(['move scs_indirect.',ext,' ..\..\..\0_Compiled_Code\scs_indirect.',ext]);
+    system(['move scs_version.',ext,' ..\..\..\0_Compiled_Code\scs_version.',ext]);
+end
+
+cd(ScriptFolder)
+
+%Compile divRectOpt
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Libraries/direct','./Mathematical Functions/Continuous Optimization/divRectOpt.c','./3rd_Party_Libraries/direct/direct_wrap.c','./3rd_Party_Libraries/direct/DIRect.c','./3rd_Party_Libraries/direct/DIRserial.c','./3rd_Party_Libraries/direct/DIRsubrout.c');
+
 %Compile lineSearch
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/liblbfgs/include','-I./3rd_Party_Code/liblbfgs/lib','./Mathematical Functions/Continuous Optimization/lineSearch.c','./3rd_Party_Code/liblbfgs/lib/lbfgs.c');
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Libraries/liblbfgs/include','-I./3rd_Party_Libraries/liblbfgs/lib','./Mathematical Functions/Continuous Optimization/lineSearch.c','./3rd_Party_Libraries/liblbfgs/lib/lbfgs.c');
+
 %Compile quasiNewtonLBFGS
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/liblbfgs/include','-I./3rd_Party_Code/liblbfgs/lib','./Mathematical Functions/Continuous Optimization/quasiNewtonLBFGS.c','./3rd_Party_Code/liblbfgs/lib/lbfgs.c');
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Libraries/liblbfgs/include','-I./3rd_Party_Libraries/liblbfgs/lib','./Mathematical Functions/Continuous Optimization/quasiNewtonLBFGS.c','./3rd_Party_Libraries/liblbfgs/lib/lbfgs.c');
+
+%Compile code concerning the rounding mode
+mex('-v','CFLAGS="$CFLAGS -frounding-math -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','./Misc/setProcRoundingMode.c');
+
+%Compile misc code
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','./Misc/reshapeVec.c');
 
 %Compile navigation code
 %Compile indirectGeodeticProb
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/GeographicLib-1.45/include','-I./Container Classes/Shared C++ Code/','-I./Mathematical Functions/Shared C++ Code/','./Navigation/indirectGeodeticProb.cpp','./Mathematical Functions/Shared C++ Code/wrapRangeCPP.cpp','./3rd_Party_Code/GeographicLib-1.45/src/Geodesic.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicExact.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicLine.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicLineExact.cpp','./3rd_Party_Code/GeographicLib-1.45/src/EllipticFunction.cpp','./3rd_Party_Code/GeographicLib-1.45/src/Math.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicExactC4.cpp');
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Libraries/GeographicLib-1.46/include','-I./Container Classes/Shared C++ Code/','-I./Mathematical Functions/Shared C++ Code/','./Navigation/indirectGeodeticProb.cpp','./Mathematical Functions/Shared C++ Code/wrapRangeCPP.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/Geodesic.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicExact.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicLine.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicLineExact.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/EllipticFunction.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/Math.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicExactC4.cpp');
+
 %Compile directGeodeticProb
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/GeographicLib-1.45/include','-I./Container Classes/Shared C++ Code/','-I./Mathematical Functions/Shared C++ Code/','./Navigation/directGeodeticProb.cpp','./Mathematical Functions/Shared C++ Code/wrapRangeCPP.cpp','./3rd_Party_Code/GeographicLib-1.45/src/Geodesic.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicExact.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicLine.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicLineExact.cpp','./3rd_Party_Code/GeographicLib-1.45/src/EllipticFunction.cpp','./3rd_Party_Code/GeographicLib-1.45/src/Math.cpp','./3rd_Party_Code/GeographicLib-1.45/src/GeodesicExactC4.cpp');
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Libraries/GeographicLib-1.46/include','-I./Container Classes/Shared C++ Code/','-I./Mathematical Functions/Shared C++ Code/','./Navigation/directGeodeticProb.cpp','./Mathematical Functions/Shared C++ Code/wrapRangeCPP.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/Geodesic.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicExact.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicLine.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicLineExact.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/EllipticFunction.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/Math.cpp','./3rd_Party_Libraries/GeographicLib-1.46/src/GeodesicExactC4.cpp');
 
 %Compile general coordinate system code.
 %Compile calcSpherJacob
@@ -65,10 +93,10 @@ mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Container Classes/Shared C++ Code/','-I./Mathematical Functions/Shared C++ Code/','-I./Coordinate Systems/Shared C++ Code/','./Mathematical Functions/spherHarmonicCovCPPInt.cpp','./Mathematical Functions/Shared C++ Code/spherHarmonicCovCPP.cpp','./Mathematical Functions/Shared C++ Code/normHelmholtzCPP.cpp','./Coordinate Systems/Shared C++ Code/spher2CartCPP.cpp');
 
 %Compile the 2D assignment algorithms
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','./Assignment Algorithms/2D Assignment/assign2DByCol.c');
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Combinatorics/Shared C++ Code/','./Assignment Algorithms/Association Probabilities/calc2DAssignmentProbs.cpp','./Mathematical Functions/Combinatorics/Shared C++ Code/getNextComboCPP.cpp','./Mathematical Functions/Combinatorics/Shared C++ Code/permCPP.cpp');
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','./Assignment Algorithms/2D Assignment/assign2DAlt.c');
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Assignment Algorithms/Shared C++ Code/','./Assignment Algorithms/2D Assignment/assign2D.cpp','./Assignment Algorithms/Shared C++ Code/ShortestPathCPP.cpp');
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','./Sample Code/2D Assignment/assign2DByCol.c');
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','./Assignment Algorithms/2D Assignment/assign2D.c');
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Assignment Algorithms/Shared C++ Code/','./Sample Code/2D Assignment/assign2DAlt.cpp','./Assignment Algorithms/Shared C++ Code/ShortestPathCPP.cpp');
 
 %Compile the k-best 2D assignment algorithm
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Assignment Algorithms/Shared C++ Code/','./Assignment Algorithms/k-Best 2D Assignment/kBest2DAssign.cpp','./Assignment Algorithms/Shared C++ Code/ShortestPathCPP.cpp');
@@ -84,7 +112,6 @@ mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Geometry/Shared C++ Code/','./Mathematical Functions/Geometry/twoLineIntersectionPoint2D.cpp','./Mathematical Functions/Geometry/Shared C++ Code/twoLineIntersectionPoint2DCPP.cpp');
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Geometry/Shared C++ Code/','./Mathematical Functions/Geometry/signedPolygonArea.cpp','./Mathematical Functions/Geometry/Shared C++ Code/signedPolygonAreaCPP.cpp');
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Shared C++ Code/','-I./Mathematical Functions/Geometry/Shared C++ Code/','./Mathematical Functions/Geometry/clipPolygonSH2D.cpp','./Mathematical Functions/Geometry/Shared C++ Code/twoLineIntersectionPoint2DCPP.cpp','./Mathematical Functions/Geometry/Shared C++ Code/signedPolygonAreaCPP.cpp');
-
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Combinatorics/Shared C++ Code/','./Mathematical Functions/Combinatorics/perm.cpp','./Mathematical Functions/Combinatorics/Shared C++ Code/getNextComboCPP.cpp','./Mathematical Functions/Combinatorics/Shared C++ Code/permCPP.cpp');
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Combinatorics/Shared C++ Code/','./Mathematical Functions/Combinatorics/getNextCombo.cpp','./Mathematical Functions/Combinatorics/Shared C++ Code/getNextComboCPP.cpp');
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Combinatorics/Shared C++ Code/','./Mathematical Functions/Combinatorics/getNextGrayCode.cpp');
@@ -92,6 +119,7 @@ mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-
 mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Mathematical Functions/Shared C Code/','./Mathematical Functions/binSearch.c','./Mathematical Functions/Shared C Code/binSearchC.c')
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Assignment Algorithms/Shared C++ Code/','-I./Mathematical Functions/MMOSPAApprox/Shared C++ Code/','./Mathematical Functions/MMOSPAApprox/MMOSPAApprox.cpp','./Mathematical Functions/MMOSPAApprox/Shared C++ Code/MMOSPAApproxCPP.cpp','./Assignment Algorithms/Shared C++ Code/ShortestPathCPP.cpp');
 mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./Container Classes/Shared C++ Code/','-I./Mathematical Functions/Shared C++ Code/','./Mathematical Functions/wrapRange.cpp','./Mathematical Functions/Shared C++ Code/wrapRangeCPP.cpp')
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','./Mathematical Functions/Basic Matrix Operations/kronSym.c')
 
 %If compiling under Windows, the compile environment must be set up so
 %that external libraries can be compiled and linked. The settings that
@@ -140,8 +168,9 @@ if(ispc())
             envVars{numSet+1}=envVar;
             origEnvVals{numSet+1}=getenv(envVar);
 
-            %The mex compile program must be in the path for anyting to compile
-            %that wishes to externally call the matlab mex compiler.
+            %The mex compile program must be in the path for anyting to
+            %compile that wishes to externally call the matlab mex
+            %compiler.
             if(strcmp(envVar,'PATH')==1||strcmp(envVar,'Path')==1||strcmp(envVar,'path')==1)
                 setenv(envVar,[settingString{1},';',matlabroot,'/bin'])
             else
@@ -159,14 +188,14 @@ end
 
 %%%Compile the SOFA library 
 %Switch to the SOFA code directory
-cd ./3rd_Party_Code/sofa/src
+cd ./3rd_Party_Libraries/sofa/src
 %Run commands on the command line to build the library and place it in a
 %known location.
 if(isunix()||ismac())%*NIX/ Mac OS X
     system('make');
     system('mv ./libsofa_c.a ../../../0_Compiled_Code/libsofa_c.a');
     system('make clean');
-     linkCommands{1}='./0_Compiled_Code/libsofa_c.a';
+    linkCommands{1}='./0_Compiled_Code/libsofa_c.a';
 elseif(ispc())
     %Create object files for all of the C++ files.
     cc=[getenv('COMPILER'),' ',getenv('COMPFLAGS'),' ','-U__STDC_UTF_16__ '];
@@ -195,97 +224,134 @@ end
 cd(ScriptFolder)
 
 %Compile astronomical functions that use the SOFA code
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/changeEpoch.c',linkCommands{:})
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./Coordinate Systems/Shared C++ Code/','-I./','./Astronomical Code/starCat2Obs.cpp','./Coordinate Systems/Shared C++ Code/getENUAxesCPP.cpp',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./Coordinate Systems/Relativity/Shared C Code/','-I./','./Astronomical Code/aberrCorr.c','./Coordinate Systems/Relativity/Shared C Code/relVecAddC.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/lightDeflectCorr.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Astronomical Code/changeEpoch.c',linkCommands{:})
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./Coordinate Systems/Shared C++ Code/','-I./','./Astronomical Code/starCat2Obs.cpp','./Coordinate Systems/Shared C++ Code/getENUAxesCPP.cpp',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./Coordinate Systems/Relativity/Shared C Code/','-I./','./Astronomical Code/aberrCorr.c','./Coordinate Systems/Relativity/Shared C Code/relVecAddC.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Astronomical Code/lightDeflectCorr.c',linkCommands{:})
 
 %Compile the atmospheric code
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./3rd_Party_Code/nrlmsise00/nrlmsis00_c_version/','-I./','-I./Coordinate Systems/Time/Shared C Code/','./Atmospheric Models/standAtmosGasTemp.c','./Coordinate Systems/Time/Shared C Code/UTC2DayCountC.c','./3rd_Party_Code/nrlmsise00/nrlmsis00_c_version/nrlmsise-00.c','./3rd_Party_Code/nrlmsise00/nrlmsis00_c_version/nrlmsise-00_data.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Atmospheric Models/simpAstroRefParam.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/nrlmsise-00.20151122/','-I./','./Atmospheric Models/NRLMSISE00GasTemp.c','./3rd_Party_Libraries/nrlmsise-00.20151122/nrlmsise-00.c','./3rd_Party_Libraries/nrlmsise-00.20151122/nrlmsise-00_data.c')
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/nrlmsise-00.20151122/','-I./','./Atmospheric Models/NRLMSISE00Alt4Pres.c','./3rd_Party_Libraries/nrlmsise-00.20151122/nrlmsise-00.c','./3rd_Party_Libraries/nrlmsise-00.20151122/nrlmsise-00_data.c')
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Atmospheric Models/simpAstroRefParam.c',linkCommands{:})
 
 %%Compile the coordinate transforms that use the SOFA code.
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/GCRS2ITRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/ITRS2GCRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/GCRS2TIRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/TIRS2GCRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/TEME2ITRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/ITRS2TEME.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/TOD2GCRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/GCRS2TOD.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/MOD2GCRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/GCRS2MOD.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/J2000F2ICRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/ICRS2J2000F.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/TIRS2ITRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/ITRS2TIRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/GCRS2CIRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/CIRS2GCRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/CIRS2TIRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/TIRS2CIRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/G2ICRS.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Astronomical Code/ICRS2G.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/GCRS2ITRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/ITRS2GCRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/GCRS2TIRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/TIRS2GCRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/TEME2ITRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/ITRS2TEME.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/TOD2GCRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/GCRS2TOD.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/MOD2GCRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/GCRS2MOD.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/J2000F2ICRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/ICRS2J2000F.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/TIRS2ITRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/ITRS2TIRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/GCRS2CIRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/CIRS2GCRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/CIRS2TIRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/TIRS2CIRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/G2ICRS.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/ICRS2G.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/ICRS2Ecliptic.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Celestial and Terrestrial Systems/ecliptic2ICRS.c',linkCommands{:})
 
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/sofa/src/','./Coordinate Systems/ellips2Cart.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Libraries/sofa/src/','./Coordinate Systems/ellips2Cart.c',linkCommands{:})
 
 %%Compile the time conversion functions that use the SOFA code.
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/UTC2Cal.c','Coordinate Systems/Time/Shared C Code/UTC2CalC.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/UTC2DayCount.c','Coordinate Systems/Time/Shared C Code/UTC2DayCountC.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/Cal2UTC.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/UTC2TAI.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TAI2TT.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TCG2TT.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TT2TAI.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TT2TCG.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TT2GMST.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TT2GAST.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TAI2UTC.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/BesselEpoch2TDB.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TDB2BesselEpoch.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/UTC2Cal.c','Coordinate Systems/Time/Shared C Code/UTC2CalC.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/UTC2DayCount.c','Coordinate Systems/Time/Shared C Code/UTC2DayCountC.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/Cal2UTC.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/UTC2TAI.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TAI2TT.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TCG2TT.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TT2TAI.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TT2TCG.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TT2GMST.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TT2GAST.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TAI2UTC.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/BesselEpoch2TDB.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TDB2BesselEpoch.c',linkCommands{:})
 
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TDB2TCB.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/TCB2TDB.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/cumLeapSec.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TDB2TCB.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/TCB2TDB.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/cumLeapSec.c',linkCommands{:})
 
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/JulDate2JulEpoch.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','./Coordinate Systems/Time/JulEpoch2JulDate.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/JulDate2JulEpoch.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','./Coordinate Systems/Time/JulEpoch2JulDate.c',linkCommands{:})
 
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TT2UT1.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TAI2UT1.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TT2TCB.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TT2TDB.c',linkCommands{:})
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TDB2TT.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TT2UT1.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TAI2UT1.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TT2TCB.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TT2TDB.c',linkCommands{:})
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/sofa/src/','-I./','-I./Mathematical Functions/Shared C Code/','-I./Coordinate Systems/Time/Shared C Code/','./Coordinate Systems/Time/TDB2TT.c',linkCommands{:})
 
 %%Compile other astronomical code
-mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Code/sofa/src/','./Astronomical Code/approxSolarSysVec.c',linkCommands{:})
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/SGP4/cpp/','-I./','./Astronomical Code/propagateOrbitSGP4.cpp','./3rd_Party_Code/SGP4/cpp/sgp4unit.cpp')
+mex('-v','CFLAGS="$CFLAGS -std=c99"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./','-I./3rd_Party_Libraries/sofa/src/','./Astronomical Code/approxSolarSysVec.c',linkCommands{:})
+mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/SGP4/cpp/','-I./','./Astronomical Code/propagateOrbitSGP4.cpp','./3rd_Party_Libraries/SGP4/cpp/sgp4unit.cpp')
+
+%Get rid of the library as nothing else is going to link to it.
+if(isunix()||ismac())%*NIX/ Mac OS X
+    system('rm ./0_Compiled_Code/libsofa_c.a');
+else%Windows
+    system('del .\0_Compiled_Code\libsofa_c.lib');
+end
 
 %%Compile the MICE code for ephemerides.
-cd ./3rd_Party_Code/mice
+cd ./3rd_Party_Libraries/mice
 %Run commands on the command line to build the library. The files are
 %placed in subdirectories in the mice folder.
-if(ismac())%Mac OS X
-    system('sh makeallOSX64.csh');
-elseif(isunix())%*NIX
-    system('sh makeallLINUX64.csh');
+if(ismac()||isunix())%Mac OS X
+    %We have to add the location of the mex command to the path for the
+    %system command so that the compile script can make the mex file.
+    numSet=1;
+    envVars{1}='PATH';
+    origEnvVals{1}=getenv('PATH');
+    setenv('PATH',[origEnvVals{1},':',matlabroot,'/bin'])
+    
+    if(ismac())
+        system('sh makeOSX64_OnlyMatlab.csh');
+    else
+        system('sh makeLINUX64_OnlyMatlab.csh');
+    end
 elseif(ispc())%Windows
-    system('makeall.bat')
+    numSet=1;
+    envVars{1}='PATH';
+    origEnvVals{1}=getenv('PATH');
+    setenv('PATH',[origEnvVals{1},':',matlabroot,'/bin'])
+   
+    system('make_OnlyMatlab.bat')
 else
-    error('Cannot Compile MICE library for unknown operating system')
+    error('Cannot compile MICE library for unknown operating system')
 end
-cd(ScriptFolder)
+
+% %Move the compiled code into the proper location.
+if(isunix()||ismac())%*NIX/ Mac OS X
+    ext=mexext();
+    system(['mv ./lib/mice.',ext,' ../../0_Compiled_Code/mice.',ext]);
+    %Get rid of the library as nothing else is going to link to it.
+    system('rm ./lib/*.a')
+else%Windows
+    ext=mexext();
+    system(['move mice.',ext,' ..\..\0_Compiled_Code\mice.',ext]);
+    %Get rid of the library as nothing else is going to link to it.
+    system('del *.lib');
+end
+
 cd(ScriptFolder)
 
 %%Compile the AIS library
-cd ./3rd_Party_Code/libais
+cd ./3rd_Party_Libraries/libais-0048ceb/src/libais/
 %Run commands on the command line to build the library and place it in a
 %known location.
 if(isunix()||ismac())%*NIX/ Mac OS X
     system('make -f Makefile-custom libais.a');
-    system('mv ./libais.a ../../0_Compiled_Code/libais.a');
+    system('mv ./libais.a ../../../../0_Compiled_Code/libais.a');
     system('make -f Makefile-custom clean');
     linkCommands{1}='./0_Compiled_Code/libais.a';
-elseif(ispc())%Windows
+elseif(ispc())%Windows    
     %Create object files for all of the C++ files that are used.
     cc=[getenv('COMPILER'),' ',getenv('COMPFLAGS'),' ','-U__STDC_UTF_16__ '];
     system([cc,'ais.cpp']);
@@ -295,9 +361,12 @@ elseif(ispc())%Windows
     system([cc, 'ais6.cpp']);
     system([cc, 'ais7_13.cpp']);
     system([cc, 'ais8.cpp']);
-    system([cc, 'ais8_001_22.cpp']);
-    system([cc, 'ais8_001_26.cpp']);
+    system([cc, 'ais8_1_22.cpp']);
+    system([cc, 'ais8_1_26.cpp']);
+    system([cc, 'ais8_200.cpp']);
+    system([cc, 'ais8_366.cpp']);
     system([cc, 'ais8_366_22.cpp']);
+    system([cc, 'ais8_367.cpp']);
     system([cc, 'ais9.cpp']);
     system([cc, 'ais10.cpp']);
     system([cc, 'ais12.cpp']);
@@ -315,6 +384,8 @@ elseif(ispc())%Windows
     system([cc, 'ais25.cpp']);
     system([cc, 'ais26.cpp']);
     system([cc, 'ais27.cpp']);
+    system([cc, 'decode_body.cpp']);
+    system([cc, 'vdm.cpp']);
     
     %Store the names of the object files
     system('dir /b *.obj > temp.lst');
@@ -326,7 +397,7 @@ elseif(ispc())%Windows
     %compile it into a program.
     system([ll,'-lib /nologo /out:libais.lib @temp.lst']);
     %Move the library into the folder with the compiled code.
-    system('move libais.lib ..\..\0_Compiled_Code\libais.lib');
+    system('move libais.lib ..\..\..\..\0_Compiled_Code\libais.lib');
     %Get rid of the object files
     system('del *.obj');
     %Get rid of the list of names of the object files.
@@ -339,8 +410,15 @@ end
 cd(ScriptFolder)
 
 %Compile the code to process AIS messages.
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/libais/','-I./','./Transponders/decodeAISString.cpp',linkCommands{:})
-mex('-v','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Code/libais/','-I./','./Transponders/decodeAISPosReports2Mat.cpp',linkCommands{:})
+mex('-v','CXXFLAGS="$CXXFLAGS -std=c++11"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/libais-0048ceb/src/libais/','-I./','-I./Transponders/Shared C++ Code/','./Transponders/decodeAISString.cpp','./Transponders/Shared C++ Code/AISFuncs.cpp',linkCommands{:})
+mex('-v','CXXFLAGS="$CXXFLAGS -std=c++11"','-largeArrayDims','-U__STDC_UTF_16__','-outdir','./0_Compiled_Code/','-I./3rd_Party_Libraries/libais-0048ceb/src/libais/','-I./','-I./Transponders/Shared C++ Code/','./Transponders/decodeAISPosReports2Mat.cpp','./Transponders/Shared C++ Code/AISFuncs.cpp',linkCommands{:})
+
+%Get rid of the library as nothing else is going to link to it.
+if(isunix()||ismac())%*NIX/ Mac OS X
+    system('rm ./0_Compiled_Code/libais.a');
+else%Windows
+    system('del .\0_Compiled_Code\libais.lib');
+end
 
 %Restore the environment values back to what they originally were.
 for curSet=1:numSet

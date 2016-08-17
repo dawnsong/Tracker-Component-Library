@@ -14,9 +14,11 @@ function intVal=symIntThirdKindDegen(x,y,z)
 %OUTPUTS: intVal The value of the degenerate symmetric integral of the
 %                third kind given x, y, and z.
 %
-%The algorithm is taken from
-%B. C. Carlson, "Numerical computation of real or complex elliptic
-%integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
+%The algorithm is taken from [1].
+%
+%REFERENCES:
+%[1] B. C. Carlson, "Numerical computation of real or complex elliptic
+%    integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

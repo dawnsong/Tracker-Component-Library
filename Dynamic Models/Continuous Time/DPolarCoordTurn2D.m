@@ -46,25 +46,12 @@ function D=DPolarCoordTurn2D(x,t,qTurn,qSLin)
 %           N columns, then N copies of D are returned with D(:,:,i) being
 %           the ith one.
 %
-%The basic 2D polar coordianted turn model is described in
-%J. L. Gertz, "Multisensor surveillance for improved aircraft tracking,"
-%The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396, 1989.
-%It is also mentioned in
-%P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
-%for an advanced ATC system," in Multitarget-Multisensor Tracking:
-%Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
-%House, 1992, vol. II, ch. 1.
-%Though no differential equations are given and a more detailed reference
-%cited therein is a hard-to-get dissertation in French. The use of
-%transversal acceleration is discussed in more detail in 
-%H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
-%of a multisensor tracking system for advanced air traffic control," in
-%Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
-%Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
-%Chapter 4.2.3 of
-%S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
-%Systems. Norwood, MA: Artech House, 1999.
-%also provides an overview of turning models using polar coordinates.
+%The basic 2D polar coordinated turn model is described in [1]. It is also
+%mentioned in [2], though no differential equations are given and a more
+%detailed reference cited therein is a hard-to-get dissertation in French.
+%The use of transversal acceleration is discussed in more detail in  [3].
+%Chapter 4.2.3 of [4] also provides an overview of turning models using
+%polar coordinates.
 %
 %More information on turning modeling using trasverse and linear
 %acceleration can be found in the comments to the function aCoordTurn2D.
@@ -82,6 +69,21 @@ function D=DPolarCoordTurn2D(x,t,qTurn,qSLin)
 %FPolarCoordTurn2D and QPolarCoordTurn2D. However, note that the
 %discrete-time functions with unknown noise is a direct-discrete model and
 %not a discretization of the continuous-time model.
+%
+%REFERENCES:
+%[1] J. L. Gertz, "Multisensor surveillance for improved aircraft
+%    tracking," The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396,
+%    1989.
+%[2] P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
+%    for an advanced ATC system," in Multitarget-Multisensor Tracking:
+%    Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
+%    House, 1992, vol. II, ch. 1.
+%[3] H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
+%    of a multisensor tracking system for advanced air traffic control," in
+%    Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
+%    Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
+%[4] S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
+%    Systems. Norwood, MA: Artech House, 1999.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

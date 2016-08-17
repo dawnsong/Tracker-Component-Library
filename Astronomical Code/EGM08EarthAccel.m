@@ -1,10 +1,10 @@
 function [accel,C,S]=EGM08EarthAccel(rVec,accelOptions,M,TT1,TT2,effectsToInclude,EOP,C,S)
 %%EGM08EARTHACCEL Get acceleration due to gravity from the Earth. This can
-%            be a simple J2 model in a generic (not rigourously defined)
+%            be a simple J2 model in a generic (not rigorously defined)
 %            Earth-centered Earth-fixed (ECEF) or Earth-centered inertial
 %            (ECI) coordinate system, or it can be more rigorously
-%            defined in the International terrestrial Reference System
-%            or the Geocentric Celestial Reference System (GCRS),
+%            defined in the International Terrestrial Reference System
+%            (ITRS) or the Geocentric Celestial Reference System (GCRS),
 %            accounting for effects such as polar motion, tides, and the
 %            drift of the coefficients over time. The EGM2008 acceleration
 %            model is used for parameters.
@@ -130,29 +130,32 @@ function [accel,C,S]=EGM08EarthAccel(rVec,accelOptions,M,TT1,TT2,effectsToInclud
 %The J2 model can be obtained in an ECI system using
 %accel=EGM08EarthAccel(rVec,1,2)
 %
-%The J2 gravitational model is derived in Appendix E of
-%"An Overview of Major Terrestrial, Celestial, and Temporal Coordinate
-%Systems for Target Tracking" by David F. Crouse.
+%The J2 gravitational model is derived in Appendix E of [1].
 %The Coriolis and centrifugal force models due to the use of non-inertial
 %coordinate systems are derived from Appendix A of the same document.
 %The various other effects are discussed in other sections.
+%
+%REFERENCES:
+%[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %incorporating elements from a Coriolis correction by David Karnick.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<2)
+if(nargin<2||isempty(accelOptions))
     accelOptions=0;
 end
 
-if(nargin<3)
+if(nargin<3||isempty(M))
     M=2;
 end
 %If someone passes a number greater than the total number of coefficients,
 %then just limit it to the total number in the EGM2008 model.
 M=min(2190,M);
 
-%Unversal gravitational constant times the mass of the Earth
+%Universal gravitational constant times the mass of the Earth
 GM=Constants.EGM2008GM;
 
 %Semi-major axis of the Earth
@@ -305,29 +308,29 @@ end
 
 %Now, get the acceleration due to gravity in ITRS coordinates WITHOUT the
 %Coriolis effect. This can be rotated to GCRS coordinates, if needed or
-%have Coriolis terms added, if staying in this coordiante system. This
-%requires getting the position in ITRS, spherical coordiantes.
+%have Coriolis terms added, if staying in this coordinate system. This
+%requires getting the position in ITRS, spherical coordinates.
 
-if(accelOptions~=3)%If r is not already in ITRS coordiantes
+if(accelOptions~=3)%If r is not already in ITRS coordinates
    %Convert r (and v if present) into ITRS coordinates 
    rVec=GCRS2ITRS(rVec,TT1,TT2,deltaTTUT1,xpyp,dXdY,LOD);
 end
 
-%Convert the position components into spherical coordiantes for the
+%Convert the position components into spherical coordinates for the
 %spherHarmonicEval function.
 r=rVec(1:3,:);%Positions
 rSpher=Cart2Sphere(r);
 
 [~,accel]=spherHarmonicEval(C,S,rSpher,a,GM);
 
-%Now, if the acceleration is supposed to be in ITRS coordiantes, then add
+%Now, if the acceleration is supposed to be in ITRS coordinates, then add
 %the Coriolis terms. Otherwise, rotate it into GCRS coordinates.
 if(accelOptions==3)
     %The output is in ITRS coordinates, compute the Coriolis terms.
     v=rVec(4:6,:);%The velocity in ITRS coordinates.
     
     %Get the axis of rotation in ITRS coordinates. This is the z-axis in
-    %TIRS coordiantes.
+    %TIRS coordinates.
     omegaAxis=TIRS2ITRS([0;0;1],TT2,TT2,xpyp);
     
     %Modify the value of omega to deal with the LOD Earth orientation

@@ -167,67 +167,52 @@ function [xPredMain,xPredSubsid,g,orders,isFSAL,subsidType]=RungeKNystroemSStep(
 %whether it is FSAL.
 %
 %REFERENCES:
-%
 %[0] S. Filippi and J. Gräf, "Ein Runge-Kutta-Nyström Formelpaar der
 %    Ordnung 11(12) für Differentialgleichungen der Form y'' = f(x,y),"
 %    Computing, vol. 34, no. 3, pp. 271-282, 1985.
-%
 %[1] E. Fehlberg, "Classical eighth- and lower order Runge-Kutta-Nystrom
 %    formulas with stepsize control for special second-order differential
 %    equations," National Aeronautics and Space Administration, Marshall Space
 %    Flight Center, AL, Tech. Rep. NASA TR R-381, Mar. 1972.
-%
 %[2] E. Fehlberg, "Classical eighth- and lower-order Runge-Kuttta-Nyström
 %    formulas with a new stepsize control procedure for special second-order
 %    differential equations," National Aeronautics and Space Administration,
 %    Marshall Space Flight Center, AL, Tech. Rep. NASA TR R-410, Jun. 1973.
-%
 %[3] D. G.Bettis, "A Runge-Kutta Nyström Algorithm," Celestial Mechanics, 
 %    vol. 8, no. 2, pp. 229-233, Sep. 1973.
-%
 %[4] J. R. Dormand and P. J. Prince, "New Runge-Kutta algorithms for
 %    numerical simulation in dynamical astronomy," Celestial Mechanics,
 %    vol. 18, no. 3, pp. 223-232, Oct. 1978.
-%
 %[5] E. Fehlberg, S. Filippi, and J. Gräf "Ein Runge-Kutta-Nyström-
 %    Formelpaar der Ordnung 10(11) für Differentialgleichungen der Form
 %    y''= f(x,y)," Zeitschrift für Angewandte Mathematik und Mechanik, 
 %    vol. 66, no. 7, pp. 265-270, 1986.
-%
 %[6] S. Filippi and J. Gräf "New Runge-Kutta-Nyström formula-pairs of
 %     order 8(7), 9(8), 10(9) and 11(10) for differential equations of the
 %     form y?? = f (x, y)," Journal of Computational and Applied
 %     Mathematics, vol. 14, no. 3, pp. 361-370, Mar. 1986.
-%
 %[7] J. R. Dormand and P. J. Prince, "Runge-Kutta-Nystrom triples,"
 %    Computers
 %    and Mathematics with Applications, vol. 13, no. 12, pp. 937-949, 1987.
-%
 %[8] J. R. Dormand, M. E. A. El-Mikkawy, and P. J. Prince, "Families of
 %    Runge-Kutta-Nystrom formulae," IMA Journal of Numerical Analysis, vol.
 %    7, no. 2, pp. 235?250, Apr. 1987.
-%
 %[9] J. R. Dormand, M. E. A. El-Mikkawy, and P. J. Prince, "High-order
 %    embedded Runge-Kutta-Nystrom formulae," IMA Journal of Numerical
 %    Analysis, vol. 7, no. 2, pp. 423-430, Apr. 1987.
-%
 %[10] R. W. Brankin, I. Gladwell, J. R. Dormand, P. J. Prince, and W. L.
 %     Seward, "Algorithm 670: A Runge-Kutta-Nyström code," ACM Transactions
 %     on Mathematical Software, vol. 15, no. 1, pp. 31-40, Mar. 1989.
-%
 %[11] J. R. Dormand, M. E. A. El-Mikkawy, and P. J. Prince,
 %     "Corrigendum: High-order embedded Runge-Kutta-Nystrom formulae,? IMA
 %     Journal of Numerical Analysis, vol. 11, no. 2, p. 297, Apr. 1991.
-%
 %[12] J. Gräf. (2006, 15 Jan.) Bäume, RKN-type methods by Filippi and Gräf
 %     (www.josef-graef.de)" [Online]. Available:
 %     http://www.josef-graef.de/baeume/rkni.html
-%
 %[13] M. Mohamad, N. Senu, M. Suleiman,and F. Ismail,"An embedded 5(4)
 %     explicit Runge-Kutta-Nyström method with dissipation of high order,"
 %     in Proceedings of the 20th National Symposium on Mathematical
 %     Sciences, vol. 1522, Putrajaya, Malaysia, 18-20 Dec. 2012.
-%
 %[14] J. R. Dormand, Numerical Methods for Differential Equations.
 %     Raton: CRC Press, 1996.
 %

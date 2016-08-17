@@ -31,9 +31,11 @@ function L=taylorOperator(a,b,order,dfdx,dfdt,d2fdx)
 %                size xDimXdColDimXdim3, where dim3 differentiates between
 %                the drift and diffusion functions
 %
-%This operator is defined in 10.1 of
-%P. E. Kloeden and E. Platen, Numerical Solution of Stochastic Differential
-%Equations. Berlin: Springer, 1999.
+%This operator is defined in 10.1 of [1].
+%
+%REFERENCES:
+%[1] P. E. Kloeden and E. Platen, Numerical Solution of Stochastic
+%    Differential Equations. Berlin: Springer, 1999.
 %
 %April 2015 David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -41,12 +43,12 @@ function L=taylorOperator(a,b,order,dfdx,dfdt,d2fdx)
 xDim=size(a,1);
 dColDim=size(b,2);
 
-if nargin<4 || isempty(dfdx)
+if(nargin<4 || isempty(dfdx))
     dfdx=zeros(xDim,xDim);
 end
 dim3=size(dfdx,3);
 
-if order==0
+if(order==0)
     if nargin<5 || isempty(dfdt)
         dfdt=zeros([xDim dim3]);
     end

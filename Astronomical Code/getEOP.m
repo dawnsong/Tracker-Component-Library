@@ -8,7 +8,7 @@ function [xpyp,dXdY,deltaUTCUT1,deltaTTUT1,LOD]=getEOP(JulUTC1,JulUTC2,refreshFr
 %         for high-precision astronomical coordinate conversions. When the
 %         date provided is outside of the range of tabulated values, then
 %         linear interpolation is provided over deltaUTCUT1 and deltaTTUT1, 
-%         and piecewise cubic hermite interpolation is provided over LOD,
+%         and piecewise cubic Hermite interpolation is provided over LOD,
 %         but xpyp and dXdY are just set to zero.
 %
 %INPUTS: JulUTC1,JulUTC2 NX1 or 1XN vectors of two-part pseudo-Julian dates
@@ -23,19 +23,22 @@ function [xpyp,dXdY,deltaUTCUT1,deltaTTUT1,LOD]=getEOP(JulUTC1,JulUTC2,refreshFr
 %                       previously loaded database. As the external sources
 %                       are updated no more than once per day, this
 %                       parameter should NOT be provided often, so as to
-%                       minimize internet traffic. Possible values of this
-%                       parameter are
-%                 -1) (The default) Load the data from the local file
-%                     ./data/EOP.txt. No internet connection is required.
-%                  0) Get the finals2000A.daily file from the
-%                     US Naval Observatory. This has EOP parameters for the
-%                     last 90 days and prediction for the next 90 days.
-%                  1) Get the finals2000A.daily file from the IERS data
-%                     center.
-%                  2) Get the finals.data file from the US Naval
-%                     Observatory. This has EOP parameters since 1992 and
-%                     predictions for the next year.
-%                  3) Get the finals.data file from the IERS data center.
+%                       minimize internet traffic. If this parameter is
+%                       anything but -1, a warning is given. Possible
+%                       values of this parameter are
+%                      -1) (The default) Load the data from the local file
+%                       ./data/EOP.txt. No internet connection is required.
+%                       0) Get the finals2000A.daily file from the
+%                          US Naval Observatory. This has EOP parameters
+%                          for the last 90 days and prediction for the next
+%                          90 days.
+%                       1) Get the finals2000A.daily file from the IERS
+%                          data center.
+%                       2) Get the finals.data file from the US Naval
+%                          Observatory. This has EOP parameters since 1992
+%                          and predictions for the next year.
+%                       3) Get the finals.data file from the IERS data
+%                          center.
 %     replaceEOPtxt  An optional boolean argument. If this parameter is
 %                    true, then the file ./EOP.txt will be replaced with
 %                    the downloaded data file when the refreshFromSource
@@ -84,18 +87,20 @@ function [xpyp,dXdY,deltaUTCUT1,deltaTTUT1,LOD]=getEOP(JulUTC1,JulUTC2,refreshFr
 %
 %The tidal and libration effects are added using the subroutines
 %PMUT1_OCEANS and PM_GRAVI that are originally from the function interp.f
-%that the IERS 2010 conventions cites in Section 5.1. The original Fortran
-%routine is available at
+%that are part of the IERS 2010 Conventions and are mentioned in Section
+%5.1. The original Fortran routine is available at
 %ftp://hpiers.obspm.fr/eop-pc/models/interp.f
-%Being part of the IERS 2010 Conventions, the subroutines are in the public
-%domain.
+%As documented in the "License for IERS Code" file in the
+%3rd_Party_Libraries folder, these routines are in the public domain.
 %
-%The citation for the IERS 2010 Conventions is
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
+%The citation for the IERS 2010 Conventions is [1].
 %
 %This function is most commonly called as
 %[xpyp,dXdY,deltaUTCUT1,deltaTTUT1,LOD]=getEOP(JulUTC1,JulUTC2)
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %April 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -108,6 +113,10 @@ function [xpyp,dXdY,deltaUTCUT1,deltaTTUT1,LOD]=getEOP(JulUTC1,JulUTC2,refreshFr
     
     if(nargin<3)
         refreshFromSource=-1;
+    end
+    
+    if(refreshFromSource~=-1)
+       warning('Downloading data from server. There is no need to download again until this function is cleared.')
     end
     
     if(nargin<4)
@@ -249,7 +258,6 @@ function [cor_x,cor_y,cor_ut1,cor_lod]=PMUT1_OCEANS(rjd)
 %     coded by Ch. Bizouard (2002), initially coded by McCarthy and 
 %     D.Gambis(1997) for the 8 prominent tidal waves.  
       
-
       nlines=71;
       ARG=zeros(6,1); %Array of the tidal arguments   
       DARG=zeros(6,1); %Array of their time derivative 
@@ -586,11 +594,11 @@ else
         case 0
             [rawText,status] =urlread('http://maia.usno.navy.mil/ser7/finals.daily');
         case 1
-            [rawText,status] =urlread('http://datacenter.iers.org/eop/-/somos/5Rgv/latest/13');
+            [rawText,status] =urlread('https://datacenter.iers.org/eop/-/somos/5Rgv/latest/13');
         case 2
             [rawText,status] =urlread('http://maia.usno.navy.mil/ser7/finals.data');
         case 3
-            [rawText,status] =urlread('http://datacenter.iers.org/eop/-/somos/5Rgv/latest/10');
+            [rawText,status] =urlread('https://datacenter.iers.org/eop/-/somos/5Rgv/latest/10');
         otherwise
             error('Invalid data sourve given')
     end

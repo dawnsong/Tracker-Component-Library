@@ -70,13 +70,14 @@ function [z0,deltaZ]=addAstroRefrac(algorithm,plhObs,zTrue,Rh,P,T,wl)
 %which is generally sufficient to ensure convergence to within working
 %precision limits for all of the algorithms.
 %
+%REFERENCES:
 %[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
-%Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
-%Books, 2013.
+%    Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
+%    Books, 2013.
 %[2] C. Y. Hohenkerk and A. T. Sinclair, "The computation of angular
-%atmospheric refraction at large zenith angles," United Kingdom
-%Hydrographic Office, HM Nautical Almanac, Tech. Rep. 63, Apr. 1985.
-%http://astro.ukho.gov.uk/data/tn/naotn63.pdf
+%    atmospheric refraction at large zenith angles," United Kingdom
+%    Hydrographic Office, HM Nautical Almanac, Tech. Rep. 63, Apr. 1985.
+%    http://astro.ukho.gov.uk/data/tn/naotn63.pdf
 %
 %April 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

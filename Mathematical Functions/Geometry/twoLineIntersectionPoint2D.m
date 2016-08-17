@@ -12,9 +12,11 @@ function point=twoLineIntersectionPoint2D(line1,line2)
 %OUTPUTS:   point The 2X1 intersection point of the two lines given as
 %                 [x;y] components.
 %
-%The formula in terms of matrix determinants is taken from
-%Weisstein, Eric W. "Line-Line Intersection." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/Line-LineIntersection.html
+%The formula in terms of matrix determinants is taken from [1].
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Line-Line Intersection." From MathWorld--A Wolfram
+%    Web Resource. http://mathworld.wolfram.com/Line-LineIntersection.html
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

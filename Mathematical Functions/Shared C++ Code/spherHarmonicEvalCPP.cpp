@@ -18,10 +18,10 @@
 #include "CoordFuncs.hpp"
 
 //For the sin and cos.
-#include <math.h>
+#include <cmath>
 #include <limits>
 //for memset
-#include <string.h>
+#include <cstring>
 
 void spherHarmonicEvalCPP(double *V, double *gradV, const ClusterSetCPP<double> &C,const ClusterSetCPP<double> &S, const double *point, const size_t numPoints, const double a, const double c, const double scalFactor) {
     //If a NULL pointer is passed for gradV, then it is assumed that the

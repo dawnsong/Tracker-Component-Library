@@ -20,10 +20,11 @@ function [u,c]=getEllipsHarmAxes(pointHarmon,E)
 %                   to reduced latitude, longitude and the semi-major axis.
 %
 %The ellipsoidal harmonic coordinate system is described in Chapter 1.15
-%of
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
-%and is an orthogonal coordinate system.
+%of [1] and is an orthogonal coordinate system.
+%
+%REFERENCES:
+%[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

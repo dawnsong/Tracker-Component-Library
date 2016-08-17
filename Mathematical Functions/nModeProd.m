@@ -42,7 +42,6 @@ function Y=nModeProd(X,U,n)
 %           172   208   244   280]
 %
 %REFERENCES:
-%
 %[1] R. G. Kolda and B. W. Bader, "Tensor decompositions and applications,"
 %    SIAM Review, vol. 51, no. 3, pp. 455?500, 2009.
 %[2] T. G. Kolda, "Multilinear operators for higher-order decompositions,"

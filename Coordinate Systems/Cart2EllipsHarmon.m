@@ -18,10 +18,9 @@ function pointsHarmon=Cart2EllipsHarmon(cartPoints,E)
 %                   with reduced latitude and longitude given in radians.
 %
 %The ellipsoidal harmonic coordinate system is described in Chapter 1.15 of
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
-%Note that some folks use the complement of the reduced latitude in place
-%of the reduced latitude. The complement is pi/2-the reduced latitude.
+%[1]. Note that some folks use the complement of the reduced latitude in
+%place of the reduced latitude. The complement is pi/2-the reduced
+%latitude.
 %
 %The conversion should work for all points that are not at the origin. For
 %points that are particularly close to the origin, (generally, points deep
@@ -35,6 +34,10 @@ function pointsHarmon=Cart2EllipsHarmon(cartPoints,E)
 %is equal to E*abs(cos(phi)). Thus, a different conversion is used
 %depending on the value of t. The conversion follows from solving the
 %equations in the aforementioned book by Hofmann-Wellenhof and Moritz.
+%
+%REFERENCES:
+%[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

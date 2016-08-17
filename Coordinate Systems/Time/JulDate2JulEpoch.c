@@ -66,7 +66,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     epochJ=(double*)mxGetData(JulianEpochRetMATLAB);
 
     for(i=0;i<numElements;i++) {
-        int retVal;
     /*Call the function in the SOFA library.*/
         epochJ[i]=iauEpj(Jul1[i], Jul2[i]);
     }

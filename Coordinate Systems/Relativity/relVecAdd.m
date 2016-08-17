@@ -21,12 +21,13 @@ function vObjRef=relVecAdd(vObsFrame,vObjInFrame)
 %                  system.
 %
 %The formulae for special relativistic velocity addition is derived in
-%Chapter 1.4 of
-%G. Ludyk, Einstein in Matrix Form: Exact Derivation of the Theory of
-%Special and General Relativity without Tensors. Heidelberg: Springer,
-%2013.
-%The magnitudes of vObsFrame and vObjInFrame must both be less than the
-%speed of light.
+%Chapter 1.4 of [1]. The magnitudes of vObsFrame and vObjInFrame must both
+%be less than the speed of light (Constants.speedOfLight).
+%
+%REFERENCES:
+%[1] G. Ludyk, Einstein in Matrix Form: Exact Derivation of the Theory of
+%    Special and General Relativity without Tensors. Heidelberg: Springer,
+%    2013.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

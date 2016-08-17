@@ -17,11 +17,12 @@ function x= BesseliRatio(nu,kappa,maxIter)
 %
 %Numerical precision limitations can make the evaluation of Bessel function
 %radios difficult if one tries to explicitely evaluate the functions. Here,
-%the algorithm of Perron described in
-%W. Gautschi and J. Slavik, "On the computation of modified Bessel function
-%ratios," Mathematics of Computation, vol. 32, no. 143, pp. 865-875, Jul.
-%1978.
-%is implemented.
+%the algorithm of Perron described in [1] is implemented.
+%
+%REFERENCES:
+%[1] W. Gautschi and J. Slavik, "On the computation of modified Bessel
+%    function ratios," Mathematics of Computation, vol. 32, no. 143, pp.
+%    865-875, Jul. 1978.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

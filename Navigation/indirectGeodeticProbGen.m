@@ -59,21 +59,9 @@ function [azStart,dist,azEnd]=indirectGeodeticProbGen(latLonStart,latLonEnd,heig
 %                   East of true North on the reference ellipsoid.
 %
 %The algorithm initially solves the indirect geodetic problem on the
-%surface of the reference ellipsoid using the function geoddistance from
-%C. F. F. Karney. (2013, 2 Jul.) Geodesics on an ellipsoid of revolution.
-%Matlab Central. [Online].
-%Available: http://www.mathworks.com/matlabcentral/fileexchange/39108
-%which is documented in
-%C. F. F. Karney, "Algorithms for geodesics," Journal of Geodesy, vol. 87,
-%no. 1, pp. 43?45, Jan. 2013. [Online].
-%Available: http://arxiv.org/pdf/1109.4448.pdf
-%and 
-%C. F. F. Karney. (2013, 31 Aug.) Addenda and errata for papers on
-%geodesics. [Online].
-%Available: http://geographiclib.sourceforge.net/geod-addenda.html
-%and 
-%C. F. F. Karney. (2011, 7 Feb.) Geodesics on an ellipsoid of revolution.
-%[Online]. Available: http://arxiv.org/pdf/1102.1215.pdf
+%surface of the reference ellipsoid using the function
+%indirectGeodeticProb. Then, if a non-zero height is used, the function
+%directGeodeticProbGen is iterated to obtain the correct solution.
 %
 %Assuming that the effects of height do not change the initial heading,
 %but rather just the distance that must be traveled to solve the problem,
@@ -99,7 +87,7 @@ function [azStart,dist,azEnd]=indirectGeodeticProbGen(latLonStart,latLonEnd,heig
 %set to 0.9*dist to 1.1*dist, where dist is the distance obtained after
 %scaling the distance from the zero-altitude solution.
 %
-%The algorithm is fastest if height=0. It is moderately slower is height is
+%The algorithm is fastest if height=0. It is moderately slower if height is
 %not zero and useHeightApprox=true, and it is very slow if height!=0 and
 %useHeightApprox=false.
 %

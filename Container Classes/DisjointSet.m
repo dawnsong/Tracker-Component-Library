@@ -5,22 +5,24 @@ classdef DisjointSet < handle
 %             measurements are associated with which target clusters, then
 %             the subclass DisjointSetM should be used.
 %
-%Disjoint sets are described in Chapter 8 of
-%M. A. Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
-%Reading, MA: Addison-Wesley, 1999.
-%in Chapter 21 of
-%T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, Introduction
-%to Algorithms, 2nd ed. Cambridge, MA: The MIT Press, 2001.
-%and Chapter 12.4 of 
-%B. R. Preiss, Data Structures and Algorithms with Object-Oriented Design
-%Patterns in C++. New York, NY: John Wiley & Sons, Inc., 1999.
+%Disjoint sets are described in Chapter 8 of [1], in Chapter 21 of [2], and
+%Chapter 12.4 of [3].
 %
 %The main point of this class is to bring together cluster data so that a
 %ClusterSet class can be created. A ClusterSet class allows the clusters to
 %be indexed by a cluster number and the elements of the clusters to be
 %subsequently indexed with another number. The algorithms here use path
 %compression in the find algorithm and a union by rank algorithm to process
-%things quickly
+%things quickly.
+%
+%REFERENCES:
+%[1] M. A. Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
+%    Reading, MA: Addison-Wesley, 1999.
+%[2] T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein,
+%    Introduction to Algorithms, 2nd ed. Cambridge, MA: The MIT Press,
+%    2001.
+%[3] B. R. Preiss, Data Structures and Algorithms with Object-Oriented
+%    Design Patterns in C++. New York, NY: John Wiley & Sons, Inc., 1999.
 %
 %November 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

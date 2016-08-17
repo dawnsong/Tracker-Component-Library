@@ -13,13 +13,16 @@ function val=StirlingNumber2(n,k)
 %OUTPUTS: val The number of ways of partitioning n items into k subsets. If
 %             an overflow occurs, this will be infinite.
 %
-%The implementation uses the recurrence relation from
-%Weisstein, Eric W. "Stirling Number of the Second Kind."
-%From MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/StirlingNumberoftheSecondKind.html
+%The implementation uses the recurrence relation from [1].
+%
 %The more commonly seen expression in terms of a sum of binomials is not
 %desirable, because overflows will occur even when the final number does
 %not overflow.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Stirling Number of the Second Kind." From
+%    MathWorld--A Wolfram Web Resource.
+%    http://mathworld.wolfram.com/StirlingNumberoftheSecondKind.html
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -1,5 +1,5 @@
 classdef ClusterSet < handle
-%CLUSTERSET  A class to access a set of clusters by indexation. Given an
+%%CLUSTERSET A class to access a set of clusters by indexation. Given an
 %            object CSObs, one can index the elements by cluster and by the
 %            index of the item in the cluster as CSObj(curClust,curItem) as
 %            described in the methods subsref and subsasgn, which overload

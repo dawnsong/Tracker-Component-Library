@@ -22,27 +22,27 @@ function numPart=numberOfPartitions(n,returnAll)
 %                 the number of partitions of all integers from 1 to n.
 %
 %For n<=250, the algorithm used is the recursion taken from Chapter
-%7.2.1.4 of
-%D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
-%Generating all Combinations and Partitions, Upper Saddle River, NJ:
-%Addison-Wesley, 2009.
-%The recursion is also mentioned on
-%Weisstein, Eric W. "Partition Function P." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/PartitionFunctionP.html
-%However, as n gets larger, the recursion suffers from a loss of precision
-%that can lead to significant inaccuracy at higher values of n. For
-%example, at n=2000, the result is about 265 times too large. Thus, for
-%n>250, the algorithm used in the first half of the RANPAR algorithm of
-%Chapter 10 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%is used. That algorithm is slower, when implemented in Matlab, but is much
-%more robust to finite precision errors at large values.
+%7.2.1.4 of [1]. The recursion is also mentioned in [2]. However, as n gets
+%larger, the recursion suffers from a loss of precision that can lead to
+%significant inaccuracy at higher values of n. For example, at n=2000, the
+%result is about 265 times too large. Thus, for n>250, the algorithm given
+%in the first half of the RANPAR algorithm of Chapter 10 of [3] is used.
+%That algorithm is slower, when implemented in Matlab, but is much more
+%robust to finite precision errors at large values.
 %
 %The amount of memory used for the computation scales linearly with n,
 %because all past values of p have to be found during the recursion. For
 %very large values of n, finite precision errors will eventually become
 %large.
+%
+%REFERENCES:
+%[1] D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
+%    Generating all Combinations and Partitions, Upper Saddle River, NJ:
+%    Addison-Wesley, 2009.
+%[2] Weisstein, Eric W. "Partition Function P." From MathWorld--A Wolfram
+%    Web Resource. http://mathworld.wolfram.com/PartitionFunctionP.html
+%[3] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

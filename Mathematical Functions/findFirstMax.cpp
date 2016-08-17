@@ -66,12 +66,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
     }
     
-    arr = (double*)mxGetData(prhs[0]);
+    arr = reinterpret_cast<double*>(mxGetData(prhs[0]));
     foundIdx= findFirstMaxCPP(arr,numPoints);
     
     //Set the return value
     retIdx=allocUnsignedSizeMatInMatlab(1,1);
-    *(size_t *)mxGetData(retIdx)=foundIdx+1;
+    *reinterpret_cast<size_t *>(mxGetData(retIdx))=foundIdx+1;
     plhs[0]=retIdx;
 }
 

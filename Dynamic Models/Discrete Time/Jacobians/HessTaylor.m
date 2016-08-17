@@ -20,19 +20,21 @@ function F=HessTaylor(deltaT,dadx,d2adx,method)
 %               by a step-size of deltaT using a strong Taylor scheme.
 %
 %The second derivative state prediction matrix is derived from the
-%stochastic order 1.5 Taylor scheme described in 10.4 of
-%P. E. Kloeden and E. Platen, Numerical Solution of Stochastic Differential
-%Equations. Berlin: Springer, 1999.
+%stochastic order 1.5 Taylor scheme described in 10.4 of [1].
+%
+%REFERENCES:
+%[1] P. E. Kloeden and E. Platen, Numerical Solution of Stochastic
+%    Differential Equations. Berlin: Springer, 1999.
 %
 %April 2015 David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 xDim=size(dadx,1);
-if nargin<4
+if(nargin<4||isempty(method))
     method=1;
 end
 
-if method==0
+if(method==0)
     F=deltaT*d2adx;
 else
     %assumes 3rd derivative is zero

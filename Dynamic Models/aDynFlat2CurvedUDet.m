@@ -28,10 +28,13 @@ function xDot=aDynFlat2CurvedUDet(x,t,aDyn,uBasis)
 %OUTPUTS:   xDot  The derivative of x with respect to time. This maps the
 %                 drift function aDyn to a curved Earth.
 %
-%A discussion on mapping flat-Earth models to a curved Earth is given in 
-%D. F. Crouse, "Simulating aerial targets in 3D accounting for the Earth's
-%curvature," Journal of Advances in Information Fusion, submitted, July
-%2014.
+%A discussion on mapping flat-Earth models to a curved Earth is given in
+%[1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -17,7 +17,7 @@ function beta=calc2DAssignmentProbs(A,diagAugment)
 %INPUTS:    A  A matrix of positive likelihoods or likelihood ratios (NOT
 %              log-likelihood ratios). If diagAugment=true, then A is a
 %              numTar X  (numMeas+numTar) matrix of all-positive
-%              likelihoods or likelihood ratios  for assigning the target
+%              likelihoods or likelihood ratios for assigning the target
 %              specified by the row to the measurement specified by the
 %              column. Columns > numMeas hold missed-detection likelihoods/
 %              likelihood ratios. Thus, off-diagonal terms for columns >
@@ -47,17 +47,22 @@ function beta=calc2DAssignmentProbs(A,diagAugment)
 %
 %The notion of using matrix permanents for evaluating 2D assignment
 %probabilities, with a focus on target-measurement association
-%probabilities is from
-%J. K. Uhlmann, "Matrix permanent inequalities for approximating joint 
-%assignment matrices in tracking systems," Journal of the Franklin 
-%Institute, vol. 341, pp. 569-593, 2004.
-%The generalization to missed detections is as simple as the generalization
-%of the matrix permanent to a rectangular matrix.
+%probabilities is from [1]. The generalization to missed detections is as
+%simple as the generalization of the matrix permanent to a rectangular
+%matrix. The generalization is discussed in [2].
 %
 %The concept of the target-measurement association probability in the JPDAF
-%tracker is discussed in Chapter 6.2 of
-%Y. Bar-Shalom, P. K. Willett, and X. Tian, Tracking and Data Fusion.
-%Storrs, CT: YBS Publishing, 2011.
+%tracker is discussed in Chapter 6.2 of [3].
+%
+%REFERENCES:
+%[1] J. K. Uhlmann, "Matrix permanent inequalities for approximating joint 
+%    assignment matrices in tracking systems," Journal of the Franklin 
+%    Institute, vol. 341, pp. 569-593, 2004.
+%[2] D. F. Crouse and P. Willett, "Computing Target-Measurement Association
+%    Probabilities Using the Matrix Permanent," IEEE Transactions on
+%    Aerospace and Electronic Systems, submitted January 2016.
+%[3] Y. Bar-Shalom, P. K. Willett, and X. Tian, Tracking and Data Fusion.
+%    Storrs, CT: YBS Publishing, 2011.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

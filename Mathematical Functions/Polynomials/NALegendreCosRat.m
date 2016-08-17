@@ -25,19 +25,11 @@ function [PBarUVals,dPBarUValsdTheta,d2PBarUValsdTheta2]=NALegendreCosRat(theta,
 %d2PBarUValsdTheta2 An instance of the ClusterSet class such that
 %                   dPBarUValsdTheta(n+1,m+1)=scalFac*D2{\bar{P}_{nm}(cos(theta))}/u^m
 %
-%The modified forward row (MFR) algorithm of 
-%S. A. Holmes and W. E. Featherstone, "A unified approach to the Clenshaw
-%summation and the recursive computation of very high degree and
-%order normalised associated Legendre functions," Journal of Geodesy,
-%vol. 76, no. 5, pp. 279-299, May 2002.
-%is used to compute PBarUVals and dPBarUValsdTheta. For d2PBarUValsdTheta2,
-%the algorithm of 
-%S. A. Holmes and W. E. Featherstone, "Short note: Extending simplified
-%high-degree synthesis methods to second latitude derivatives of
-%geopotential," Journal of Geodesy, vol. 76, no. 8, pp. 447-450, Nov. 2002.
-%is used. However, the paper contains a typo. The first term of the first
-%unnumbered equation should be multiplied by an additional (1/u). This
-%function uses the correct formulation.
+%The modified forward row (MFR) algorithm of [1] is used to compute
+%PBarUVals and dPBarUValsdTheta. For d2PBarUValsdTheta2, the algorithm of
+%[2] is used. However, the paper contains a typo. The first term of the
+%first unnumbered equation should be multiplied by an additional (1/u).
+%This function uses the correct formulation.
 %
 %With the notation P^m_n(x) for an associated Legendre function of degree n
 %and order m evaluated at the point x, one generally means 
@@ -62,6 +54,16 @@ function [PBarUVals,dPBarUValsdTheta,d2PBarUValsdTheta2]=NALegendreCosRat(theta,
 %The fully normalized associated Legendre function ratios that this
 %function computes can be used in the synthesis of spherical harmonic
 %coefficients.
+%
+%REFERENCES:
+%[1] S. A. Holmes and W. E. Featherstone, "A unified approach to the
+%    Clenshaw summation and the recursive computation of very high degree
+%    and order normalised associated Legendre functions," Journal of
+%    Geodesy, vol. 76, no. 5, pp. 279-299, May 2002.
+%[2] S. A. Holmes and W. E. Featherstone, "Short note: Extending simplified
+%    high-degree synthesis methods to second latitude derivatives of
+%    geopotential," Journal of Geodesy, vol. 76, no. 8, pp. 447-450, Nov.
+%    2002.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

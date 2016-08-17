@@ -38,11 +38,13 @@ function [LMTRad,LMT1,LMT2]=TT2LMT(TT1,TT2,rObsITRS,deltaT,xpyp)
 %radians is midnight, not noon.
 %
 %The use of UT1 as a definition of Greenwhich mean solar time is given in
-%D. D. McCarthy, "Evolution of timescales from astronomy to physical
-%metrology," Metrologia, vol. 48, no. 4, pp. S132-S144, Aug. 2011.
-%Since UT1 is defined as a rotation in the TIRS, it only makes sense that a
-%local mean solar time is defined by using the longitude offset in the
-%TIRS.
+%[1]. Since UT1 is defined as a rotation in the TIRS, it only makes sense
+%that a local mean solar time is defined by using the longitude offset in
+%the TIRS.
+%
+%REFERENCES:
+%[1] D. D. McCarthy, "Evolution of timescales from astronomy to physical
+%    metrology," Metrologia, vol. 48, no. 4, pp. S132-S144, Aug. 2011.
 %
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -22,7 +22,7 @@ function xPred=fTransCoordTurn2D(T,x,turnType,discPoint,tauTurn,tauLinAccel)
 %            x=[x;y;xdot;ydot;omega;al] where omega is the turn rate and al
 %            is the linear acceleration or the target state is
 %            x=[x;y;xdot;ydot;at;al] if the turn is expressed in terms of a
-%            transversal acceleration. The dimensionality fo the state is
+%            transversal acceleration. The dimensionality of the state is
 %            used to determine whether a linear acceleration component is
 %            present. The linear acceleration component changes the speed.
 %            That means that it acts in the direction of the velocity
@@ -67,35 +67,23 @@ function xPred=fTransCoordTurn2D(T,x,turnType,discPoint,tauTurn,tauLinAccel)
 %               coordinated turn model where the velocity is a Cartesian
 %               vector.
 %
-%The basic 2D coordinated turn model is described in Section VA of
-%X. R. Li and V. P. Jilkov, "Survey of maneuvering target tracking. part I:
-%Dynamic models," IEEE Transactions on Aerospace and Electronic Systems,
-%vol. 39, no. 4, pp. 1333-1364, Oct. 2003.
-%It is assumed that the continuous-time turn rate model is
+%The basic 2D coordinated turn model is described in Section VA of [1]. It
+%is assumed that the continuous-time turn rate model is
 %omegaDot=-(1/tauTurn)*omega+noise, which discretizes to
 %omega[k+1]=exp(-T/tauTurn)*omega[k]+noise.
 %Analogously, the optional linear acceleration discretizes to
 %al[k+1]=exp(-T/tauLinAccel)*al[k]+noise
 %The F matrix, not including the optional linear velocity term, is taken
-%from equation 73 of the paper for an unknown turn rate. The ordering
-%of the elements in the state has been changed from the paper.
+%from equation 73 of [1] for an unknown turn rate. The ordering of the
+%elements in the state has been changed from the paper.
 %
 %The concept of using the transversal acceleration instead of the turn rate
 %is not discussed in either of those references. It is, however, mentioned
-%in
-%P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
-%for an advanced ATC system," in Multitarget-Multisensor Tracking:
-%Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
-%House, 1992, vol. II, ch. 1.
-%Though no differential equations are given and a more detailed reference
-%cited therein is a hard-to-get dissertation in French. The use of
-%transversal acceleration is discussed in more detail in
-%H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
-%of a multisensor tracking system for advanced air traffic control," in
-%Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
-%Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
-%though expressions are given when considering the 2D velocity are broken
-%into components of heading and speed rather than in Cartesian space. The
+%in [2], though no differential equations are given and a more detailed
+%reference cited therein is a hard-to-get dissertation in French. The use
+%of transversal acceleration is discussed in more detail in [3], though
+%expressions are given when considering the 2D velocity are broken into
+%components of heading and speed rather than in Cartesian space. The
 %generalization to Cartesian space is not difficult and is done here.
 %
 %The average value of the predicted value of omega over the interval that
@@ -111,10 +99,8 @@ function xPred=fTransCoordTurn2D(T,x,turnType,discPoint,tauTurn,tauLinAccel)
 %for the turn rate. That is,
 %alDot=-(1/tauLinAccel)*al+noise
 %This is similar to how (total) acceleration decays in the Singer dynamic
-%model, which was described in
-%R.A.Singer,"Estimating optimal tracking filter performance for manned
-%maneuvering targets," IEEE Transactions on Aerospace and Electronic
-%Systems, vol. AES-6, no. 4, pp. 473-483, Jul. 1970.
+%model, which was described in [4].
+%
 %The linear acceleration time T is just added to the velocity in the
 %direction of motion of the target in this discretization. Care is taken to
 %avoid NaNs when the veloicty is close to zero.
@@ -128,24 +114,40 @@ function xPred=fTransCoordTurn2D(T,x,turnType,discPoint,tauTurn,tauLinAccel)
 %that this model is a direct-discrete-time model and is not just a
 %discretization of the continuous-time model.
 %
+%REFERENCES:
+%[1] X. R. Li and V. P. Jilkov, "Survey of maneuvering target tracking.
+%    Part I: Dynamic models," IEEE Transactions on Aerospace and Electronic
+%    Systems, vol. 39, no. 4, pp. 1333-1364, Oct. 2003.
+%[2] P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
+%    for an advanced ATC system," in Multitarget-Multisensor Tracking:
+%    Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
+%    House, 1992, vol. II, ch. 1.
+%[3] H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design of a
+%    multisensor tracking system for advanced air traffic control," in
+%    Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
+%    Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
+%[4] R. A. Singer,"Estimating optimal tracking filter performance for
+%    manned maneuvering targets," IEEE Transactions on Aerospace and
+%    Electronic Systems, vol. AES-6, no. 4, pp. 473-483, Jul. 1970.
+%
 %April 2015 David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 %The time constant for the linear acceleration.
-if(nargin<6)
+if(nargin<6||isempty(tauLinAccel))
     tauLinAccel=Inf;
 end
 
 %The time constant for the turn.
-if(nargin<5)
+if(nargin<5||isempty(tauTurn))
     tauTurn=Inf;
 end
 
-if(nargin<4)
+if(nargin<4||isempty(discPoint))
     discPoint=0;
 end
 
-if(nargin<3)
+if(nargin<3||isempty(turnType))
     turnType='TurnRate';
 end
 

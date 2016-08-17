@@ -112,7 +112,7 @@ elseif(nargin==4)
     h11=S11;
 end
 
-%Perform the rotation in Cartesian coordiantes (avoiding the singularities
+%Perform the rotation in Cartesian coordinates (avoiding the singularities
 %of Equation 3 of [1])
 xRot=ITRS2CartCD(spher2Cart(zSpher),g10,g11,h11);
 

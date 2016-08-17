@@ -35,10 +35,11 @@ template<typename T> bool isFinite(T arg)
            arg != -std::numeric_limits<T>::infinity();
 }
 
-void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<double> &CStdDev,const ClusterSetCPP<double> &SStdDev, const double *point, const size_t numPoints, const double a, const double c, const double scalFactor) {
+bool spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<double> &CStdDev,const ClusterSetCPP<double> &SStdDev, const double *point, const size_t numPoints, const double a, const double c, const double scalFactor) {
     //If a NULL pointer is passed for gradV, then it is assumed that the
     //gradient is not desired. Otherwise, a pointer to a buffer for 3
-    //doubles should be passed.
+    //doubles should be passed. The return value indicates whether any
+    //terms were discarded due to overflow errors.
     double r, *nCoeff;
     const size_t M=CStdDev.numClust-1;
     size_t n,m,curPoint;
@@ -52,6 +53,7 @@ void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<doub
     //allocating a bunch of small buffers, and all of the variables are of
     //the same type.
     double *buffer;
+    bool didOverflow=false;//The return value
         
     //Initialize the ClusterSet classes for the coefficients. The space
     //for the elements will be allocated shortly.
@@ -161,7 +163,11 @@ void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<doub
                 
                 innerTerm+=temp1*temp1+temp2*temp2;
             }
-            sigma2[curPoint]+=nCoeff[n]*nCoeff[n]*innerTerm;
+            if(isFinite(innerTerm)){
+                sigma2[curPoint]+=nCoeff[n]*nCoeff[n]*innerTerm;
+            } else {
+                didOverflow=true;
+            }
         }
         
         //The variance of the potential.
@@ -235,28 +241,44 @@ void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<doub
                     CProdMN=CCur2*rCur*rCur+SCur2*iCur*iCur;
                     Lmn=(nf+mf+1)*HVal+u*dHVal;
                     
-                    a11Loop+=mf*mf*(CCur2*rPrev*rPrev+SCur2*iPrev*iPrev)*HVal*HVal;
-                    a22Loop+=mf*mf*(SCur2*rPrev*rPrev+CCur2*iPrev*iPrev)*HVal*HVal;
-                    //This is to deal with numerical precision problems near the
-                    //poles. We want to avoid 0*Inf terms due to limitations in
-                    //the valid range of double precision numbers. Of course,
-                    //the loss of the terms where overflow occurs means that the
-                    //covariance matrix will be underestimated.
+                    //These if-statements are to deal with numerical
+                    //precision problems near the poles. We want to avoid
+                    //0*Inf terms due to limitations in the valid range of
+                    //double precision numbers. Of course, the loss of the
+                    //terms where overflow occurs means that the covariance
+                    //matrix will be underestimated.
+                    
+                    if(isFinite(HVal)) {
+                        a11Loop+=mf*mf*(CCur2*rPrev*rPrev+SCur2*iPrev*iPrev)*HVal*HVal;
+                        a12Loop+=mf*mf*rPrev*iPrev*(SCur2-CCur2)*HVal*HVal;
+                        a22Loop+=mf*mf*(SCur2*rPrev*rPrev+CCur2*iPrev*iPrev)*HVal*HVal;
+                    } else {
+                        didOverflow=true;
+                    }
+
                     if(isFinite(Lmn)) {
                         a44Loop+=CProdMN*Lmn*Lmn;
-                        a14Loop-=mf*(CCur2*rPrev*rCur+SCur2*iPrev*iCur)*HVal*Lmn;
-                        a24Loop-=mf*(-CCur2*iPrev*rCur+SCur2*rPrev*iCur)*HVal*Lmn;
-                        a34Loop-=CProdMN*Lmn*dHVal;
+                        if(isFinite(HVal)) {
+                            a14Loop-=mf*(CCur2*rPrev*rCur+SCur2*iPrev*iCur)*HVal*Lmn;
+                            a24Loop-=mf*(-CCur2*iPrev*rCur+SCur2*rPrev*iCur)*HVal*Lmn;
+                        }
+                        if(isFinite(dHVal)){
+                            a34Loop-=CProdMN*Lmn*dHVal;
+                        }
+                    } else {
+                        didOverflow=true;
                     }
                     
                     if(isFinite(dHVal)) {
                         a33Loop+=CProdMN*dHVal*dHVal;
-                        a13Loop+=mf*(CCur2*rPrev*rCur+SCur2*iPrev*iCur)*HVal*dHVal;
-                        a23Loop+=mf*(-CCur2*iPrev*rCur+SCur2*rPrev*iCur)*HVal*dHVal;
+                        if(isFinite(HVal)) {
+                            a13Loop+=mf*(CCur2*rPrev*rCur+SCur2*iPrev*iCur)*HVal*dHVal;
+                            a23Loop+=mf*(-CCur2*iPrev*rCur+SCur2*rPrev*iCur)*HVal*dHVal;
+                        }
+                    } else {
+                        didOverflow=true;
                     }
                     
-                    a12Loop+=mf*mf*rPrev*iPrev*(SCur2-CCur2)*HVal*HVal;
-
                     mf++;
                 }
 
@@ -290,17 +312,15 @@ void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<doub
                 double s23=a23+t*a34+u*a24+t*u*a44;
                 double s33=a33+2*u*a34+u*u*a44;
                 
-                temp*=temp;
-
-                *Sigma=temp*s11;
-                *(Sigma+1)=temp*s12;
-                *(Sigma+2)=temp*s13;
-                *(Sigma+3)=temp*s12;
-                *(Sigma+4)=temp*s22;
-                *(Sigma+5)=temp*s23;
-                *(Sigma+6)=temp*s13;
-                *(Sigma+7)=temp*s23;
-                *(Sigma+8)=temp*s33;
+                *Sigma=temp*(temp*s11);
+                *(Sigma+1)=temp*(temp*s12);
+                *(Sigma+2)=temp*(temp*s13);
+                *(Sigma+3)=temp*(temp*s12);
+                *(Sigma+4)=temp*(temp*s22);
+                *(Sigma+5)=temp*(temp*s23);
+                *(Sigma+6)=temp*(temp*s13);
+                *(Sigma+7)=temp*(temp*s23);
+                *(Sigma+8)=temp*(temp*s33);
                 
                 //Go to the next point.
                 Sigma+=9;
@@ -309,6 +329,8 @@ void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<doub
     }
     
     delete[] buffer;
+    
+    return didOverflow;
 }
 
 /*LICENSE:

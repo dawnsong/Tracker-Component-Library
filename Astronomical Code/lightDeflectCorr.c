@@ -57,12 +57,12 @@
 #include "mex.h"
 /*This header is for the SOFA library.*/
 #include "sofa.h"
-
+#include <limits.h>
 #include "MexValidation.h"
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     size_t numSource, numBodies, baseIdx,curBody,curSource;
-    double *vObsSource,posObs[3], *MSolar, *xBody, *deflecLimit;
+    double *vObsSource,posObs[3], *MSolar, *xBody, *deflecLimit=NULL;
     iauLDBODY *bodyParam;
     mxArray *vDeflMATLAB;
     double *vDefl;
@@ -94,6 +94,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
 
     numBodies=mxGetM(prhs[2]);
+    
+    if(numBodies>INT_MAX) {
+        mexErrMsgTxt("Too many bodies are specified.");
+    }
+    
 
     if(numBodies==0||mxGetN(prhs[2])!=1) {
         mexErrMsgTxt("The input MSolar has the wrong dimensionality.");
@@ -134,7 +139,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
              
     baseIdx=0;
     for(curBody=0;curBody<numBodies;curBody++) {
-        int i;
+        size_t i;
         
         bodyParam[curBody].bm=MSolar[curBody];
         if(deflecLimit!=NULL) {
@@ -170,7 +175,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         //Get a unit direction vector and magnitude to the current source.
         iauPn(vObsSource+baseIdx, &vecMag, sc);
         
-        iauLdn(numBodies, bodyParam, posObs, sc,vDefl+baseIdx);
+        iauLdn((int)numBodies, bodyParam, posObs, sc,vDefl+baseIdx);
         
         //Deal with possibly non-unit magnitudes on the input.
         vDefl[baseIdx]*=vecMag;

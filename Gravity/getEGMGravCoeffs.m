@@ -114,25 +114,26 @@ function [C,S,a,c,CStdDev,SStdDev]=getEGMGravCoeffs(M,isTideFree,modelType,TT1,T
 %the coefficients is also documented in
 %http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/README_FIRST.pdf
 %
-%The EGM2008 model is documented in 
-%N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "The
-%development and evaluation of the Earth gravitational model 2008
-%(EGM2008)," Journal of Geophysical Research, vol. 117, no. B4, Apr.
-%2012.
-%N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "Correction to
-%"The development and evaluation of the Earth gravitational model 2008
-%(EGM2008)"," Journal of Geophysical Research, vol. 118, 2013.
+%The EGM2008 model is documented in [1] and [2]. The EGM96 model is
+%documented in [3].
 %
-%The EGM96 model is documented in
-%F. G. Lemoine, S. Kenyon, J. Factor, R. G. Trimmer, N. K. Pavlis, and
-%et. al., "The development of the joint NASA GSFC and the National Imagery
-%and Mapping Agency (NIMA) geopotential model EGM96," National Aeronautics
-%and Space Administration, Goddard Space Flight Center, Greenbelt, MD,
-%Tech. Rep. NASA/TP-1998-206861, Jul. 1998.
+%The IERS conventions are in [4].
 %
-%The IERS conventions are
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
+%REFERENCES:
+%[1] N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "The
+%    development and evaluation of the Earth gravitational model 2008
+%    (EGM2008)," Journal of Geophysical Research, vol. 117, no. B4, Apr.
+%    2012.
+%[2] N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "Correction to
+%    "The development and evaluation of the Earth gravitational model 2008
+%    (EGM2008)"," Journal of Geophysical Research, vol. 118, 2013.
+%[3] F. G. Lemoine, S. Kenyon, J. Factor, R. G. Trimmer, N. K. Pavlis, and
+%    et. al., "The development of the joint NASA GSFC and the National
+%    Imagery and Mapping Agency (NIMA) geopotential model EGM96," National
+%    Aeronautics and Space Administration, Goddard Space Flight Center,
+%    Greenbelt, MD, Tech. Rep. NASA/TP-1998-206861, Jul. 1998.
+%[4] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

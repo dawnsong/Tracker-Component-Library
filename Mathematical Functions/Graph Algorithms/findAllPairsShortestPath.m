@@ -51,7 +51,6 @@ function [distMat,pathMatrix]=findAllPairsShortestPath(adjMat)
 %all cycles, because a single node can be in multiple cycles.
 %
 %REFERENCES:
-%
 %[1] C. H. Papadimitriou and K. Steiglitz, Combinatorial Optimization:
 %    Algorithms and Complexity. Englewood Cliffs, NJ: Prentice-Hall Inc.,
 %    1982.
@@ -61,7 +60,6 @@ function [distMat,pathMatrix]=findAllPairsShortestPath(adjMat)
 %[3] S. Hougardy, "The floyd-warshall algorithm on graphs with negative
 %    cycles," Information Processing Letters, vol. 110, no. 8-9,
 %    pp. 279-281, Apr. 2010.
-
 %
 %June 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

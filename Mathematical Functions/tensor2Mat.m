@@ -1,5 +1,5 @@
 function Y=tensor2Mat(X,param2,C)
-%%TENSOR2MAT Unfold a (real or complex) tensor into a matrix. This can
+%%TENSOR2MAT   Unfold a (real or complex) tensor into a matrix. This can
 %              either be done as an n-way matricization using a standard
 %              ordering of the modes, or one can explicitely specify the
 %              ordering of the modes. The tensor is just a hypermatrix. The
@@ -74,7 +74,6 @@ function Y=tensor2Mat(X,param2,C)
 %Introductions to tensor operations are in [3] and [4].
 %
 %REFERENCES:
-%
 %[1] J. Salmi, A. Richter, and V. Koivunen, "Sequential unfolding SVD for
 %    tensors with applications in array signal processing," IEEE
 %    Transactions on Signal Processing, vol. 57, no. 12, pp. 4719-4733,

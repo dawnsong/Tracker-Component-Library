@@ -13,6 +13,9 @@
  *                  algorithm, this algorithm does not store the entire
  *                  inverse Hessian matrix estimate, thus making it
  *                  significantly more efficient for very large problems.
+ *                  If one wishes to zero a vector (not a scalar), then
+ *                  NewtonsMethod is more appropriate as this function
+ *                  assumes the Hessian matrix is symmetric.
  *
  *INPUTS:            f A handle to the function (and its gradient) over
  *                     which the minimization is to be performed. The
@@ -206,6 +209,7 @@
 #define  LBFGS_FLOAT 64
 #include "lbfgs.h"
 #include "MexValidation.h"
+#include <limits.h>
 
 //Prototype for the callback function wrappers.
 static double MatlabCallback(void *MatlabFunctionHandles,
@@ -235,7 +239,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     lbfgs_parameter_t param;
     double fVal;
     int exitCode;
-    lbfgs_progress_t callbackFunction;
     const mxArray *MatlabFunctionHandles[2];//To hold the callback functions.
 
     if(nrhs<2||nrhs>9){
@@ -259,7 +262,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("The point x has the wrong dimensionality."); 
     }
     
-    //Allocate space for the state. This should be done
+    //The function in the library only uses integers for dimensions.
+    if(xDim>INT_MAX) {
+        mexErrMsgTxt("The problem has too many dimensions to be solved using this function.");
+    }
+    
+    //Allocate space for the state.
     x=mxCalloc(xDim, sizeof(double));
     //Copy the passed initial estimate.
     memcpy(x, mxGetData(prhs[1]), sizeof(double)*xDim);
@@ -282,11 +290,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     param.max_step=1e20;
     param.max_linesearch=20;
     param.orthantwise_start=0;
-    param.orthantwise_end=xDim-1;
+    param.orthantwise_end=(int)xDim-1;
     
     //Now load optional parameters.
     if(nrhs>2&&!mxIsEmpty(prhs[2])) {
-        param.m=getSizeTFromMatlab(prhs[2]);
+        param.m=getIntFromMatlab(prhs[2]);
+        if(param.m<0) {
+            mexErrMsgTxt("param.m must be a positive integer.");
+        }
     }
     
     if(nrhs>3&&!mxIsEmpty(prhs[3])) {
@@ -294,7 +305,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     if(nrhs>4&&!mxIsEmpty(prhs[4])) {
-        param.past=getSizeTFromMatlab(prhs[4]);
+        param.past=getIntFromMatlab(prhs[4]);
+        if(param.past<0) {
+            mexErrMsgTxt("param.past must be a positive integer.");
+        }
     }
     
     if(nrhs>5&&!mxIsEmpty(prhs[5])) {
@@ -364,7 +378,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         
         theField=mxGetField(prhs[6],0,"maxIter");
         if(theField!=NULL) {//If the field is present.
-            param.max_linesearch=getDoubleFromMatlab(theField);
+            param.max_linesearch=getIntFromMatlab(theField);
+        
+            if(param.max_linesearch<0) {
+               mexErrMsgTxt("param.max_linesearch must be positive."); 
+            }
         }
         
         theField=mxGetField(prhs[6],0,"l1NormRange");
@@ -376,7 +394,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 mexErrMsgTxt("The size of l1NormRange is incorrect."); 
             }
 
-            indices=mxGetData(theField);
+            indices=(double*)mxGetData(theField);
 
             if(indices[0]!=floor(indices[0])||indices[1]!=floor(indices[1])) {
                 mexErrMsgTxt("The indices in l1NormRange must be integers."); 
@@ -400,7 +418,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     if(nrhs>7&&!mxIsEmpty(prhs[7])) {
-        param.max_iterations=getSizeTFromMatlab(prhs[7]);
+        param.max_iterations=getIntFromMatlab(prhs[7]);
+        if(param.max_iterations<0) {
+            mexErrMsgTxt("param.max_iterations must be a positive integer.");
+        }
     }
     
     if(nrhs>8&&!mxIsEmpty(prhs[8])) {
@@ -455,7 +476,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     //Now, the algorithm can be run.
     if(MatlabFunctionHandles[1]==NULL) {
         //If there is no callback function.
-        exitCode=lbfgs(xDim,
+        exitCode=lbfgs((int)xDim,
                x,
                &fVal,
                &MatlabCallback,
@@ -465,7 +486,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     else {
         //If there is a callback function.
-        exitCode=lbfgs(xDim,
+        exitCode=lbfgs((int)xDim,
                        x,
                        &fVal,
                        &MatlabCallback,
@@ -506,7 +527,6 @@ static double MatlabCallback(void *MatlabFunctionHandles,
     mxArray *lhs[2];
     double *oldPtr;
     double fVal;
-    size_t i;
     
     //feval in Matlab will take the function handle and the state as
     //inputs.
@@ -519,7 +539,7 @@ static double MatlabCallback(void *MatlabFunctionHandles,
     //x will not be modified, but the const must be typecast away to use
     //the mxSetPr function.
     mxSetPr(rhs[1], (double*)x);
-    mxSetM(rhs[1], n);
+    mxSetM(rhs[1], (size_t)n);
     mxSetN(rhs[1], 1);
 
     //Get the function value and gradient.
@@ -529,9 +549,13 @@ static double MatlabCallback(void *MatlabFunctionHandles,
     fVal=getDoubleFromMatlab(lhs[0]);
 
     //Copy the gradient into gVal, checking for errors.
-    verifySizeReal(n,1,lhs[1]);
-    memcpy(gVal, mxGetData(lhs[1]), sizeof(double)*n);
+    verifySizeReal((size_t)n,1,lhs[1]);
+    memcpy(gVal, mxGetData(lhs[1]), sizeof(double)*(size_t)n);
 
+    //Get rid of the returned Matlab matrices.
+    mxDestroyArray(lhs[0]);
+    mxDestroyArray(lhs[1]);
+    
     //Set the data pointer back to what it was during allocation that
     //mxDestroyArray does not have a problem. 
     mxSetPr(rhs[1],oldPtr);
@@ -566,8 +590,8 @@ static int progressMatlabCallback(
     //Allocate temporary variables to pass to Matlab.
     //The second function handle is the callback function.
     rhs[0]=((mxArray**)MatlabFunctionHandles)[1];
-    rhs[1]=doubleMat2Matlab(x,n,1);
-    rhs[2]=doubleMat2Matlab(g,n,1);
+    rhs[1]=doubleMat2Matlab(x,(size_t)n,1);
+    rhs[2]=doubleMat2Matlab(g,(size_t)n,1);
     rhs[3]=doubleMat2Matlab(&fx,1,1);
     rhs[4]=doubleMat2Matlab(&xnorm,1,1);
     rhs[5]=doubleMat2Matlab(&gnorm,1,1);
@@ -578,6 +602,9 @@ static int progressMatlabCallback(
     mexCallMATLAB(1,lhs,9,rhs,"feval");
     
     retVal=getIntFromMatlab(lhs[0]);
+    
+    //Get rid of the returned Matlab matrix
+    mxDestroyArray(lhs[0]);
     
     //Free the temporary variables.
     for(i=1;i<9;i++) {

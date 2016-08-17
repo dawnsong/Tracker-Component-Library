@@ -1,6 +1,6 @@
 function numSecs=numSecInYear(year)
 %%NUMSECINYEAR Find the number of seconds in a particular Gregorian
-%              calendar year in universal coordianted time (UTC) from 1960
+%              calendar year in universal coordinated time (UTC) from 1960
 %              onwards, accounting for leap years and leap seconds.
 %
 %INPUTS: year A matrix  of integer years in the Gregorian calendar. The

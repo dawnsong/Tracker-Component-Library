@@ -10,11 +10,11 @@ function Q=MarcumQ(mu,alpha,beta)
 %
 %OUTPUTS: Q     The value of the generalized Marcum Q function with the
 %               given parameters.
-%DEPENDENCIES: NoncentralGammaD.m
+%DEPENDENCIES: GammaD.m
 %
 %Note that the parameter order is different from that used in the marcumq
 %function that is part of Matlab's statistics toolbox. Also note that
-%Matlab's function cannot hanlde non-integer orders at all.
+%Matlab's function cannot handle non-integer orders at all.
 %
 %This function tries to combine the best implementations of the MarcumQ
 %function for a wide range of parameters. The most reliable results are
@@ -24,53 +24,47 @@ function Q=MarcumQ(mu,alpha,beta)
 %  Thus, the build-in gammainc function can be used for a very wide range
 %  of (non-integer) values of mu and beta.
 %- When alpha is not zero, but mu is a multiple of 0.5, then
-%  the algorithm of Benton is used.
+%  the algorithm of [1] is used.
 %- If alpha is not zero and mu is not a multiple of 0.5, then the
 %  equivalency of the Marcum Q function with the noncentral chi square CDF
 %  and therefore the noncentral gamma CDF is used to compute the result.
 %
-%The algorithms mentioned above are
+%Note that a result from the [2] was used to modify the implementation of
+%Benton's algorithm in [1] for large input values.
 %
-%D. Benton and K. Krishnamoorthy, "Computing Discrete Mixtures of
-%Continuous Distributions: Noncentral Chisquare, Noncentral t and the
-%Distribution of the Square of the Sample Multiple Correlation
-%Coefficient," Computational Statistics & Data Analysis, vol. 43, no. 2,
-%pp.249-26, 28 Jun. 2003.
+%Also, for those looking to understand the difficulty of computing the
+%MarcumQ function, the following algorithms are implemented as
+%separate functions in this file but are not used, because they are
+%inferior to the algorithms chosen. The algorithms are not
+%used either because they are not as stable or they are slower. The
+%algorithms are taken from [3], [4], [5], [6], and [7].
 %
-%The noncentral gamma algorithm is documented further in NoncentralGamma.m.
-%
-%Also, in case one needs them, the following algorithms are implemented as
-%separate functions in this file but are not used. The algorithms are not
-%used either because they are not as stable or they are slower.
-%
-%A. Annamalai Jr. and C. Tellambura, "A Simple Exponential Integral
-%Representation of the Generalized Marcum Q-Function Q_M(a,b) for
-%Real-Order M with Applications," in Proceedings of the IEEE Military
-%Communications Conference, San Diego, CA, 16-19 Nov. 2008.
-%
-%A. Annamalai Jr., A., C. Tellambura, and J. Matyjas, "A New Twist on the
-%Generalized Marcum Q-Function Q_M(a,b) with Fractional-Order M and Its
-%Applications," in Proceedings of the IEEE Consumer Communications and
-%Networking Conference, Las Vegas, NV, 10-13 Jan. 2009.
-%
-%C. G. Ding, "Algorithm AS 275: Computing the Non-Central Chi^2
-%Distribution Function," Journal of the Royal Statistical Society Series C
-%(Applied Statistics) vol. 41. no. 2. pp. 478-482, 1992.
-%
-%A. H. Ross, "Algorithm for Calculating the Noncentral Chi-Square
-%Distribution," IEEE Transactions on Information Theory, vol. 45, no. 4,
-%pp. 1327-1333, May 1999.
-%
-%D. A. Shnidman, "The Calculation of the Probability of Detection and the
-%Generalized Marcum Q-Function," IEEE Transactions on Information Theory,
-%vol. 35, no. 2, pp. 389-400, Mar. 1989.
-%
-%D. A. Shnidman, "Note on "The Calculation of the Probability of Detection
-%and the Generalized Marcum Q-Function"," IEEE Transactions on Information
-%Theory, vol. 37, no. 4. pg. 1233, Jul. 1991.
-%
-%Note that a result from the second Shnidman paper was used to modify the
-%implementation of Benton's algorithm for large input values.
+%REFERENCES:
+%[1] D. Benton and K. Krishnamoorthy, "Computing Discrete Mixtures of
+%    Continuous Distributions: Noncentral Chisquare, Noncentral t and the
+%    Distribution of the Square of the Sample Multiple Correlation
+%    Coefficient," Computational Statistics & Data Analysis, vol. 43, no.
+%    2, pp.249-26, 28 Jun. 2003.
+%[2] D. A. Shnidman, "Note on "The Calculation of the Probability of
+%    Detection and the Generalized Marcum Q-Function"," IEEE Transactions
+%    on Information Theory, vol. 37, no. 4. pg. 1233, Jul. 1991.
+%[3] A. Annamalai Jr. and C. Tellambura, "A Simple Exponential Integral
+%    Representation of the Generalized Marcum Q-Function Q_M(a,b) for
+%    Real-Order M with Applications," in Proceedings of the IEEE Military
+%    Communications Conference, San Diego, CA, 16-19 Nov. 2008.
+%[4] A. Annamalai Jr., A., C. Tellambura, and J. Matyjas, "A New Twist on
+%    the Generalized Marcum Q-Function Q_M(a,b) with Fractional-Order M and
+%    Its Applications," in Proceedings of the IEEE Consumer Communications
+%    and Networking Conference, Las Vegas, NV, 10-13 Jan. 2009.
+%[5] C. G. Ding, "Algorithm AS 275: Computing the Non-Central Chi^2
+%    Distribution Function," Journal of the Royal Statistical Society
+%    Series C (Applied Statistics) vol. 41. no. 2. pp. 478-482, 1992.
+%[6] A. H. Ross, "Algorithm for Calculating the Noncentral Chi-Square
+%    Distribution," IEEE Transactions on Information Theory, vol. 45, no. 4,
+%    pp. 1327-1333, May 1999.
+%[7] D. A. Shnidman, "The Calculation of the Probability of Detection and
+%    the Generalized Marcum Q-Function," IEEE Transactions on Information 
+%    Theory, vol. 35, no. 2, pp. 389-400, Mar. 1989.
 %
 %February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %December 2014 David A. Karnick, Naval Research Laboratory, Washington D.C.
@@ -99,21 +93,28 @@ end
 %If mu is not a multiple of 0.5, then use equivalency of the Marcum Q
 % function with the noncentral chi square CDF and therefore the noncentral
 % gamma CDF to compute the result.
-    Q=1-NoncentralGammaD.CDF(beta.^2,mu,2,alpha^2);
+    Q=1-GammaD.CDF(beta.^2,mu,2,alpha^2);
 end
 
 function Q=AlgorithmSchnidman(mu,alpha,beta)
-%This implements the algorithm of
-%D. A. Shnidman, "The Calculation of the Probability of Detection and the
-%Generalized Marcum Q-Function," IEEE Transactions on Information Theory,
-%vol. 35, no. 2, pp. 389-400, Mar 1989.
-%with the improved exponential term of 
-%D. A. Shnidman, "Note on "The Calculation of the Probability of Detection
-%and the Generalized Marcum Q-Function"," IEEE Transactions on Information
-%Theory, vol. 37, no. 4. pg. 1233, Jul. 1991.
-%
+%This implements the algorithm of [1] but with the improved exponential
+%term of [2].
+
 %To determine whether to compute Q or 1-Q, the decision criterion used in
-%Ross is emplyed here.
+%[3] is employed here.
+%
+%REFERENCES:
+%[1] D. A. Shnidman, "The Calculation of the Probability of Detection and
+%    the Generalized Marcum Q-Function," IEEE Transactions on Information
+%    Theory, vol. 35, no. 2, pp. 389-400, Mar 1989.
+%[2] D. A. Shnidman, "Note on "The Calculation of the Probability of
+%    Detection and the Generalized Marcum Q-Function"," IEEE Transactions
+%    on Information Theory, vol. 37, no. 4. pg. 1233, Jul. 1991.
+%[3] A. H. Ross, "Algorithm for Calculating the Noncentral Chi-Square
+%    Distribution," IEEE Transactions on Information Theory, vol. 45, no. 4,
+%    pp. 1327-1333, May 1999.
+%
+%February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 
     N=mu;
     %X and Y are related to alpha and beta as in Equation 7.
@@ -233,13 +234,17 @@ function Q=AlgorithmSchnidman(mu,alpha,beta)
 end
 
 function Q=AlgorithmDing(mu,alpha,beta)
-%This is the algorithm of
-%C. G. Ding, "Algorithm AS 275: Computing the Non-Central Chi^2
-%Distribution Function," Journal of the Royal Statistical Society Series C
-%(Applied Statistics) vol. 41. no. 2. pp. 478-482, 1992.
-%This will work for small values of alpha and values of mu that are either
-%integers or an integer+0.5. However, if mu is large, then
-%this algorithm can be slow or suffer from overflow/underflow errors.
+%This is the algorithm of [1]. This will work for small values of alpha and
+%values of mu that are either integers or an integer+0.5. However, if mu is
+%large, then this algorithm can be slow or suffer from overflow/underflow
+%errors.
+%
+%REFERENCES:
+%[1] C. G. Ding, "Algorithm AS 275: Computing the Non-Central Chi^2
+%    Distribution Function," Journal of the Royal Statistical Society
+%    Series C (Applied Statistics) vol. 41. no. 2. pp. 478-482, 1992.
+%
+%February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 
     x=beta^2;
     nu=2*mu;
@@ -276,21 +281,28 @@ function Q=AlgorithmDing(mu,alpha,beta)
 end
 
 function Q=AlgorithmBenton(mu,alpha,beta)
-%This function implements the algorithm of
-%D. Benton and K. Krishnamoorthy, "Computing Discrete Mixtures of
-%Continuous Distributions: Noncentral Chisquare, Noncentral t and the
-%Distribution of the Square of the Sample Multiple Correlation
-%Coefficient," Computational Statistics & Data Analysis, vol. 43, no. 2,
-%pp.249-26, 28 Jun. 2003.
-%whose code is given in Section 7.3 as Algorithm 7.3. Some of the comments
-%are copied from the paper. The algorithm will evaluate the MarcumQ
-%function a integer values of mu as well as values of mu that are integers
+%This function implements the algorithm of [1], whose code is given in
+%Section 7.3 as Algorithm 7.3. Some of the comments
+%are taken from the paper. The algorithm will evaluate the MarcumQ
+%function at integer values of mu as well as values of mu that are integers
 %+0.5. Changes from the original code are the substitution of expFunc(y,M)
-%from the Shnidman paper for the code that computed terms of the form
-%exp(-y)*y^M/M! to avoid overflow/underflow errors. Also, the error
-%tolerance is set to eps(sumVal) and some code for the fact that we want Q
-%and not 1-Q is added as well as the translation of the input parameters
-%$into the form for the nocentral Chi-Squared distribution.
+%from [2] for the code that computed terms of the form exp(-y)*y^M/M! to
+%avoid overflow/underflow errors. Also, the error tolerance is set to
+%eps(sumVal) and some code for the fact that we want Q and not 1-Q is
+%added as well as the translation of the input parameters
+%into the form for the noncentral Chi-Squared distribution.
+%
+%REFERENCES:
+%[1] D. Benton and K. Krishnamoorthy, "Computing Discrete Mixtures of
+%    Continuous Distributions: Noncentral Chisquare, Noncentral t and the
+%    Distribution of the Square of the Sample Multiple Correlation
+%    Coefficient," Computational Statistics & Data Analysis, vol. 43, no.
+%    2, pp.249-26, 28 Jun. 2003.
+%[2] D. A. Shnidman, "Note on "The Calculation of the Probability of
+%    Detection and the Generalized Marcum Q-Function"," IEEE Transactions
+%    on Information Theory, vol. 37, no. 4. pg. 1233, Jul. 1991.
+%
+%February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 
 maxIter=5000;
 
@@ -371,24 +383,26 @@ Q=max(1-P,0);
 Q=min(Q,1);
 end
 
-
 function Q=AlgorithmAnnamalai(mu,alpha,beta)
-%This function implements the algorithm of 
-%A. Annamalai Jr. and C. Tellambura, "A Simple Exponential Integral
-%Representation of the Generalized Marcum Q-Function Q_M(a,b) for
-%Real-Order M with Applications," in Proceedings of the IEEE Military
-%Communications Conference, San Diego, CA, 16-19 Nov. 2008.
-%which will work with non-integer values of mu, but which will produce bad
-%results if (alpha/beta)^(1-mu) is large.
-%The same algorithm is also presented in
-%A. Annamalai Jr., A., C. Tellambura, and J. Matyjas, "A New Twist on the
-%Generalized Marcum Q-Function Q_M(a,b) with Fractional-Order M and Its
-%Applications," in Proceedings of the IEEE Consumer Communications and
-%Networking Conference, Las Vegas, NV, 10-13 Jan. 2009.
+%This function implements the algorithm of [1]., which will work with
+%non-integer values of mu, but which will produce bad results if
+%(alpha/beta)^(1-mu) is large. The same algorithm is also presented in [2].
 %
 %The algorithm is just an implementation of equations in the paper.
 %However, a slight ad-hoc modification to deal with numerical precision
 %limitations near singular points has been added to the integral function.
+%
+%REFERENCES:
+%[1] A. Annamalai Jr. and C. Tellambura, "A Simple Exponential Integral
+%    Representation of the Generalized Marcum Q-Function Q_M(a,b) for
+%    Real-Order M with Applications," in Proceedings of the IEEE Military
+%    Communications Conference, San Diego, CA, 16-19 Nov. 2008.
+%[2] A. Annamalai Jr., A., C. Tellambura, and J. Matyjas, "A New Twist on
+%    the Generalized Marcum Q-Function Q_M(a,b) with Fractional-Order M and
+%    Its Applications," in Proceedings of the IEEE Consumer Communications
+%    and Networking Conference, Las Vegas, NV, 10-13 Jan. 2009.
+%
+%February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 
     zeta=alpha/beta;
     %THis is from Equation
@@ -430,17 +444,21 @@ end
 
 
 function Q=AlgorithmRoss(mu,alpha,beta)
-%This function implements the algorithm of
-%A. H. Ross, "Algorithm for Calculating the Noncentral Chi-Square
-%Distribution," IEEE Transactions on Information Theory, vol. 45, no. 4,
-%pp. 1327-1333, May 1999.
-%to solve the MarcumQ function for values of mu>=1.5 that are integers or
-%integers +0.5. Due to the precision limitations, the algorithm should not
-%be used if log(beta/alpha) < (log(realmax())-log(6/eps))/(mu-1), as is
-%documented in the paper.
+%This function implements the algorithm of [1] to solve the MarcumQ
+%function for values of mu>=1.5 that are integers or integers +0.5. Due to
+%the precision limitations, the algorithm should not be used if
+%log(beta/alpha) < (log(realmax())-log(6/eps))/(mu-1), as is documented in
+%the paper.
 %
 %The implementation comes directly from implementing all of the equations
 %in Table II in the paper to get Q or 1-Q.
+%
+%REFERENCES:
+%[1] A. H. Ross, "Algorithm for Calculating the Noncentral Chi-Square
+%    Distribution," IEEE Transactions on Information Theory, vol. 45, no. 4,
+%    pp. 1327-1333, May 1999.
+%
+%February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 
     m=mu*2;
     a=alpha;
@@ -578,10 +596,16 @@ end
 
 
 function val=expFunc(y,M)
-    %This function evaluates exp(-y)*y^M/M! while trying to avoid
-    %underflows. This function is used by the Schindman implementation of
-    %the MarcumQ function as well as in my implementation of the Benton
-    %version of the MarcumQ function.
+%This function evaluates exp(-y)*y^M/M! while trying to avoid
+%underflows. This function is used by [1] when imp[lementing the MarcumQ
+%function as well as in the function AlgorithmBenton in this file.
+%
+%REFERENCES:
+%[1] D. A. Shnidman, "Note on "The Calculation of the Probability of
+%    Detection and the Generalized Marcum Q-Function"," IEEE Transactions
+%    on Information Theory, vol. 37, no. 4. pg. 1233, Jul. 1991.
+%
+%February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 
     if(y>0)
         if(y<10000)

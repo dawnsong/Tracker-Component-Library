@@ -22,12 +22,14 @@ function ellipsLat=isoLat2EllipsLat(isoLat,f)
 %
 %The isometric latitude is the integral from 0 to ellipsLat of
 %(1-e^2)*sec(L)/(1-e^2*sin(L)^2) dL, where e is the first numerical
-%eccentricity of the ellipse. It has an explicit solution, given in
-%J. P. Snyder, "Map projections- a working manual," U.S. Geological
-%Survey, Tech. Rep. 1395, 1987.
+%eccentricity of the ellipse. It has an explicit solution, given in [1].
 %The inverse iteration is taken from the same chapter.
 %
 %The inverse of this function is ellipsLat2IsoLat.
+%
+%REFERENCES:
+%[1] J. P. Snyder, "Map projections- a working manual," U.S. Geological
+%    Survey, Tech. Rep. 1395, 1987.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

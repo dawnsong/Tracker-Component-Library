@@ -26,16 +26,17 @@ function [deltaC,deltaS]=gravPoleTideOffset(TT1,TT2,xpyp)
 %               format of S is the same as that of C.
 %
 %This implements the pole tide models that are described in Sections 6.4
-%and 6.5 of
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%When implementing the oceanic pole tide model, only the most significant
-%terms are used (the ones highlighted in the conventions) rather than the
-%full set of parameters from Desai.
+%and 6.5 of [1]. When implementing the oceanic pole tide model, only the
+%most significant terms are used (the ones highlighted in the conventions)
+%rather than the full set of parameters from Desai.
 %
 %To get the full offset in the gravitational coefficients due to tides,
 %the functions gravSolidTideOffset, gravOceanTideOffset and
 %gravPoleTideOffset have to be combined.
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

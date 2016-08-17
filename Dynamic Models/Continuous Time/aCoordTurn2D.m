@@ -21,7 +21,7 @@ function val= aCoordTurn2D(x,t,turnType,tauTurn,tauLinAccel)
 %            x=[x;y;xdot;ydot;omega;al] where omega is the turn rate and al
 %            is the linear acceleration or the target state is
 %            x=[x;y;xdot;ydot;at;al] if the turn is expressed in terms of a
-%            transversal acceleration. The dimensionality fo the state is
+%            transversal acceleration. The dimensionality of the state is
 %            used to determine whether a linear acceleration component is
 %            present. The linear acceleration component changes the speed.
 %            That means that it acts in the direction of the velocity
@@ -49,37 +49,21 @@ function val= aCoordTurn2D(x,t,turnType,tauTurn,tauLinAccel)
 %             turn model.
 %
 %The basic 2D coordinated turn model in Cartesian coordinates is described
-%in Section VA of
-%X. R. Li and V. P. Jilkov, "Survey of maneuvering target tracking. part I:
-%Dynamic models," IEEE Transactions on Aerospace and Electronic Systems,
-%vol. 39, no. 4, pp. 1333-1364, Oct. 2003.
-%When the turn rate is something that must be estimated, it is assumed that
-%the continuous-time turn rate model is
+%in Section VA of [1]. When the turn rate is something that must be
+%estimated, it is assumed that the continuous-time turn rate model is
 %omegaDot=-(1/tauTurn)*Omega+noise
 %Note that the ordering of the state elements assumed by this function
-%differs from the ordering of the state elements assumed in the paper.
+%differs from the ordering of the state elements assumed in [1].
 %
-%The 2D coordiantes turn model in Cartesian coordiantes is also described
-%in 
-%Chapter 4.2.3 of
-%S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
-%Systems. Norwood, MA: Artech House, 1999.
+%The 2D coordinates turn model in Cartesian coordinates is also described
+%in Chapter 4.2.3 of [2].
 %
 %The concept of using the transversal acceleration instead of the turn rate
 %is not discussed in either of those references. It is, however, mentioned
-%in
-%P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
-%for an advanced ATC system," in Multitarget-Multisensor Tracking:
-%Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
-%House, 1992, vol. II, ch. 1.
-%Though no differential equations are given and a more detailed reference
-%cited therein is a hard-to-get dissertation in French. The use of
-%transversal acceleration is discussed in more detail in 
-%H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
-%of a multisensor tracking system for advanced air traffic control," in
-%Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
-%Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
-%though expressions are given when considering the 2D velocity are broken
+%in [3], though no differential equations are given and a more detailed
+%reference cited therein is a hard-to-get dissertation in French. The use
+%of transversal acceleration is discussed in more detail in [4], though
+%expressions are given when considering the 2D velocity are broken
 %into components of heading and speed rather than in Cartesian space. The
 %generalization to Cartesian space is not difficult and is done here.
 %
@@ -87,17 +71,14 @@ function val= aCoordTurn2D(x,t,turnType,tauTurn,tauLinAccel)
 %to the speed times the turn rate. The model utilizing the transverse
 %acceleration comes naturally from there. The relationship to the time
 %constant in the transverse acceleration model comes from how it related to
-%the derivative of the turn rate in Li'a paper.
+%the derivative of the turn rate in [1].
 %
 %The optional linear acceleration provides a derivative of the speed of the
 %target. The time constant operates in the same manner as the time constant
 %for the turn rate. That is,
 %alDot=-(1/tauLinAccel)*al+noise
 %This is similar to how (total) acceleration decays in the Singer dynamic
-%model, which was described in 
-%R.A.Singer,"Estimating optimal tracking filter performance for manned
-%maneuvering targets," IEEE Transactions on Aerospace and Electronic
-%Systems, vol. AES-6, no. 4, pp. 473-483, Jul. 1970.
+%model, which was described in [5].
 %
 %The formulation in terms of transverse acceleration contains a singularity
 %in the computation of the implied turn rate if the speed is zero. In such
@@ -110,6 +91,24 @@ function val= aCoordTurn2D(x,t,turnType,tauTurn,tauLinAccel)
 %QCoordTurn2D. However, note that the discrete-time functions are
 %direct-discrete models and not discretizations of the continuous-time
 %models as the propagated PDF does not remain Gaussian over time.
+%
+%REFERENCES:
+%[1] X. R. Li and V. P. Jilkov, "Survey of maneuvering target tracking.
+%    Part I: Dynamic models," IEEE Transactions on Aerospace and Electronic
+%    Systems, vol. 39, no. 4, pp. 1333-1364, Oct. 2003.
+%[2] S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
+%    Systems. Norwood, MA: Artech House, 1999.
+%[3] P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
+%    for an advanced ATC system," in Multitarget-Multisensor Tracking:
+%    Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
+%    House, 1992, vol. II, ch. 1.
+%[4] H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
+%    of a multisensor tracking system for advanced air traffic control," in
+%    Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
+%    Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
+%[5] R. A. Singer,"Estimating optimal tracking filter performance for
+%    manned maneuvering targets," IEEE Transactions on Aerospace and
+%    Electronic Systems, vol. AES-6, no. 4, pp. 473-483, Jul. 1970.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

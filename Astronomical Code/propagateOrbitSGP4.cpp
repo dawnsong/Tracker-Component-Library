@@ -96,21 +96,17 @@
  *                         no longer used.
  *                      6: Satellite has decayed.
  *
- *The SGP4 propagator is described in 
- *F. R. Hoots and R. L. Roehrich, "Spacetrack report no. 3: Models for
- *propagation of NORAD element sets," Department of Defense, Tech. Rep.,
- *31 Dec. 1988. [Online].
- *Available: http://www.amsat.org/amsat/ftp/docs/spacetrk.pdf
- *and 
- *D. A. Vallado, P. Crawford, R. Hujsak, and T. S. Kelso, "Revisiting
- *spacetrack report # 3: Rev 2," in Proceedings of the AIAA/AAS
- *Astrodynamics Specialist Conference and Exhibit, Keystone, CO, 21-24
- *Aug. 2006. [Online].
- *Available: http://celestrak.com/publications/AIAA/2006-6753/AIAA-2006-6753.pdf
- *The implementation here uses the code that Vallado released into the
- *public domain with his paper, and which was downloaded from
+ *The SGP4 propagator is described in [1] and [2]. The implementation here
+ *uses the code that Vallado released into the public domain with his
+ *paper, and which was downloaded from
  *http://www.centerforspace.com/downloads/
  *as an external library for performing the key propagation step.
+ *
+ *Note that this is NOT the official SGP4 orbital propagator used by the
+ *U.S. Air Force and cannot be assumed to be as reliable or produce
+ *%identical results to the official propagator. Information on obtaining
+ *the U.S. Air Force's official propagator is given at
+ *http://www.afspc.af.mil/units/ASDA/
  *
  *The algorithm can be compiled for use in Matlab  using the
  *CompileCLibraries function.
@@ -121,6 +117,17 @@
  *[xState,errorState]=propagateOrbitSGP4(SGP4Elements,deltaT,TTEpoch1,TTEpoch2);
  *or if no deep-space model is needed, as
  *[xState,errorState]=propagateOrbitSGP4(SGP4Elements,deltaT);
+ *
+ *REFERENCES:
+ *[1] F. R. Hoots and R. L. Roehrich, "Spacetrack report no. 3: Models for
+ *    propagation of NORAD element sets," Department of Defense, Tech.
+ *    Rep., 31 Dec. 1988. [Online].
+ *    Available: http://www.amsat.org/amsat/ftp/docs/spacetrk.pdf
+ *[2] D. A. Vallado, P. Crawford, R. Hujsak, and T. S. Kelso, "Revisiting
+ *    spacetrack report # 3: Rev 2," in Proceedings of the AIAA/AAS
+ *    Astrodynamics Specialist Conference and Exhibit, Keystone, CO, 21-24
+ *    Aug. 2006. [Online].
+ *    Available: http://celestrak.com/publications/AIAA/2006-6753/AIAA-2006-6753.pdf
  *
  *December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/

@@ -93,6 +93,7 @@ function [zQD,apexPoints,exitCode]=ITRS2QD(zCart,modSelParam,a,f,RelTol,AbsTol,m
 %might produce the wrong result if a magnetic field line has more than one
 %peak above the reference ellipsoid.
 %
+%REFERENCES:
 %[1] A. D. Richmond, "Ionospheric electrodynamics using magnetic apex
 %    coordinates," Journal of Geomagnetism and Geoelectricity, vol. 47,
 %    no. 2, pp. 191-212, 1995.

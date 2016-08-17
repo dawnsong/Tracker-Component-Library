@@ -9,11 +9,12 @@ function boolVal=lineSegmentsIntersect2D(line1,line2)
 %        line2  A 2X2 matrix of two points in the second line defined the
 %               same way as line1.
 %
-%The algorithm of Chapter 1.5 of
-%J. O'Rourke, Computational Geometry in C, 2nd ed. Cambridge, United
-%Kingdom: Cambridge University Press, 1998.
-%is used. It does not compute slopes and thus avoid issues with infinite
-%sloped when lines are vertical.
+%The algorithm of Chapter 1.5 of [1] is used. It does not compute slopes
+%and thus avoid issues with infinite sloped when lines are vertical.
+%
+%REFERENCES:
+%[1] J. O'Rourke, Computational Geometry in C, 2nd ed. Cambridge, United
+%    Kingdom: Cambridge University Press, 1998.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

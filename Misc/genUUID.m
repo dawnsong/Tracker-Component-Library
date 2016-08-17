@@ -63,7 +63,7 @@ switch(UUIDType)
         error('Invalid UUID type is provided')
 end
 
-charString=theID.toString();
+charString=char(theID.toString());
 hashValue=theID.hashCode();
 end
 

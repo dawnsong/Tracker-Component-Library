@@ -39,9 +39,12 @@ void relVecAddC(double c, double *v,double *u, double *vObjRef) {
     for(i=0;i<3;i++) {
         vObjRef[i]=(v[i]+u[i]+(1/gamma-1)*(u[i]-(uv/(vMag*vMag))*v[i]))/Denom;   
     }
-    //If vMag=0 then NaNs will appear. In such an instance, the correct
-    //solution is u, because the frame is not moving.
-    if(isnan(vObjRef[0])||isnan(vObjRef[1])||isnan(vObjRef[2])) {
+    //If vMag=0 then NaNs will appear. We are not using the isnan function
+    //to detect the NaNs, because many versions of Windows do not support
+    //this function. However, if a value x is a NaN then x!=x should be
+    //true. Given NaNs the correct solution is u, because the frame is not
+    //moving.
+    if(vObjRef[0]!=vObjRef[0]||vObjRef[1]!=vObjRef[1]||vObjRef[2]!=vObjRef[2]) {
         for(i=0;i<3;i++) {
             vObjRef[i]=u[i];   
         }

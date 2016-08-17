@@ -19,7 +19,7 @@ function M=Euler2Ang2RotMat(theta1,theta2,series,handed)
 %                            example, 'xy' means rotate theta2 about the y
 %                            axis, then rotate theta1 about the rotated x
 %                            axis. All possible combinations of values are:
-%                            'xy', 'xy', 'yx', 'yz', 'zx', and 'zy'.
+%                            'xy', 'xz', 'yx', 'yz', 'zx', and 'zy'.
 %                    handed  The handedness of the rotation angles. If
 %                            omitted, it is assumed that the rotations are
 %                            right-handed (the standard). Possible values
@@ -34,9 +34,11 @@ function M=Euler2Ang2RotMat(theta1,theta2,series,handed)
 %OUTPUTS: M The 3X3 rotation matrix such that M*v rotates the 3X1 vector v
 %           according to the given rotation angles and axes.
 %
-%Euler angles are discussed in 
-%M. D. Shuster, "A survey of attitude representations," The Journal of
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. - Dec. 1993.
+%Euler angles are discussed in [1].
+%
+%REFERENCES:
+%[1] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. - Dec. 1993.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

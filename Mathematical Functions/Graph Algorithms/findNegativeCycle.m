@@ -23,11 +23,7 @@ function cycleNodes=findNegativeCycle(adjMat)
 %                found. The last node in cycleNodes is corrected back to
 %                the first node, finishing the loop.
 %
-%The algorithm is that of
-%X. Huang, "Negative-weight cycle algorithms," in Proceedings of the
-%International Conference on Foundations of Computer Science, Las Vegas,
-%NV, 26-29 Jun. 2006, pp. 109-115. [Online].
-%Available: http://ww1.ucmss.com/books/LFS/CSREA2006/FCS4906.pdf
+%The algorithm is that of [1].
 %
 %As an example, consider
 % adjMat=[Inf,    -20,    Inf,    Inf,    Inf;
@@ -40,6 +36,12 @@ function cycleNodes=findNegativeCycle(adjMat)
 %BellmanFordAlg starting at node 4, it would never find the cycle as nodes
 %1, 2, and 3, are not accessible from node 4. On the other hand, this
 %algorithm returns cycleNodes=[3;1;2];
+%
+%REFERENCES:
+%[1] X. Huang, "Negative-weight cycle algorithms," in Proceedings of the
+%    International Conference on Foundations of Computer Science, Las
+%    Vegas, NV, 26-29 Jun. 2006, pp. 109-115. [Online].
+%    Available: http://ww1.ucmss.com/books/LFS/CSREA2006/FCS4906.pdf
 %
 %June 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

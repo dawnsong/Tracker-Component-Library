@@ -23,24 +23,26 @@ function b=ChebyshevPolyDerivCoeffs(a,tauStart,tauEnd)
 %            function given by a. If a is 1X1, then b=0 will be returned.
 %
 %The derivative of a weighted Chebyshev polynomial series is another
-%weighted Chebyshev polynomial series, as given in
-%K. S. Breuer and R. M. Everson, "On the errors incurred calculating
-%derivatives using Chebyshev polynomials," Journal of Computational
-%Physics, vol. 99, no. 1, pp. 56-67, Mar. 1992.
-%The derivative of the Chebyshev polynomial series is exact, as noted in
-%the above, it comes form a simplification of term-by-term differentiation.
-%However, it is not necessarily as accurate as one might hope when the
-%polynomials are used for interpolation. Though the above notes a number of
-%issues in interpolated derivatives, one would expect such problems to be
-%lessened if the derivatives themselves were used when designing the
-%interpolation routine. For example, in
-%X. X. Newhall, "Numerical representation of planetary ephemerides,"
-%Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
-%the Chebyshev polynomials are fit to points and the first derivatives.
+%weighted Chebyshev polynomial series, as given in [1]. The derivative of
+%the Chebyshev polynomial series is exact, as noted in the above, it comes
+%from a simplification of term-by-term differentiation. However, it is not
+%necessarily as accurate as one might hope when the polynomials are used
+%for interpolation. Though the above notes a number of issues in
+%interpolated derivatives, one would expect such problems to be lessened if
+%the derivatives themselves were used when designing the interpolation
+%routine. For example, in [2], the Chebyshev polynomials are fit to points
+%and the first derivatives.
 %
 %The opposite of this function is ChebyshevPolyIntCoeffs, though it cannot
 %be strictly used as an inverse, because it assumes the additive
 %integration constant is zero.
+%
+%REFERENCES:
+%[1] K. S. Breuer and R. M. Everson, "On the errors incurred calculating
+%    derivatives using Chebyshev polynomials," Journal of Computational
+%    Physics, vol. 99, no. 1, pp. 56-67, Mar. 1992.
+%[2] X. X. Newhall, "Numerical representation of planetary ephemerides,"
+%    Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

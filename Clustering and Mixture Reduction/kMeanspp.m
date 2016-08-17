@@ -25,16 +25,17 @@ function [mu,P,w,cost]=kMeanspp(z,K,maxIter)
 %The k-means algorithm is a suboptimal algorithm that tries to find a set
 %of k-means such that the sum of the squared distances from the points to
 %the closest means is minimized. The implementation here uses a better
-%initialization the k-means++ initialization from
-%D. Arthur and S. Vassilvitskii, "k-means++: The advantages of careful
-%seeding," in Proceedings of the Eighteenth Annual ACM-SIAM Symposium on
-%Discrete Algorithms, New Orleans, LA, Jan. 2007, pp. 1027? 1035.
-%which improves the probability that the algorithm will converge to a good
-%solution.
+%initialization the k-means++ initialization from [1], which improves the
+%probability that the algorithm will converge to a good solution.
 %
 %Note that the k-means algorithm used a randomized initialization, so one
 %will not always get the same results when the function is run twice on the
-%same data. 
+%same data.
+%
+%REFERENCES:
+%[1] D. Arthur and S. Vassilvitskii, "k-means++: The advantages of careful
+%    seeding," in Proceedings of the Eighteenth Annual ACM-SIAM Symposium
+%    on Discrete Algorithms, New Orleans, LA, Jan. 2007, pp. 1027-1035.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -45,6 +46,7 @@ end
 
 %This uses the k-mean++ initalization algorithm on the given data.
 %K is the number of clusters to form.
+
 zDim=size(z,1);
 numPoints=size(z,2);
 

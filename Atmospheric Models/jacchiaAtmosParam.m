@@ -38,15 +38,10 @@ function [rho,P,T,Te]=jacchiaAtmosParam(Jul1,Jul2,point,F10,F10b,Kp)
 %major steps. First, the exospheric temperature is computed based on solar
 %and geomagnetic data. Then, the the density is calculated using a
 %bi-polynomial fit. The algorithms in this function are taken primarily
-%from Section 3.5.3 of
-%O. Montenbruck and E. Gill, "Satellite orbits: models, methods and
-%applications," Springer Science & Business Media. 2012.
+%from Section 3.5.3 of [1].
 %
-%with guidance and some substitutions from the original
-%L. G. Jacchia, "Revised Static Models of the Thermosphere and Exosphere
-%with Empirical Temperature PRofiles," SAO Special Report 332, Cambridge,
-%1971
-%This function does not take into account the seasonal variations in helium
+%with guidance and some substitutions from the original paper [2]. This
+%function does not take into account the seasonal variations in helium
 %or hydrogen concentrations.
 %
 %The atmospheric pressure is obtained using the Ideal Gas Law as described
@@ -54,6 +49,13 @@ function [rho,P,T,Te]=jacchiaAtmosParam(Jul1,Jul2,point,F10,F10b,Kp)
 %Douglas P. Drob.
 %
 %The anomalous oxygen parameter in the NRLMSISE-00 model is not used.
+%
+%REFERENCES:
+%[1] O. Montenbruck and E. Gill, "Satellite orbits: models, methods and
+%    applications," Springer Science & Business Media. 2012.
+%[2] L. G. Jacchia, "Revised Static Models of the Thermosphere and
+%    Exosphere with Empirical Temperature PRofiles," SAO Special Report
+%    332, Cambridge, 1971
 %
 %April 2015, David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

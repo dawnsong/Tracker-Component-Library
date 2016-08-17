@@ -25,20 +25,11 @@ function [zInterp,gradInterp,gradDerivMatInterp]=interpSurf2D(xyPoints,xyPointsR
 %gradDerivMatInterp The 2X2XnumRef second derivative matrices of the
 %                 interpolated surface at the points of interest.
 %
-%The 2D surface from which the deriavtives are derived is found using the
-%hyperbolic multiquadratic method. The algorithm is cited to originate in 
-%R. L. Hardy, "Multiquadric equations of topography and other irregular
-%surfaces," Journal of Geophysical Research, vol. 76, no. 8, pp.
-%1905-1915, 10 Mar. 1971.
-%However, that paper was not consulted in implementing the routine. Rather
-%the summaries given in
-%S. E. Stead, "Estimation of gradients from scattered data," Journal of
-%Mathematics, vol. 14, no. 1, pp. 265-279, Winter 1984.
-%and 
-%R. E. Barnhill, "A survey of representation and design of surfaces," IEEE
-%Computer Graphics and Applications, vol. 3, no. 7, pp. 9?16, Oct. 1984.
-%where the routine is compared to a number of other algorithms were
-%considered.
+%The 2D surface from which the derivatives are derived is found using the
+%hyperbolic multiquadratic method. The algorithm is cited to originate in
+%[1]. However, that paper was not consulted in implementing the routine.
+%Rather the summaries given in [2] and [3] where the routine is compared to
+%a number of other algorithms were used.
 %
 %None of those methods explicitely provides the derivatives, but analytic
 %derivatives for the interpolating function are simple to find.
@@ -48,6 +39,16 @@ function [zInterp,gradInterp,gradDerivMatInterp]=interpSurf2D(xyPoints,xyPointsR
 %by solving numRef linear equations so that the interpolation equation
 %matches the points at points in zPointsRef at the reference x and y
 %values.
+%
+%REFERENCES:
+%[1] R. L. Hardy, "Multiquadric equations of topography and other irregular
+%    surfaces," Journal of Geophysical Research, vol. 76, no. 8, pp.
+%    1905-1915, 10 Mar. 1971.
+%[2] S. E. Stead, "Estimation of gradients from scattered data," Journal of
+%    Mathematics, vol. 14, no. 1, pp. 265-279, Winter 1984.
+%[3] R. E. Barnhill, "A survey of representation and design of surfaces,"
+%    IEEE Computer Graphics and Applications, vol. 3, no. 7, pp. 9?16, Oct.
+%    1984.
 %
 %February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

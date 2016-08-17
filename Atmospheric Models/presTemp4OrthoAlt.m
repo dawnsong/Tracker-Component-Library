@@ -35,15 +35,16 @@ function [P,T,Hb,Pb,TMb,LMb]=presTemp4OrthoAlt(z,P0,T0)
 %           used in the computation. This is used in the function
 %           orthoAlt4Pres.
 %
-%The atmospheric model is defined in
-%U.S. Standard Atmosphere, 1976, National Oceanic and Atmospheric
-%Administration Std., Oct. 1976.
-%and the full model goes up to 1000km altitude. Up to an altitude of 32km,
-%the U.S. standard atmosphere is identical to the International Civil
-%Aviation Organization's (ICAO) standard atmosphere.
-%Regulations related to how altimeters should be set with respect to a
-%standard pressure are at
+%The atmospheric model is defined in [1], and the full model goes up to
+%1000km altitude. Up to an altitude of 32km, the U.S. standard atmosphere
+%is identical to the International Civil Aviation Organization's (ICAO)
+%standard atmosphere. Regulations related to how altimeters should be set
+%with respect to a standard pressure are at
 %https://www.faa.gov/air_traffic/publications/atpubs/aim/aim0702.html
+%
+%REFERENCES:
+%[1] U.S. Standard Atmosphere, 1976, National Oceanic and Atmospheric
+%    Administration Std., Oct. 1976.
 %
 %June 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

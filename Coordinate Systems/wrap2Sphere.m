@@ -3,11 +3,11 @@ function wrapVals=wrap2Sphere(azEl)
 %              that might be outside of the standard range of -pi to pi for
 %              azimuth and -pi/2 to pi/2 for evevation, wrap the points to
 %              the sphere. This function is useful when offsets (like
-%              simulated noise) are added to spherical coordiantes. For
+%              simulated noise) are added to spherical coordinates. For
 %              example, if elevation exceeds pi/2 by epsilon, then it must
 %              be reduced to pi/2-epsilon and azimuth offset by pi.
 %
-%INPUTS: azEl  A 2XN set of N spherical coordiantes in radians that should
+%INPUTS: azEl  A 2XN set of N spherical coordinates in radians that should
 %              be wrapped to the normal sphere. azEl(1,:) are azimuth
 %              values measured counterclockwise from the x-axis. azEl(2,:)
 %              are elevation values measured up from the equator.

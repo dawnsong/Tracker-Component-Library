@@ -23,9 +23,7 @@ function [maxFlow,F]=solveMaxFlowEdmondsKarp(CMat,source,sink)
 %                 node j is the negative of that in the opposite direction.
 %
 %The Edmonds-Karp algorithm, which is a modification of the Ford-Fulkerson
-%algorithm, is described in Chapter 26.2 of
-%T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, Introduction
-%to Algorithms, 2nd ed. Cambridge, MA: The MIT Press, 2001.
+%algorithm, is described in Chapter 26.2 of [1].
 %
 %The maximum flow problem maximizes sum(F(source,:)) subject to the
 %constraints:
@@ -53,6 +51,11 @@ function [maxFlow,F]=solveMaxFlowEdmondsKarp(CMat,source,sink)
 %      0   -12     0     0    -7    19
 %      0     0   -11     7     0     4
 %      0     0     0   -19    -4     0
+%
+%REFERENCES:
+%[1] T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein,
+%    Introduction to Algorithms, 2nd ed. Cambridge, MA: The MIT Press,
+%    2001.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

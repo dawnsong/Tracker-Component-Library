@@ -23,15 +23,13 @@ function clippedPolygon=clipPolygonSH2D(polygon2Clip,convexClipPolygon)
 %                        If the clipping region is engulfed by the polygon,
 %                        then the polygon will be the clipping region.
 %
-%The Sutherland-Hodgman algorithm is originally from
-%I. E. Sutherland and G. W. Hodgman, "Reentrant polygon clipping,"
-%Communications of the ACM, vol. 17, no. 1, pp. 32-42, Jan. 1974.
-%though the authors focus a lot of its attention on clipping polyhedra to
-%planes. A quick search online will yield many result explaining how it
-%works in 2D in a more intuitive manner. The original paper also includes a
-%technique for diving a polygon into multiple parts when it is split by the
-%clipping region rather than just having coincident edges on the edge of
-%the clipping region. 
+%The Sutherland-Hodgman algorithm is originally from [1], though the
+%authors focus a lot of its attention on clipping polyhedra to planes. A
+%quick search online will yield many result explaining how it works in 2D
+%in a more intuitive manner. The original paper also includes a technique
+%for diving a polygon into multiple parts when it is split by the clipping
+%region rather than just having coincident edges on the edge of the
+%clipping region. 
 %
 %The Sutherland-Hodgman algorithm requires that the vertices in the
 %clipping polygon be in counterclockwise order.
@@ -40,6 +38,10 @@ function clippedPolygon=clipPolygonSH2D(polygon2Clip,convexClipPolygon)
 %vertex of the polygon to clip is outside of the clipping region, as each
 %exit/ entry to the clipping region adds two vertices. Thus, the maximum
 %number of edges is 3/2 times the original number.
+%
+%REFERENCES:
+%[1] I. E. Sutherland and G. W. Hodgman, "Reentrant polygon clipping,"
+%    Communications of the ACM, vol. 17, no. 1, pp. 32-42, Jan. 1974.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

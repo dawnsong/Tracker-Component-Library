@@ -138,37 +138,23 @@ function [xVals,exitCodes]=homotopySolver(x0,f,FJacob,c,systemType,startForward,
 %                     null function when trying to solve for a descent
 %                     direction.
 %
-%The algorithm is based on the probability 1 homotopy theory, which
-%transforms the problem of solving difficult nonlinear equations into a
-%problem of following a curve until a particular parameter becomes 1. Such
-%techniques reach the desired solution with probability 1 given a
-%completely random initialization and infinite precision. Thus, even though
-%in reality the algorithm can fail with certain initializations and due to
-%the use of finite precision, it is still very robust.
+%The algorithm is implemented as discussed in [1]. The algorithm is based
+%on the probability 1 homotopy theory, which transforms the problem of
+%solving difficult nonlinear equations into a problem of following a curve
+%until a particular parameter becomes 1. Such techniques reach the desired
+%solution with probability 1 given a completely random initialization and
+%infinite precision. However, such proofs on probability-1 convergence are
+%often done in the complex domain and this function operates in the real
+%domain. Nonetheless, even though in reality the algorithm can fail with
+%certain initializations and due to the use of finite precision, it is
+%still robust with regard to a number of problems.
 %
-%The theory of probability 1 homotopy algorithms is discussed in 
-%L. T. Watson, "Globally convergent homotopy methods: A tutorial," Applied
-%Mathematics and Computation, vol. 31, pp. 369-396, May 1989.
-%and
-%S. L. Richter and R. A. DeCarlo, "Continuation methods: Theory and
-%applications," IEEE Transactions on Systems, Man, and Cybernetics, vol.
-%SMC-13, no. 4, pp. 459-464, Jul./Aug. 1983.
+%The theory of probability 1 homotopy algorithms is discussed in [2] and
+%[3]
 %
 %The algorithm implemented here is based somewhat on the description of the
-%dense differential-equation based routine of
-%L. T. Watson, S. C. Billups, and A. P. Morgan, "Algorithm 652: HOMPACK:
-%A suit of codes for globally convergent homotopy algorithms," ACM
-%Transactions on Mathematical Software, vol. 13, no. 3, pp. 281-310, Sep.
-%1987.
-%which is updated in 
-%L. T. Watson, M. Sosonkina, R. C. Melville, A. P. Morgan, and
-%H. F. Walker, "Algorithm 777: HOMPACK: A suit of Fortran 90 codes for
-%globally convergent homotopy algorithms," ACM Transactions on Mathematical
-%Software, vol. 23, no. 4, pp. 514-549, Dec. 1997.
-%An understanding of some of the parts can also be obtained from 
-%L. T. Watson, "A globally convergent algorithm for computing fixed points
-%of C2 maps," Applied Mathematics and Computation, vol. 5, no. 4, pp.
-%297-311, Oct. 1979.
+%dense differential-equation based routine of [4], which is updated in [5].
+%An understanding of some of the parts can also be obtained from [6].
 %The dense differential equation based method is chosen despite being
 %slower than alternatives using Newton's method, because the paper for
 %algorithm 652 describes it as being less likely to fail.
@@ -186,17 +172,39 @@ function [xVals,exitCodes]=homotopySolver(x0,f,FJacob,c,systemType,startForward,
 %conditions to remain satisfied. Also, at the end, as it is assumed that
 %one will overstep the point of lambda=1, interpolation is performed to
 %find the actual point where lambda=1. The interpolation is performed
-%using Newton's method as described in Chapter 6.6 of 
-%J. R. Dormand, Numerical Methods for Differential Equations. Boca Raton:
-%CRC PRess, 1996.
+%using Newton's method as described in Chapter 6.6 of [7].
 %
 %Homotopy methods are useful for many problem related to target tracking.
 %For example, the problem of range-only track initiation is considered in 
-%R. L. Smith and C. Huang, "Study of a homotopy continuation method for
-%early orbit determination with the tracking and data relay satellite
-%system (TDRSS)," National Aeronautics and Space Administration/
-%Computer Sciences Corporation, Beltsville, MD, Tech. Rep. 86230,
-%Mar. 1986.
+%[8].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Target Track Initiation in Difficult Scenarios Using
+%    Probability-1 Homotopy Methods and Cubature Integration," in
+%    Proceedings of the IEEE Aerospace Conference, Big Sky, MT, Mar. 2016.
+%[2] L. T. Watson, "Globally convergent homotopy methods: A tutorial,"
+%    Applied Mathematics and Computation, vol. 31, pp. 369-396, May 1989.
+%[3] S. L. Richter and R. A. DeCarlo, "Continuation methods: Theory and
+%    applications," IEEE Transactions on Systems, Man, and Cybernetics,
+%    vol. SMC-13, no. 4, pp. 459-464, Jul./Aug. 1983.
+%[4] L. T. Watson, S. C. Billups, and A. P. Morgan, "Algorithm 652:
+%    HOMPACK: A suit of codes for globally convergent homotopy algorithms,"
+%    ACM Transactions on Mathematical Software, vol. 13, no. 3, pp. 281-
+%    310, Sep. 1987.
+%[5] L. T. Watson, M. Sosonkina, R. C. Melville, A. P. Morgan, and H. F.
+%    Walker, "Algorithm 777: HOMPACK: A suit of Fortran 90 codes for
+%    globally convergent homotopy algorithms," ACM Transactions on
+%    Mathematical Software, vol. 23, no. 4, pp. 514-549, Dec. 1997.
+%[6] L. T. Watson, "A globally convergent algorithm for computing fixed
+%    points of C2 maps," Applied Mathematics and Computation, vol. 5, no.
+%    4, pp. 297-311, Oct. 1979.
+%[7] J. R. Dormand, Numerical Methods for Differential Equations. Boca
+%    Raton: CRC PRess, 1996.
+%[8] R. L. Smith and C. Huang, "Study of a homotopy continuation method for
+%    early orbit determination with the tracking and data relay satellite
+%    system (TDRSS)," National Aeronautics and Space Administration/
+%    Computer Sciences Corporation, Beltsville, MD, Tech. Rep. 86230,
+%    Mar. 1986.
 %
 %February 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -626,7 +634,6 @@ function [deltaS,u,s,k,derivVal,exitCode]=performOneStep(u,s,derivFunc,deltaS,de
     %No error on exit.
     exitCode=0;
 end
-
 
 %LICENSE:
 %

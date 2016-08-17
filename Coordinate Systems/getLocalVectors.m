@@ -2,7 +2,7 @@ function vLocal=getLocalVectors(vGlobal,uList)
 %%GETGLOBALVECTORS Change a collection of local vectors into global
 %                  vectors using the local coordinate axes. This multiplies
 %                  the components of the vectors by the corresponding
-%                  coordiante axis vectors.
+%                  coordinate axis vectors.
 %
 %INPUTS:  vGlobal  A 3XN matrix of N global vectors that are to be
 %                  converted.              
@@ -20,7 +20,7 @@ function vLocal=getLocalVectors(vGlobal,uList)
     numVel=size(vGlobal,2);
     
     if size(uList,3)==1
-        uList=repmat(uList,[1 1 numVel]);
+        uList=repmat(uList,[1,1,numVel]);
     end
     
     vLocal=zeros(3,numVel);

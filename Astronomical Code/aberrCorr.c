@@ -28,10 +28,7 @@
  *question need not have unit magnitude. If the distance to the Sun is
  *omitted, then the standard special relativistic aberration correction
  *without any gravitational effects is applied. The standard special
- *relativistic aberration correction is described in chapter 7 of
- *S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
- *Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
- *Books, 2013.
+ *relativistic aberration correction is described in Chapter 7 of [1]
  *
  *Note that if the vectors provided are meant to be apparent distances,
  *rather than just unit vectors representing directions, the transformation
@@ -47,6 +44,11 @@
  *vAberr=aberCorr(vOrig,obsVel,sunDist);
  *or
  *vAberr=aberCorr(vOrig,obsVel);
+ *
+ *REFERENCES:
+ *[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
+ *    Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
+ *    Books, 2013.
  *
  *March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  **/

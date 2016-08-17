@@ -5,15 +5,7 @@ classdef metricTree < handle
 %             place of the Matlab routines, since the C++ implementation
 %             can be significantly faster.
 %
-%The metric tree data structure is implemented as described in 
-%J. K. Uhlmann. (1991, Nov.) Implementing metric trees to satisfy
-%general proximity/similarity queries. [Online]. Available:
-%http://people.cs.missouri.edu/ uhlmannj/ImplementGH.pdf
-%and
-%J. K. Uhlmann, "Satisfying general proximity/similarity queries with
-%metric trees,"
-%Information Processing Letters, vol. 40, no. 4, pp. 175?179, 25 Nov.
-%1991.
+%The metric tree data structure is implemented as described in [1] and [2].
 %
 %This implementation builds the tree from a batch of data all at once. As
 %long as there are not numerous points equidistance from a given point, the
@@ -23,6 +15,18 @@ classdef metricTree < handle
 %
 %Note that unlike certain metric tree implementations, not all of the nodes
 %are held in the leaves.
+%
+%Modification of the CPPData member of this class or of the error checking
+%code in the members can potentially lead to Matlab crashing as CPPData is
+%a pointer to data in the C++ implementation.
+%
+%REFERENCES:
+%[1] J. K. Uhlmann. (1991, Nov.) Implementing metric trees to satisfy
+%    general proximity/similarity queries. [Online]. Available:
+%    http://people.cs.missouri.edu/ uhlmannj/ImplementGH.pdf
+%[2] J. K. Uhlmann, "Satisfying general proximity/similarity queries with
+%    metric trees," Information Processing Letters, vol. 40, no. 4, pp.
+%    175-179, 25 Nov. 1991.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -73,10 +77,12 @@ classdef metricTree < handle
         %                  the metric tree. k is the dimensionality of the
         %                  points and N is the number of points.
         %
-        %The tree is constructed roughly as described in 
-        %J. K. Uhlmann. (1991, Nov.) Implementing metric trees to satisfy
-        %general proximity/similarity queries. [Online]. Available:
-        %http://people.cs.missouri.edu/ uhlmannj/ImplementGH.pdf
+        %The tree is constructed roughly as described in [1].
+        %
+        %REFERENCES:
+        %[1] J. K. Uhlmann. (1991, Nov.) Implementing metric trees to
+        %    satisfy general proximity/similarity queries. [Online].
+        %    Available: http://people.cs.missouri.edu/ uhlmannj/ImplementGH.pdf
            
             N=size(dataBatch,2);
             if(exist('metricTreeCPPInt','file'))

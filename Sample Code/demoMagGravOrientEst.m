@@ -29,7 +29,7 @@ obsLoc=[phi;lambda;height];
 display('The true orientation of the observer is a rotation of 60 degrees')
 display('about the local ENU East (x)-axes 15 degrees about the rotated z axis.')
 %We need to build up the true rotation matrix. First, we need to figure out
-%the relationship between the local ENU axes and the global coordiante
+%the relationship between the local ENU axes and the global coordinate
 %system.
 
 %First, figure out how the ENU axes are related to the global WGS-84 axes.

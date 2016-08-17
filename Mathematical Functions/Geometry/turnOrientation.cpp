@@ -96,16 +96,16 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
     }
     
-    P1=(double*)mxGetData(prhs[0]);
-    P2=(double*)mxGetData(prhs[1]);
-    P3=(double*)mxGetData(prhs[2]);
+    P1=reinterpret_cast<double*>(mxGetData(prhs[0]));
+    P2=reinterpret_cast<double*>(mxGetData(prhs[1]));
+    P3=reinterpret_cast<double*>(mxGetData(prhs[2]));
     
     //Allocate space for the return values
     retMat=mxCreateDoubleMatrix(numElements,1,mxREAL);
-    retVals=(double*)mxGetData(retMat);
+    retVals=reinterpret_cast<double*>(mxGetData(retMat));
     
     for(i=0;i<numElements;i++) {
-        retVals[i]=(double)turnOrientationCPP(P1+2*i,P2+2*i,P3+2*i);
+        retVals[i]=static_cast<double>(turnOrientationCPP(P1+2*i,P2+2*i,P3+2*i));
     }
     //Set the return value.
     plhs[0]=retMat;
@@ -114,14 +114,14 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
 int turnOrientationCPP(const double *P1, const double *P2, const double *P3) {
     long double S[6];
 
-    S[0]= (long double)P3[0]*(long double)P1[1];
-    S[1]= (long double)P1[0]*(long double)P2[1];
-    S[2]= (long double)P2[0]*(long double)P3[1];
-    S[3]= -(long double)P3[0]*(long double)P2[1];
-    S[4]= -(long double)P1[0]*(long double)P3[1];
-    S[5]= -(long double)P2[0]*(long double)P1[1];
+    S[0]= static_cast<long double>(P3[0])*static_cast<long double>(P1[1]);
+    S[1]= static_cast<long double>(P1[0])*static_cast<long double>(P2[1]);
+    S[2]= static_cast<long double>(P2[0])*static_cast<long double>(P3[1]);
+    S[3]= -static_cast<long double>(P3[0])*static_cast<long double>(P2[1]);
+    S[4]= -static_cast<long double>(P1[0])*static_cast<long double>(P3[1]);
+    S[5]= -static_cast<long double>(P2[0])*static_cast<long double>(P1[1]);
     //The sum of the S components is the determinant.
-    return exactSignOfSumCPP(S,6);    
+    return exactSignOfSumCPP<long double>(S,6);    
 }
 
 /*LICENSE:

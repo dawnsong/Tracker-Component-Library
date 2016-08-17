@@ -14,22 +14,29 @@ function demoMultipleModelFiltering()
 %allows the algorithms to be used with variable sampling rates, though in
 %this instance, the sampling rate is held constant.
 %
-%Three scenarios are considered. One is a baseline Kalman filter with a
-%large process noise. The other two scenarios utilize the interacting
-%multiple model (IMM) filter. The first IMM scenario is as in [1], where
-%two nearly constant velocity dynamic models with differing process noises
-%are used in a standard Kalman filter (with the IMM). The second IMM
-%scenario is where a nearly constant velocity model in a Kalman filter is
-%used as well as a coordinated turn model in an extended Kalman filter
-%(EKF). The functions multipleModelPred and multipleModelUpdate are used to
-%handle the prediction and mixing in the IMM, though a change of the
-%algorithm selection would allow one to just as easily use a generalized
-%pseudo-Bayesian 2 filter. 
+%Six scenarios are considered. One is a baseline Kalman filter with a
+%polynomial dynamic model and a large process noise. The second is a Kalman
+%filter with a first-order Gauss-Markov model (the integrated Ornstein-
+%Uhlenbeck model), which, unlike the standard polynomial model, includes a
+%correlation constant to try to better cover turns. The third is the
+%reduced state filter. The fourth is the separated covariance filter. The
+%other two scenarios utilize the interacting multiple model (IMM) filter.
+%The first IMM scenario is as in [1], where two nearly constant velocity
+%dynamic models with differing process noises are used in a standard Kalman
+%filter (with the IMM). The second IMM scenario is where a nearly constant
+%velocity model in a Kalman filter is used as well as a coordinated turn
+%model in an extended Kalman filter (EKF). The functions multipleModelPred
+%and multipleModelUpdate are used to handle the prediction and mixing in
+%the IMM, though a change of the algorithm selection would allow one to
+%just as easily use a generalized pseudo-Bayesian 2 filter. The IMM
+%estimators can be more difficult to use as there are more parameters to
+%tune.
 %
 %The measurements are generated in Cartesian space as measurement
 %conversion and tracking using non-Cartesian measurements is not the focus
 %of this example.
 %
+%REFERENCES:
 %[1] Y. Bar-Shalom, X. R. Li, and T. Kiruabarajan, Estimation with
 %    Applications to Tracking and Navigation. New York: Wiley Interscience,
 %    2001.
@@ -152,7 +159,7 @@ scatter(z(1,:),z(2,:),'.k')
 
 h1=xlabel('Meters West->East');
 h2=ylabel('Meters South->North');
-h3=title('The True trajectory and the Detections');
+h3=title('The True Trajectory and the Detections');
 set(gca,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h1,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h2,'FontSize',14,'FontWeight','bold','FontName','Times')
@@ -171,8 +178,12 @@ set(h1,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h2,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h3,'FontSize',14,'FontWeight','bold','FontName','Times')
 
-%STEP 3: Get the baseline scenario: Run a Kalman filter.
-display('Computing the baseline scenario with just a Kalman filter.')
+%STEP 3: Get the baseline scenario: Run a Kalman filter with a standard
+%first-order white-noise process model, a Kalman filter with a first-order
+%Gauss-Markov model, a reduced state estimator, and the
+%separated covariance filter.
+display('Computing the baseline scenarios with just a Kalman filter and with the')
+display('reduced state estimator.')
 
 %A direct-discrete model with a 1m/2s^2 process noise standard deviation is
 %used (normally, a discretized model is preferred, because it is
@@ -183,9 +194,48 @@ Q=QPolyKalDirectDisc(T,zeros(4,1),1,1^2);%1m/s^2 process noise
 %The state transition matrix for constant velocity motion.
 F=FPolyKal(T,xInit,1);
 
-%Allocate space for the estimates
+%Parameters for the Gauss-Markov dynamic model. We are using a first-order
+%Gauss-Markov model.
+tau=20;%20 seconds; the assumed maneuver decorrelation time.
+maxAccel=9.8*3;%Assume max 3G turn
+%Rule of thumb- process noise suggestion.
+q=processNoiseSuggest('PolyKal-ROT',maxAccel,T);
+QGM=QGaussMarkov(T,xInit,q,tau,1);%Process noise matrix.
+FGM=FGaussMarkov(T,xInit,tau,1);%State Transition matrix
+
+%Allocate space for the polynomial Kalman filter estimates
 xKalman=zeros(4,numSamples);%The states
 PKalman=zeros(4,4,numSamples);%The covariance matrices
+
+%Allocate space for the Gauss-Markov Kalman filter estimates
+xKalmanGM=zeros(4,numSamples);%The states
+PKalmanGM=zeros(4,4,numSamples);%The covariance matrices
+
+%Allocate space for the reduced state estimator.
+xRedState=zeros(4,numSamples);%The states
+
+%Allocate space for the separated covariance filter.
+xSCFState=zeros(4,numSamples);%The states
+
+%We are using the version of the reduced state estimator that needs a
+%maximum linear acceleration (directed along the direction of motion of the
+%target) for the target along with a maximum turn rate acceleration.
+%A 0.5m/s^2 maximum linear acceleration with 1 deg/s^2 maximum turn rate
+%acceleration is used.
+ARedState=0.5;
+OmegaRedState=1*(pi/180);
+
+%The separated covariance filter needs a matrix introducing the effects of
+%the maximum acceleration onto the state (for covariance computation
+%results. For a state consisting of position and velocity in 2D, this can
+%be
+aMax=9.8/2;
+Ba=[T^2/2,   0;
+    0,       T^2/2;
+	T,       0;
+	0,       T]*aMax;
+%where we chose the maximum acceleration in each dimension to be 0.5G
+%(1G=9.8m/s^2).
 
 %Track initiation is by one-point differencing using just assumed maximum
 %values as the standard deviations for the velocity covariance matrix. The
@@ -195,25 +245,84 @@ PKalman(1:2,1:2,1)=R;
 PKalman(3,3,1)=300^2;
 PKalman(4,4,1)=300^2;
 
+xKalmanGM(:,1)=xKalman(:,1);
+PKalmanGM(:,1)=PKalman(:,1);
+
+%The reduced state estimator keeps the covariance matrix broken into parts
+%M and D, which will be propagated and updated.
+xRedState(1:2)=z(:,1);
+M=PKalman(:,:,1);
+D=zeros(4,2);
+
+%The separated covariance filter. It has been chosen to start the filter
+%with zero lag and all uncertainty in the covariance matrix.
+xSCFState(1:2)=z(:,1);
+PSCF=PKalman(:,:,1);
+LSCF=zeros(4,2);
+
 absErrKalman=zeros(numSamples,1);%Allocate space
 absErrKalman(1)=norm(xKalman(1:2,1)-xTrue(1:2,1));
+
+absErrKalmanGM=zeros(numSamples,1);%Allocate space
+absErrKalmanGM(1)=norm(xKalman(1:2,1)-xTrue(1:2,1));
+
+absErrRedState=zeros(numSamples,1);%Allocate space
+absErrRedState(1)=norm(xRedState(1:2,1)-xTrue(1:2,1));
+
+absErrSCF=zeros(numSamples,1);%Allocate space
+absErrSCF(1)=norm(xSCFState(1:2,1)-xTrue(1:2,1));
+
 %Run the filter
 for curSamp=2:numSamples
+    %The Kalman filter with the polynomial model
     %Predict the state forward
-    [xPred, PPred]=DiscKalPred(xKalman(:,curSamp-1),PKalman(:,:,curSamp-1),F,Q);
+    [xPred, PPred]=discKalPred(xKalman(:,curSamp-1),PKalman(:,:,curSamp-1),F,Q);
     %Update the state with a measurement
     [xKalman(:,curSamp),PKalman(:,:,curSamp)]=KalmanUpdate(xPred,PPred,z(:,curSamp),R,H);
     
     absErrKalman(curSamp)=norm(xKalman(1:2,curSamp)-xTrue(1:2,curSamp));
+    
+    %The Kalman filter with the Gauss-Markov model
+    [xPred, PPred]=discKalPred(xKalmanGM(:,curSamp-1),PKalmanGM(:,:,curSamp-1),FGM,QGM);
+    %Update the state with a measurement
+    [xKalmanGM(:,curSamp),PKalmanGM(:,:,curSamp)]=KalmanUpdate(xPred,PPred,z(:,curSamp),R,H);
+    
+    absErrKalmanGM(curSamp)=norm(xKalmanGM(1:2,curSamp)-xTrue(1:2,curSamp));
+    
+    %The reduced state estimator.
+    %Predict the state forward
+    modParams=[];
+    modParams.T=T;
+    modParams.A=ARedState;
+    modParams.Omega=OmegaRedState;
+    [xPred,M,D,PPred]=reducedStateDiscPred(xRedState(:,curSamp-1),M,D,[],[],'GenTurn',modParams);
+    %Update the state with a measurement
+    [xRedState(:,curSamp),M,D]=reducedStateUpdate(xPred,PPred,M,D,z(:,curSamp),R);
+    
+    absErrRedState(curSamp)=norm(xRedState(1:2,curSamp)-xTrue(1:2,curSamp));
+
+    %The separated covariance filter.
+    %Predict the state forward
+    [xPred,LSCF,TSCF]=separatedCovDiscPred(xSCFState(:,curSamp-1),PSCF,LSCF,F,Ba);
+    %Update the state with a measurement
+    [xSCFState(:,curSamp),LSCF,PSCF]=separatedCovUpdate(xPred,LSCF,TSCF,z(:,curSamp),R,H);
+    absErrSCF(curSamp)=norm(xSCFState(1:2,curSamp)-xTrue(1:2,curSamp));
 end
 
 figure(1)
+hold on 
 plot(xKalman(1,:),xKalman(2,:),'-g','linewidth',2)
+plot(xKalmanGM(1,:),xKalmanGM(2,:),'-c','linewidth',2)
+plot(xRedState(1,:),xRedState(2,:),'--b','linewidth',2)
+plot(xSCFState(1,:),xSCFState(2,:),'-.m','linewidth',2)
 
 figure(3)
 clf
 hold on
 plot(absErrKalman,'-g','linewidth',2)
+plot(absErrKalmanGM,'-c','linewidth',2)
+plot(absErrRedState,'--b','linewidth',2)
+plot(absErrSCF,'-.m','linewidth',2)
 
 h1=xlabel('Absolute distance error');
 h2=ylabel('Discrete Step');
@@ -233,8 +342,8 @@ QLow=QPolyKalDirectDisc(T,zeros(4,1),1,0.1^2);%0.1m/s^2 process noise
 QHigh=QPolyKalDirectDisc(T,zeros(4,1),1,2^2);%2m/s process noise.
 
 %The propagation routines for each model
-transFuns{1}=@(xPrev,PPrev)DiscKalPred(xPrev,PPrev,F,QLow);
-transFuns{2}=@(xPrev,PPrev)DiscKalPred(xPrev,PPrev,F,QHigh);
+transFuns{1}=@(xPrev,PPrev)discKalPred(xPrev,PPrev,F,QLow);
+transFuns{2}=@(xPrev,PPrev)discKalPred(xPrev,PPrev,F,QHigh);
 
 %The measurement update function is the same for both models.
 measUpdateFuns=@(x,P,z,R)KalmanUpdate(x,P,z,R,H);
@@ -328,16 +437,20 @@ display('Computing the IMM scenario with a linear Kalman filter and an EKF.')
 %The covariance matrix for the linear model.
 QLinear=QPolyKalDirectDisc(T,zeros(4,1),1,0.01^2);%0.01m/s^2 process noise.
 
-%0.25m/s^2 linear acceleration with 0.1 deg/s^2 turning acceleration for the
-%coordinated turn model as the standard deviations going into the
-%covariance matrix.
-QCT=QCoordTurn2D(T,zeros(5,1),0.25^2,(0.1*(pi/180))^2);
+%0.025m/s^2 linear acceleration (in 3D, not just directed along the
+%direction of motion of the target) with 0.5 deg/s^2 turning acceleration
+%for the coordinated turn model as the standard deviations going into the
+%covariance matrix. Note that these assumptions differ from those used in
+%the reduced state filter. The filters should be tuned separately for a
+%fair comparison. Often, improving the IMM's ability to recognize a turn
+%worsens its overall track performance. Thus, a tradeoff must be present.
+QCT=QCoordTurn2D(T,zeros(5,1),0.025^2,(0.5*(pi/180))^2);
 
 %The propagation routines for each model
 transFuns=[];
-transFuns{1}=@(xPrev,PPrev)DiscKalPred(xPrev,PPrev,F,QLinear);
+transFuns{1}=@(xPrev,PPrev)discKalPred(xPrev,PPrev,F,QLinear);
 f=@(x)(FCoordTurn2D(T,x)*x);
-transFuns{2}=@(xPrev,PPrev)DiscEKFPred(xPrev,PPrev,f,@(x)JacobCoordTurn2D(T,x),QCT);
+transFuns{2}=@(xPrev,PPrev)discEKFPred(xPrev,PPrev,f,@(x)JacobCoordTurn2D(T,x),QCT);
 
 %The measurement update function differs for the different models, because
 %H is different for the coordinated turn model, due to the extra element
@@ -409,7 +522,7 @@ end
 
 figure(1)
 plot(xLCTDisp(1,:),xLCTDisp(2,:),'--c','linewidth',2)
-legend('True Trajectory','Basic Kalman Filter', 'Two Linear Models','Linear and Maneuvering Models','Location','SouthEast') 
+legend('True Trajectory','Raw Detections','Basic Kalman Filter', 'Gauss-Markov Kalman Filter','Reduced State Filter', 'Separated Covariance Filter', 'Two Linear Models','Linear and Maneuvering Models','Location','SouthEast') 
 
 figure(2)
 plot(muModeLCT(2,:),'--c','linewidth',2)
@@ -417,7 +530,7 @@ legend('True Mode', 'Two Linear Models','Linear and Maneuvering Models','Locatio
 
 figure(3)
 plot(absErrLCT,'--c','linewidth',2)
-legend('Basic Kalman Filter', 'Two Linear Models','Linear and Maneuvering Models','Location','NorthWest') 
+legend('Polynomial Kalman Filter','Gauss-Markov Kalman Filter','Reduced State Filter', 'Separated Covariance Filter', 'Two Linear Models','Linear and Maneuvering Models','Location','NorthWest') 
 end
 
 %LICENSE:

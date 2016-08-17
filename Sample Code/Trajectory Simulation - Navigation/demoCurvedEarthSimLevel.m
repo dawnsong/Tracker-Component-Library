@@ -106,10 +106,10 @@ display(['out of a total transit distance of ', num2str(distRhumbE), ' meters.']
 
 display(' ')%Insert line break
 display('3) Computing the trajectory at 1000 points of a non-maneuvering target flying the geodesic path using')
-display('analytical deriavtives.')
+display('analytical derivatives.')
 %The continuous-time drift function for a 3D, flat-Earth dynamic model is
 aFlatEarth3D=@(x,t)aPoly(x,t,3);
-%The initial local coordiante system is defined as East-North-Up,
+%The initial local coordinate system is defined as East-North-Up,
 %corresponding to the x, y and z axes. This lets us easily translate the
 %initial heading given by the indirectGeodeticProb function into components
 %for the initial heading. The basis vectors at the starting point are
@@ -117,7 +117,7 @@ uInit=getENUAxes(latLonStart);
 
 %Obtain the initial Cartesian location of the target.
 rGlobalCart=ellips2Cart([latLonStart;ellipsAlt]);
-%The initial velocity in LOCAL coordiantes of the target is Mach 1 times
+%The initial velocity in LOCAL coordinates of the target is Mach 1 times
 %the direction obtained by solving the indirect geodesic problem. The
 %direction is found from trigonometry using the heading (in radians East of
 %North).

@@ -11,7 +11,7 @@ function xList=RungeKAtTimes(xInit,theTimes,f,deltaTMax,order,solutionChoice)
 %                    theTimes(1) is the time of xInit.
 %           f        f(xVal,curT) returns the derivative of xVal taken at
 %                    time curT.
-%           deltaTMax The maximum allowable step size in the Runge-Kutta
+%          deltaTMax The maximum allowable step size in the Runge-Kutta
 %                    integration between times in theTimes. If this
 %                    parameter is omitted, it is just set to Inf, meaning
 %                    that the steps will be at the actual times.

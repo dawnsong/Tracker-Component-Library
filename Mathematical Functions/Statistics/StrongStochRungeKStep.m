@@ -48,18 +48,18 @@ function xSim=StrongStochRungeKStep(method,xCur,curT,a,D,deltaT,w,z,dadt,dDdt,da
 %OUTPUTS: xSim   The simulated target state at time curT+deltaT.
 %
 %The algorithm for the explicit order 1.5 Taylor scheme is described in
-%Eq. 2.19, Section 11.2 of
-%P. E. Kloeden and E. Platen, Numerical Solution of Stochastic Differential
-%Equations. Berlin: Springer, 1999.
-%The vector form of the equations used here is written out in
-%"Basic Tracking Using Nonlinear Continuous-Time Dynamic Models" by David
-%F. Crouse.
+%Eq. 2.19, Chapter 11.2 of [1]. The vector form of the equations used here
+%is written out in [2]. The algorithm for the additive order 1.5 Taylor
+%scheme is described in Chapter 10.4 of [1].
 %
-%The algorithm for the additive order 1.5 Taylor scheme is described in
-%10.4 of Kloeden
+%REFERENCES:
+%[1] P. E. Kloeden and E. Platen, Numerical Solution of Stochastic
+%    Differential Equations. Berlin: Springer, 1999.
+%[2] D. F. Crouse, "Basic tracking using nonlinear continuous-time dynamic
+%    models," IEEE Aerospace and Electronic Systems Magazine, vol. 30, no.
+%    2, Part II, pp. 4-41, Feb. 2015.
 %
 %April 2015 David Karnick, Naval Research Laboratory, Washington D.C.
-%
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 aCur=a(xCur,curT);
@@ -68,7 +68,7 @@ DNext=D(xCur,curT+deltaT);
 dColDim=size(DCur,2);
 xDim=size(aCur,1);
 
-if nargin<7 || isempty(w)
+if(nargin<7 || isempty(w))
     %Generate the random component. It takes two correlated random variables.
     RSim=[deltaT*eye(dColDim),     deltaT^2/2*eye(dColDim);
         deltaT^2/2*eye(dColDim), deltaT^3/3*eye(dColDim)];
@@ -78,7 +78,7 @@ if nargin<7 || isempty(w)
     z=noiseVec((dColDim+1):end);
 end
 
-switch method
+switch(method)
     case 1 % Explicit order 1.5
         y=xCur+(1/dColDim)*aCur*deltaT;
         

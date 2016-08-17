@@ -73,13 +73,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     //points[1] is longitude
     //points[2] is height.
     
-    if(nrhs>1) {
+    if(nrhs>1&&!mxIsEmpty(prhs[1])) {
         a=getDoubleFromMatlab(prhs[1]);
     } else {
         a=getScalarMatlabClassConst("Constants", "WGS84SemiMajorAxis");
     }
 
-    if(nrhs>2) {
+    if(nrhs>2&&!mxIsEmpty(prhs[2])) {
         f=getDoubleFromMatlab(prhs[2]);
     } else {
         f=getScalarMatlabClassConst("Constants", "WGS84Flattening");   

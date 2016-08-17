@@ -4,18 +4,11 @@ classdef Constants
 %Constants can be accessed using Constants.constantName without
 %instantiating this class.
 %
-%The WGS84 properties are from 
-%Department of Defense, "Department of Defense world geodetic system 1984:
-%Its definition and relationships with local geodetic systems," National
-%Imagery and Mapping Agency, Tech. Rep. NIMA TR8350.2, Jun. 2004, third
-%Edition, Amendment 2. [Online]. Available:
-%http://earth- info.nga.mil/GandG/publications/tr8350.2/wgs84fin.pdf
+%The WGS84 properties are from  [1].
 %
-%The WGS72 properties are from
-%World Geodetic System Committee, "The Department of Defense world geodetic
-%system 1972," Defense Mapping Agency, Washington, D.C., Tech. Rep.,
-%May 1974. [Online]. Available:
-%http://www.dtic.mil/dtic/tr/fulltext/u2/a110165.pdf
+%The WGS72 properties are from [2].
+%
+%The GRS80 properties are from [6].
 %
 %Tha IERS' mean Earth rotation rate, which plays a role in computations of
 %the length-of-day Earth orientation parameter is from
@@ -28,47 +21,27 @@ classdef Constants
 %EGM96 gravitational model.
 %
 %The value of the International Geomagnetic Reference Field's (IGRF's)
-%reference sphere radius, which is used in the 11th edition fo the IGRF, is
-%from
-%International Association of Geomagnetism and Aeronomy, Working
-%Group V-MOD, "International geomagnetic reference field: Eleventh
-%generation," Geophysical Journal International, vol. 183, no. 3, pp.
-%1216-1230, Dec. 2010.
+%reference sphere radius, which is used in the 11th edition of the IGRF, is
+%from [3].
 %
 %The value of the reference sphere radius in the World Magnetic Model for
-%the year 2010 is given in
-%S. Maus, S. McLean, M. Nair, and C. Rollins, "The US/UK
-%world magnetic model for 2010-2015," National Oceanographic and
-%Atmospheric Organization, Tech. Rep. NESDIS/NGDC, 2010. [Online].
-%Available: http://www.ngdc.noaa.gov/geomag/WMM/
+%the year 2010 is given in [4].
 %
-%The CODATA 2010 recommended values are from
-%P. J. Mohr, B. N. Taylor, and D. B. Newell, "CODATA recommended
-%values of the fundemental physical constants: 2010," Reviews of Modern
-%Physics, vol. 84, no. 4, pp. 1527-1605, Oct. - Dec. 2012. [Online].
-%Available: http://physics.nist.gov/cuu/Constants/Preprints/lsa2010.pdf
+%The CODATA 2014 recommended values are from [5]. The data is also on the
+%site http://physics.nist.gov/cuu/Constants/ .
 %
-%Various physical parameters for space and the Earth are from
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%This includes the drift rates for the C20, C30 and C40 terms in the
-%EGM2008 model, which are given in table 6.2 on page 80.
+%Various physical parameters for space and the Earth are from [6]. This
+%includes the drift rates for the C20, C30 and C40 terms in the EGM2008
+%model, which are given in table 6.2 on page 80.
 %
 %The values for the gravitational parameters of the Moon are taken from the
 %GL0900C, which can be obtained from
 %http://pds-geosciences.wustl.edu/missions/grail/default.htm
-%and which is very briefly documented in
-%A. S. Konopliv, R. S. Park, D.-N. Yuan, S. W. Asmar, and et. al.,
-%"High-resolution lunar gravity fields from the GRAIL primary and
-%extended missions,? Geophysical Research Letters, vol. 41, no. 5, pp.
-%1452-1458, 16 Mar. 2014.
-%and which is consistent with the DE430 ephemerides.
+%and which is very briefly documented in [7] and which is consistent with
+%the DE430 ephemerides.
 %
 %The parameters for the JPL reference ellipsoid of the moon are taken from
-%R. B. Roncoli, "Lunar constants and models document," Jet Propulsion
-%Laboratory, California Institute of Technology, Tech. Rep. JPL D-32296,
-%23 Sep. 2005. [Online].
-%Available: http: //www.hq.nasa.gov/alsj/lunar cmd 2005 jpl d32296.pdf
+%[8].
 %
 %The SI standard values are from the 8th Edition of the International
 %System of Units at
@@ -91,28 +64,64 @@ classdef Constants
 %temperatures are provided, then the ideal gas specific heat and the second
 %virial coefficient and its first two derivatives for the specified
 %substance are returned as well. The data for all of the second virial
-%coefficients except Helium and water were was taken from
-%D. Ambrose, M. B. Ewing, and M. L. McGlashan. (2014, Mar.) Kaye & Laby
-%tables of physical & chemical constants. National Physical Laboratory.
-%[Online]. Available: http://www.kayelaby.npl.co.uk/chemistry/3_5/3_5.html
+%coefficients except Helium and water were was taken from [9]
+%
 %The second virial coefficient for Helium is taken from cubic spline
-%interpolation of the tabulated values in
-%J. M. H. Levelt Sengers, M. Klein, and J. S.Gallagher, "Pressure-Volume-
-%Temperature Relationships of Gases; Virial Coefficients," in American
-%Institute of Physics Handbook, edited by D. E. Grey (McGraw-Hill, New
-%York, 1972), 3rd ed., Chap. 4i, pp. 4-204-4-221.
-%The second virial coefficient for water was taken from
-%R. W. Hyland, "A correlation for the second interaction virial
-%coefficients and enhancement factors for moist air," Journal of Research
-%of National Bureau of Standards - A Physics and Chemistry, vol. 79A,
-%no. 4, pp. 551-560, Jul. - Aug. 1975.
-%where it was assumed that the valid range matched the temperature range
-%studied in the paper.
+%interpolation of the tabulated values in [10]. The second virial
+%coefficient for water was taken from [11] where it was assumed that the
+%valid range matched the temperature range studied in the paper.
 %The data for all of the ideal gas specific heats at a constant pressure
-%were taken from
-%Y. S. Touloukian and T. Makita, "Specific heat nonmetallic liquids and
-%gasses," in Thermophysical Properties of Matter. New York: IFI/Plenum,
-%1970, vol. 6.
+%were taken from [12].
+%
+%The Euler-Mascheroni Constant is as mentioned in [13].
+%
+%REFERENCES:
+%[1] Department of Defense, "Department of Defense world geodetic system
+%    1984: Its definition and relationships with local geodetic systems,"
+%    National Imagery and Mapping Agency, Tech. Rep. NIMA TR8350.2, Jun.
+%    2004, third Edition, Amendment 2. [Online]. Available:
+%    http://earth- info.nga.mil/GandG/publications/tr8350.2/wgs84fin.pdf
+%[2] World Geodetic System Committee, "The Department of Defense world
+%    geodetic system 1972," Defense Mapping Agency, Washington, D.C., Tech.
+%    Rep., May 1974. [Online]. Available:
+%    http://www.dtic.mil/dtic/tr/fulltext/u2/a110165.pdf
+%[3] International Association of Geomagnetism and Aeronomy, Working
+%    Group V-MOD, "International geomagnetic reference field: Eleventh
+%    generation," Geophysical Journal International, vol. 183, no. 3, pp.
+%    1216-1230, Dec. 2010.
+%[4] S. Maus, S. McLean, M. Nair, and C. Rollins, "The US/UK
+%    world magnetic model for 2010-2015," National Oceanographic and
+%    Atmospheric Organization, Tech. Rep. NESDIS/NGDC, 2010. [Online].
+%    Available: http://www.ngdc.noaa.gov/geomag/WMM/
+%[5] P. J. Mohr, D. B. Newell, and B. N. Taylor, "CODATA recommended
+%    values of the fundamental physical constants: 2014," ArXiv
+%    21 Jul. 2015. [Online]. Available: http://arxiv.org/abs/1507.07956
+%[6] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
+%[7] A. S. Konopliv, R. S. Park, D.-N. Yuan, S. W. Asmar, and et. al.,
+%    "High-resolution lunar gravity fields from the GRAIL primary and
+%    extended missions," Geophysical Research Letters, vol. 41, no. 5, pp.
+%    1452-1458, 16 Mar. 2014.
+%[8] R. B. Roncoli, "Lunar constants and models document," Jet Propulsion
+%    Laboratory, California Institute of Technology, Tech. Rep. JPL D-32296,
+%    23 Sep. 2005. [Online].
+%    Available: http: //www.hq.nasa.gov/alsj/lunar cmd 2005 jpl d32296.pdf
+%[9] D. Ambrose, M. B. Ewing, and M. L. McGlashan. (2014, Mar.) Kaye & Laby
+%    tables of physical & chemical constants. National Physical Laboratory.
+%    [Online]. Available: http://www.kayelaby.npl.co.uk/chemistry/3_5/3_5.html
+%[10] J. M. H. Levelt Sengers, M. Klein, and J. S.Gallagher, "Pressure-
+%    Volume-Temperature Relationships of Gases; Virial Coefficients," in
+%    American Institute of Physics Handbook, edited by D. E. Grey (McGraw-
+%    Hill, New York, 1972), 3rd ed., Chap. 4i, pp. 4-204-4-221.
+%[11] R. W. Hyland, "A correlation for the second interaction virial
+%    coefficients and enhancement factors for moist air," Journal of
+%    Research of National Bureau of Standards - A Physics and Chemistry,
+%    vol. 79A, no. 4, pp. 551-560, Jul. - Aug. 1975.
+%[12] Y. S. Touloukian and T. Makita, "Specific heat nonmetallic liquids
+%    and gasses," in Thermophysical Properties of Matter. New York:
+%    IFI/Plenum, 1970, vol. 6.
+%[13] Weisstein, Eric W. "Euler-Mascheroni Constant." From MathWorld--A
+%    Wolfram Web Resource. http://mathworld.wolfram.com/Euler-MascheroniConstant.html
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -127,7 +136,7 @@ properties (Constant)
     %IAU's SOFA library.
     WGS84SemiMajorAxis=6378137.00;%m
     WGS84InverseFlattening=298.257223563;%Unitless
-    WGS84Flattening=1/298.257223563;%Unitless
+    WGS84Flattening=1/Constants.WGS84InverseFlattening;%Unitless
     
     %WGS72 Properties
     WGS72GMWithAtmosphere=398600.8*10^(9);%m^3/s^2
@@ -135,8 +144,16 @@ properties (Constant)
     WGS72EarthRotationRate=0.7292115147*10^(-4);%radians per second.
     WGS72SemiMajorAxis=6378135;%m
     WGS72InverseFlattening=298.26;%Unitless
-    WGS72Flattening=1/298.26;%Unitless
+    WGS72Flattening=1/Constants.WGS72InverseFlattening;%Unitless
     WGS72C20Bar=-484.1605e-6;%Unitless, tide free
+    
+    %GRS80 Properties
+    GRS80GMWithAtmosphere=3.986005e14;%m^3/s^s
+    GRS80SemiMajorAxis=6378137;%m
+    GRS80InverseFlattening=298.257222101;%Unitless
+    GRS80Flattening=1/Constants.GRS80InverseFlattening
+    GRS80J2=1.08263e-3;%Dynamical form factor
+    GRS80EarthRotationRate=7.292115e-5;%radians/second
     
     %This is the mean rotation rate at epoch 1820, from which the
     %Length-of-day Earth orientation parameter is related.
@@ -206,18 +223,31 @@ properties (Constant)
     %The radius of the reference sphere used in the WMM2010.
     WMM2010SphereRad=6371200;%meters
     
-    %CODATA 2010 Recommended Values of the Fundamental Physical Constants
+    %CODATA 2014 Recommended Values of the Fundamental Physical Constants
     speedOfLight=299792458;%(c) m/s
-    PlanckConstant=6.62606957*10^(-34);%(h) Jule-seconds
     magneticConstant=4*pi*10^(-7);%(mu_0) N/A^2
-    elementaryCharge=1.602176565*10^(-19);%(e) Coulombs
-    BoltzmannConstant=1.3806488*10^(-23);%(k) J/K
-    molarGasConstant=8.3144621;%(R) J/(mol K) (ideal gas constant)
+    electricConstant=1/(Constants.magneticConstant*Constants.speedOfLight^2);%(epsilon_0) F/m
+    GravitationalConstant=6.67408e-11;%m^3/(kg*s^2)
+    PlanckConstant=6.626070040e-34;%(h) Jule-seconds
+    %The following is an alternative form of Planck's constant
+    hBar=Constants.PlanckConstant/(2*pi);
+    elementaryCharge=1.602176565e-19;%(e) Coulombs
+    quantumMagneticFlux=Constants.PlanckConstant/(2*Constants.elementaryCharge);%Wb
+    quantumConductance=2*Constants.elementaryCharge^2/Constants.PlanckConstant;%S
+    electronMass=9.10938356e-31%(m_e) kilograms
+    protonMass=1.672621898e-27;%(m_p) kilograms
+    fineStructureConst=Constants.elementaryCharge^2/(4*pi*Constants.electricConstant*Constants.hBar*Constants.speedOfLight);%(alpha) Unitless.
+    RydbergConstant=Constants.fineStructureConst^2*Constants.electronMass*Constants.speedOfLight/(2*Constants.PlanckConstant);%(R_Inf) meters
+    AvogadroConstant=6.022140857e23;%(N_A) 1/mol
+    FaradayConstant=Constants.AvogadroConstant*Constants.elementaryCharge;%(F) C/mol
+    molarGasConstant=8.3144598;%(R) J/(mol K) (ideal gas constant)
     %The mean molecular mass of a substance in atomic mass units is the
     %mass in grams of one mole of the substance.
-    AvogadroConstant=6.02214129*10^(23);%(N_A) 1/mol
-    GravitationalConstant=6.67384*10^(-11);%m^3/(kgs^2)
-    electronVolt=1.602176565e-19;%Joules
+    BoltzmannConstant=Constants.molarGasConstant/Constants.AvogadroConstant;%(k) J/K
+    StefanBoltzmannConstant=(pi^2/60)*Constants.BoltzmannConstant^4/(Constants.hBar^3*Constants.speedOfLight^2);%(sigma) W/(m^2*K^4)
+    electronVolt=1.6021766208e-19;%(eV) Joules
+    %Unified atomic mass unit
+    atomicMassUnit=1.660539040e-27;%(u) kilograms
     
     %The mass ratios provided in ther IERS 2010 conventions.
     %From Table 1.1 of the IERS 2010 conventions.
@@ -255,6 +285,10 @@ properties (Constant)
     %in seconds. UTC should not be used in a tracker due to leap seconds
     %interrupting things.
     GPS2TAIOffset=-19;%seconds
+    
+    %Misc Constants
+    %The Euler-Mascheroni constant from mathematics to 128 places.
+    EulerMascheroni=0.57721566490153286060651209008240243104215933593992359880576723488486772677766467093694706329174674951463144724980708248096050401;
 end
 
 methods(Static)

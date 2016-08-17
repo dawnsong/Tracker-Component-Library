@@ -26,14 +26,16 @@ function E=solveKeplersEq(M,e,eqSel)
 %
 %It is assumed that if eqSel=0 or eqSel=2 that 0<=e<=1.
 %
-%The solution to Kepler's equations is described in Chapter 4.1 of
-%G. Beutler, Methods of Celestial Mechanics: Physical, Mathematical and
-%Numerical Principles. Berlin: Springer, 2005, vol. 1.
-%The implementation used is taken from
-%R. H. Gooding and A. W. Odell, "The hyperbolic Kepler's equation,
-%and the elliptic equations revisited," Royal Aerospace Executive,
-%Procurement Executive, Ministry of Defence, Farnborough, Hants, United
-%Kingdom, Tech. Rep. 369, Jul. 1989.
+%The solution to Kepler's equations is described in Chapter 4.1 of [1]. The
+%implementation used is taken from [2].
+%
+%REFERENCES:
+%[1] G. Beutler, Methods of Celestial Mechanics: Physical, Mathematical and
+%    Numerical Principles. Berlin: Springer, 2005, vol. 1.
+%[2] R. H. Gooding and A. W. Odell, "The hyperbolic Kepler's equation,
+%    and the elliptic equations revisited," Royal Aerospace Executive,
+%    Procurement Executive, Ministry of Defence, Farnborough, Hants, United
+%    Kingdom, Tech. Rep. 369, Jul. 1989.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

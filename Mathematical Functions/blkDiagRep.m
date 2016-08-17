@@ -12,7 +12,7 @@ function FBig=blkDiagRep(F,numTimes)
 %        numTimes   The number of times (>=1) that a matrix is repeated on
 %                   the block diagonal of the larger matrix if F is a 2D
 %                   matrix to be repeated. Otherwise, this parameter is
-%                   omitted.
+%                   ignored.
 %
 %OUTPUTS: FBig      A large block diagonal matrix either with the 2D matrix
 %                   F repeated numTimes on the diagonal or a block diagonal

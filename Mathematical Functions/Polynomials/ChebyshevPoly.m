@@ -29,13 +29,14 @@ function T=ChebyshevPoly(tau,n,tauStart,tauEnd)
 %                tau(j).
 %
 %Chebyshev polynomials are often used to express orbital ephemerides and
-%are described in
-%X. X. Newhall, "Numerical representation of planetary ephemerides,"
-%Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
-%and in Chapter 3.3.3 of
-%O. Montenbruck and E. Gill, Satellite Orbits, 4th ed. Heidelberg:
-%Springer, 2012.
-%which is whence the recursion formula used here is taken.
+%are described in [1] and in Chapter 3.3.3 of [2], which is whence the
+%recursion formula used here is taken.
+%
+%REFERENCES:
+%[1] X. X. Newhall, "Numerical representation of planetary ephemerides,"
+%    Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
+%[2] O. Montenbruck and E. Gill, Satellite Orbits, 4th ed. Heidelberg:
+%    Springer, 2012.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

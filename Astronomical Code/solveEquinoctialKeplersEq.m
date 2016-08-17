@@ -11,13 +11,15 @@ function F=solveEquinoctialKeplersEq(lambda,h,k)
 %
 %OUTPUTS: F The real solution to lambda=F+h*cos(F)-k*sin(F).
 %
-%The algorithm is taken from Section 7.1 of 
-%D. A. Danielson, C. P. Sagovac, B. Neta, and L. W. Early, "Semianalytic
-%satellite theory," Mathematics Department, Naval Postgraduate School,
-%Monterey, CA, Tech. Rep., 1995. [Online]. Available:
-%http://oai.dtic.mil/oai/oai?verb=getRecord&metadataPrefix= html&identifier=ADA531136
-%The algorithm simply uses Newton's method to solve the equation. An
-%arbitrarily upper limit of 50 iterations has been set.
+%The algorithm is taken from Section 7.1 of [1]. The algorithm simply uses
+%Newton's method to solve the equation. An arbitrarily upper limit of 50
+%iterations has been set.
+%
+%REFERENCES:
+%[1] D. A. Danielson, C. P. Sagovac, B. Neta, and L. W. Early,
+%    "Semianalytic satellite theory," Mathematics Department, Naval
+%    Postgraduate School, Monterey, CA, Tech. Rep., 1995. [Online].
+%    Available: http://oai.dtic.mil/oai/oai?verb=getRecord&metadataPrefix= html&identifier=ADA531136
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

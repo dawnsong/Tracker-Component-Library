@@ -18,8 +18,12 @@ function cartPoints=ellips2Cart(points,a,f)
 %                      converted points with each column having the format
 %                      [x;y;z].
 %
-%The conversions are mentioned in the paper "Simulating Aerial Targets in
-%3D Accounting for the Earth's Curvature" by David F. Crouse.
+%The conversions are mentioned in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

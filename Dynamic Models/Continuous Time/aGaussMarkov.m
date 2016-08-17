@@ -35,19 +35,11 @@ function val=aGaussMarkov(x,t,tau,order)
 %             from x, whose elements are ordered
 %             [position;velocity;acceleration;etc].
 %
-%The Singer model (order=2) is introduced for tracking in
-%R.A.Singer,"Estimating optimal tracking filter performance for manned
-%maneuvering targets," IEEE Transactions on Aerospace and Electronic
-%Systems, vol. AES-6, no. 4, pp. 473-483, Jul. 1970.
-%The first-order model, the integrated Ornstein-Uhlenbeck process, is
-%discussed for tracking in Chapter 3.2.2 of
-%L. D. Stone, C. A. Barlow, and T. L. Corwin, Bayesian Multiple Target
-%Tracking. Boston: Artche House, 1999.
-%In Chapter 8.2.3 of 
-%Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications
-%to Tracking and Navigation. New York: John Wiley and Sons, Inc, 2001.
-%it is stated that a typical value of tau for a slowly turning aircraft
-%is 20s, and is 5s for an evasive maneuver.
+%The Singer model (order=2) is introduced for tracking in [1]. The first-
+%order model, the integrated Ornstein-Uhlenbeck process, is discussed for
+%tracking in Chapter 3.2.2 of [2]. In Chapter 8.2.3 of [3] it is stated
+%that a typical value of tau for a slowly turning aircraft is 20s, and is
+%5s for an evasive maneuver.
 %
 %This function simply generalized the concept from first and second orders
 %to arbitrary orders.
@@ -65,6 +57,16 @@ function val=aGaussMarkov(x,t,tau,order)
 %highest-order moment is= sigmam^2*exp(-abs(deltaT)/tau) for some deltaT
 %time interval. The discrete-time process noise covariance matrix is given
 %by QGaussMarkov.
+%
+%REFERENCES:
+%[1] R. A. Singer,"Estimating optimal tracking filter performance for
+%    manned maneuvering targets," IEEE Transactions on Aerospace and
+%    Electronic Systems, vol. AES-6, no. 4, pp. 473-483, Jul. 1970.
+%[2] L. D. Stone, C. A. Barlow, and T. L. Corwin, Bayesian Multiple Target
+%    Tracking. Boston: Artech House, 1999.
+%[3] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with
+%    Applications to Tracking and Navigation. New York: John Wiley and
+%    Sons, Inc, 2001.
 %
 %August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

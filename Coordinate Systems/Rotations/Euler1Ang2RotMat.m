@@ -22,9 +22,11 @@ function M=Euler1Ang2RotMat(theta,series,handed)
 %OUTPUTS: M    The rotation matrix such that M*v rotates a vector v
 %              by theta about the specified axis.
 %
-%Euler angles are discussed in 
-%M. D. Shuster, "A survey of attitude representations," The Journal of
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. - Dec. 1993.
+%Euler angles are discussed in [1].
+%
+%REFERENCES:
+%[1] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. - Dec. 1993.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

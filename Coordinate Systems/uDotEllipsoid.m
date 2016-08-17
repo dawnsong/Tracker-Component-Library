@@ -2,8 +2,8 @@ function uDot=uDotEllipsoid(u,x,t,a,f)
 %%UDOTELLIPSOID Return the derivative of the basis vectors for the local
 %               coordinate system of a moving observer when using an
 %               ellipsoidal approximation of the curved Earth. Such an
-%               evolving coordiante system has been termed "wander
-%               coordiante" or "naturally evolving coordiantes". Targets
+%               evolving coordinate system has been termed "wander
+%               coordinate" or "naturally evolving coordinates". Targets
 %               moving in non-maneuvering, level flight with
 %               a coordinate system evolving as per this coordinate system
 %               will follow geodesic curves, not rhumb lines.
@@ -28,12 +28,13 @@ function uDot=uDotEllipsoid(u,x,t,a,f)
 %OUTPUTS:   uDot    The derivative of the basis vector u with respect to
 %                   time.
 %
-%The solution is detailed in
-%D. F. Crouse, "Simulating aerial targets in 3D accounting for the Earth's
-%Curvature," Journal of Advances in Information Fusion, submitted, July
-%2014.
-%and has been simplified for an ellipsoidal Earth so that numerical
-%differentiation is not necessary.
+%The solution is detailed in [1], and has been simplified for an
+%ellipsoidal Earth so that numerical differentiation is not necessary.
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

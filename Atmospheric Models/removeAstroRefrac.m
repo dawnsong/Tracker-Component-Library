@@ -66,24 +66,14 @@ function [zTrue,deltaZ]=removeAstroRefrac(algorithm,plhObs,z0,Rh,P,T,wl)
 %              refraction removed.
 %      deltaZ The refraction correction that was applied. zTrue=z0+deltaZ.
 %
-%The references for Algorithm 0 are
-%[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
-%Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
-%Books, 2013.
-%[2] C. Y. Hohenkerk and A. T. Sinclair, "The computation of angular
-%atmospheric refraction at large zenith angles," United Kingdom
-%Hydrographic Office, HM Nautical Almanac, Tech. Rep. 63, Apr. 1985.
-%http://astro.ukho.gov.uk/data/tn/naotn63.pdf
-%Unlike the method given in those references, the distance from the center
-%of the Earth to the reference ellipsoid at the latitude of the observer is
-%used for the radius of the spherical Earth in the model as opposed to a
-%constant for the entire Earth, in the model.
+%The references for Algorithm 0 are [1] and [2]. Unlike the method given in
+%those references, the distance from the center of the Earth to the
+%reference ellipsoid at the latitude of the observer is used for the radius
+%of the spherical Earth in the model as opposed to a constant for the
+%entire Earth, in the model.
 %
-%Algorithm 1 is described in [2] but also in much more detail in 
-%[3] J. Saastamoinen, "Introduction to the practical computation of
-%astronomical refraction," Bulletin Géodésique, vol. 106, no. 1,
-%pp. 383-397, Dec. 1972.
-%The model requires the partial vapor pressure of water. The low-precision
+%Algorithm 1 is described in [2] but also in much more detail in [3]. The
+%model requires the partial vapor pressure of water. The low-precision
 %conversion from a relative humidity to a partical vapor pressure as is
 %used in the algorithm in [2] was used here. The loss in accuracy in using
 %a low-precision humidity model should be significantly less than the loss
@@ -107,7 +97,19 @@ function [zTrue,deltaZ]=removeAstroRefrac(algorithm,plhObs,z0,Rh,P,T,wl)
 %(zetaObs) considered was 75 degrees.
 %
 %Algorithm 2 will provide results without errors and without producing NaNs
-%for all input values. The other techniques will produce errors
+%for all input values. The other techniques will produce errors.
+%
+%REFERENCES:
+%[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
+%    Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
+%    Books, 2013.
+%[2] C. Y. Hohenkerk and A. T. Sinclair, "The computation of angular
+%    atmospheric refraction at large zenith angles," United Kingdom
+%    Hydrographic Office, HM Nautical Almanac, Tech. Rep. 63, Apr. 1985.
+%    http://astro.ukho.gov.uk/data/tn/naotn63.pdf
+%[3] J. Saastamoinen, "Introduction to the practical computation of
+%    astronomical refraction," Bulletin Géodésique, vol. 106, no. 1,
+%    pp. 383-397, Dec. 1972.
 %
 %April 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

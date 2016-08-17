@@ -92,10 +92,10 @@ function [V,gradV]=spherHarmonicEval(C,S,point,a,c,fullyNormalized,scalFactor)
 %for the potential is assumed to be of the form
 %V=(c/r)*sum_{n=0}^M\sum_{m=0}^n(a/r)^n*(C(n+1,m+1)*cos(m*lambda)+S(n+1,m+1)*sin(m*lambda))*P^m_n(sin(theta))
 %where r, lambda, and theta are the range, azimuth and elevation in a
-%spherical coordiante system and P^m_n(x) is the notation for an associated
+%spherical coordinate system and P^m_n(x) is the notation for an associated
 %Legendre function of degree n and order m evaluated at the point x. Note
 %that theta is essentially a latitude, not a co-latitude, as is commonly
-%used in an alternate definition of spherical coordiantes. When computing
+%used in an alternate definition of spherical coordinates. When computing
 %terrain heights, which are specified only by spherical latitude and
 %longitude, the (c/r) term as well as the (a/r) term disappear. When fully
 %normalized coefficients are used (fullyNormalized=true), then P^m_n(x) is
@@ -153,16 +153,11 @@ function [V,gradV]=spherHarmonicEval(C,S,point,a,c,fullyNormalized,scalFactor)
 %limitations. This means that one can not simply use the built-in
 %legendre function in Matlab to obtain the polynomials. Consequently, when
 %fully normalized coefficients are passed, the modified forward row (MFR)
-%algorithm of 
-%S. A. Holmes and W. E. Featherstone, "A unified approach to the Clenshaw
-%summation and the recursive computation of very high degree and
-%order normalised associated Legendre functions," Journal of Geodesy,
-%vol. 76, no. 5, pp. 279-299, May 2002.
-%is used in this function to avoid precision problems. Note that the
-%notation of the normalized Legendre functions in the above paper is
-%slightly different than that used here. First, the paper uses a
+%algorithm of [1] is used in this function to avoid precision problems.
+%Note that the notation of the normalized Legendre functions in the above
+%paper is slightly different than that used here. First, the paper uses a
 %colatitude (Let's call it \tilde{\theta}), not a latitude theta
-%(elevation) in its spherical coordiante system. Thus, the sine term for
+%(elevation) in its spherical coordinate system. Thus, the sine term for
 %the fully normalized associated Legendre function in the
 %sum becomes a cosine term. That is, \bar{P}_{nm}(cos(\tilde{\theta})).
 %However, the paper abbreviates the notation and does not explicitely write
@@ -171,11 +166,8 @@ function [V,gradV]=spherHarmonicEval(C,S,point,a,c,fullyNormalized,scalFactor)
 %
 %The Holmes and Featherstone algorithm cannot be used for computing the
 %acceleration due to gravity near the poles, because of singularities in
-%the derivatives of spherical coordiantes. Thus, the method of Pines, as
-%expressed using fully-normalized Helmholtz polynomials as described in
-%E. Fantino and S. Casotto, "Methods of harmonic synthesis for global
-%geopotential models and their first-, second- and third-order gradients,"
-%Journal of Geodesy, vol. 83, no. 7, pp. 595-619, Jul. 2009.
+%the derivatives of spherical coordinates. Thus, the method of Pines, as
+%expressed using fully-normalized Helmholtz polynomials as described in [2]
 %is used instead when the latitude is within 2 degrees of the pole and the
 %user wants gradV.
 %
@@ -186,7 +178,7 @@ function [V,gradV]=spherHarmonicEval(C,S,point,a,c,fullyNormalized,scalFactor)
 %
 %This validity of this function can be tested on the surface of the
 %reference ellipsoid using the coefficients for the ellipsoid. That is, at
-%any point given in ellipsoidal coordiantes with zero height, the
+%any point given in ellipsoidal coordinates with zero height, the
 %gravity potential should be a constant and equal that given by the
 %ellipParam2Potential function. For example,
 %
@@ -227,22 +219,32 @@ function [V,gradV]=spherHarmonicEval(C,S,point,a,c,fullyNormalized,scalFactor)
 %spherHarmonicEvalCPPInt is compiled, especially for high degrees and
 %orders.
 %
+%REFERENCES:
+%[1] S. A. Holmes and W. E. Featherstone, "A unified approach to the
+%    Clenshaw summation and the recursive computation of very high degree
+%    and order normalised associated Legendre functions," Journal of
+%    Geodesy, vol. 76, no. 5, pp. 279-299, May 2002.
+%[2] E. Fantino and S. Casotto, "Methods of harmonic synthesis for global
+%    geopotential models and their first-, second- and third-order
+%    gradients," Journal of Geodesy, vol. 83, no. 7, pp. 595-619, Jul.
+%    2009.
+%
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<7)
+if(nargin<7||isempty(scalFactor))
     scalFactor=10^(-280);
 end
 
-if(nargin<6)
+if(nargin<6||isempty(fullyNormalized))
     fullyNormalized=true;
 end
 
-if(nargin<5)
+if(nargin<5||isempty(c))
     c=Constants.EGM2008GM;
 end
 
-if(nargin<4)
+if(nargin<4||isempty(a))
     a=Constants.EGM2008SemiMajorAxis;
 end
 
@@ -284,22 +286,10 @@ end
 
 %%If a compiled C++ implementation exists, then just use that.
 if(exist('spherHarmonicEvalCPPInt','file'))
-%The function expects the format of offsetArray and clusterSizes to be in
-%the native unsigned format of the architecture, not as doubles (the
-%default of Matlab), so convert the types.
-    switch(systemNumberOfBits())
-        case 32
-            C.offsetArray=reshape(uint32(C.offsetArray),C.numClusters(),1);
-            C.clusterSizes=reshape(uint32(C.clusterSizes),C.numClusters(),1);
-        otherwise%Otherwise, assume it is a 64 bit system
-            C.offsetArray=reshape(uint64(C.offsetArray),C.numClusters(),1);
-            C.clusterSizes=reshape(uint64(C.clusterSizes),C.numClusters(),1);
-    end
-    
     if(nargout==2)
-        [V,gradV]=spherHarmonicEvalCPPInt(C.clusterEls,S.clusterEls,C.offsetArray,C.clusterSizes,point,a,c,scalFactor);
+        [V,gradV]=spherHarmonicEvalCPPInt(C.clusterEls,S.clusterEls,point,a,c,scalFactor);
     else
-        V=spherHarmonicEvalCPPInt(C.clusterEls,S.clusterEls,C.offsetArray,C.clusterSizes,point,a,c,scalFactor);
+        V=spherHarmonicEvalCPPInt(C.clusterEls,S.clusterEls,point,a,c,scalFactor);
     end
     return
 end

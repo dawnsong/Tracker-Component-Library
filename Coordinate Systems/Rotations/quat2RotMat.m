@@ -25,13 +25,8 @@ function R=quat2RotMat(q,handed)
 %If q does not have unit magnitude, then R will not be a rotation matrix.
 %
 %The formula for turning a quaternion into a left-handed rotation matrix is
-%given in 
-%M. D. Shuster, "A survey of attitude representations," The Journal of
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. -Dec. 1993.
-%However, right-handed quaternion algebra, as used in
-%Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/Quaternion.html
-%is far more common.
+%given in [1]. However, right-handed quaternion algebra, as used in [2] is
+%far more common.
 %
 %A quaternion form q(1)+i*q(2)+j*q(3)+k*q(4) that obeys right-handed
 %multiplication rules supports the following rules for multiplication of i,
@@ -47,6 +42,12 @@ function R=quat2RotMat(q,handed)
 %i -1,-k, j
 %j  k,-1,-i
 %k -j, i,-1
+%
+%REFERENCES:
+%[1] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. -Dec. 1993.
+%[2] Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/Quaternion.html
 %
 %August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

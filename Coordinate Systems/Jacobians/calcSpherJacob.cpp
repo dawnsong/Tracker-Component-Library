@@ -23,12 +23,7 @@
 *
 *The derivatives can be computed in a straightforward manner from
 *the basic relation between spherical and Cartesian coordinates, which is
-*given in
-*R. L. Duncombe, "Computational techniques," in Explanatory Supplement
-*to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
-*Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
-*ch. 14.4.4.1.
-*among other sources.
+*given in Ch. 14.4.4.1 of [1], among other sources.
 *
 *Azimuth is an angle measured from the x-axis in the x-y plane. Elevation
 *is the angle above the x-y plane. Note that singularities exist at the
@@ -39,6 +34,11 @@
 *
 *The algorithm is run in Matlab using the command format
 *J=calcSpherJacob(point,systemType);
+*
+*REFERENCES:
+*[1] R. L. Duncombe, "Computational techniques," in Explanatory Supplement
+*   to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
+*   Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
 *
 *January 2014 David F.Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -72,7 +72,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     }
     
     checkRealDoubleArray(prhs[0]);
-    point=(double*)mxGetData(prhs[0]);
+    point=reinterpret_cast<double*>(mxGetData(prhs[0]));
     
     if(nrhs<2) {
         systemType=0;
@@ -86,7 +86,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     }
     
     retMat=mxCreateDoubleMatrix(3, 3,mxREAL);
-    retData=(double*)mxGetData(retMat);
+    retData=reinterpret_cast<double*>(mxGetData(retMat));
     
     calcSpherJacobCPP(retData, point,systemType);
     plhs[0]=retMat;

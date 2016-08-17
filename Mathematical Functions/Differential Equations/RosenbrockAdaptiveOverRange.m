@@ -85,10 +85,12 @@ function [xVals,tVals,dxdtVals,exitCode,numRejections]=RosenbrockAdaptiveOverRan
 %and the stepsize is halved.
 %
 %The central difference formula used for the numeric derivative of f with
-%respect to t if dfdtFun is not provided is taken from Chapter 4.1 of
-%R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston,
-%MA: Brooks/ Cole, 2011.
+%respect to t if dfdtFun is not provided is taken from Chapter 4.1 of [1],
 %whereby the three-point midpoint formula is used.
+%
+%REFERENCES:
+%[1] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
+%    Brooks/ Cole, 2011.
 %
 %February 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -114,8 +116,8 @@ deltaTSign=sign(tDiff);
 %The sign is separated out so that one can use the algorithm running
 %backwards as well as forwards in time.
 
-%The maximum step size is arbitraily set to 1/5 the total distance.
-maxStepSize=tDiffMag/5;
+%The maximum step size is arbitraily set to 1/3 the total distance.
+maxStepSize=tDiffMag/3;
 
 if(nargin<7||isempty(initStepSize))
     %If no initial step size is given, then just use the smallest uniform

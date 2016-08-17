@@ -1,6 +1,6 @@
 function demo2DDataAssociation()
 %%DEMO2DDATAASSOCIATION Demonstrate how the Joint Probabilistic Data
-%             Association Filter (JPDAF) and the GLobal Nearest Neighbor
+%             Association Filter (JPDAF) and the Global Nearest Neighbor
 %             (GNN)-JPDAF can be used when tracking a two target with the
 %             possibility of missed detections and false alarms. Track
 %             initiation and termination are not considered.
@@ -25,7 +25,7 @@ function demo2DDataAssociation()
 %to the middle of the Pacific. The function orbVelDet2PtMinEng is used to
 %get an approximate initial velocity for a minimum energy trajectory
 %between the points. However, the function is only an approximation as it
-%is meant for use in an Earth-centered-inertial coordiante system (thus
+%is meant for use in an Earth-centered-inertial coordinate system (thus
 %trajectories are minimum energy ignoring the energy imparted by the
 %rotation of the Earth. Additionally, the endpoints are specified in an
 %ECEF coordinate system, so the initial conditions outputted by the
@@ -55,21 +55,21 @@ function demo2DDataAssociation()
 %produce multiple solutions.
 %
 %The JPDAF and GNN-JPDAF algorithms require a likelihood matrix to
-%make their (soft) associations of measurements to targets. The subroutine
-%makeLRMat in this file creates the likelihood matrix based on the exponent
-%of the  dimensionless score function of [1]. This requires that the
-%clutter density in measurement space and the detection probability be
+%make their (soft) associations of measurements to targets. The function
+%makeStandardCartLRMatHyps creates the likelihood matrix based on the
+%exponent of the dimensionless score function of [1]. This requires that
+%the clutter density in measurement space and the detection probability be
 %known (or estimated). A nominal detection probability of 80% is used.
 %
-%The makeLRMat function also updates the tracks for each of the
-%measurements. The sqrtKalmanUpdate function is used with
+%The makeStandardCartLRMatHyps function also updates the tracks for each of
+%the measurements. The sqrtKalmanUpdate function is used with
 %Cartesian-converted measurements. The measurement conversion is performed
 %using the spher2CartCubature function via fifth-order cubature
 %integration.
 %
-%The target state is predicted usign the MomentMatchPred function, which
-%can handle the nonlinear dynamic model. The MomentMatchPred function
-%utilizes non-stochastic RUnge-Kutta methods to propagate the mean and
+%The target state is predicted using the momentMatchPred function, which
+%can handle the nonlinear dynamic model. The momentMatchPred function
+%utilizes non-stochastic Runge-Kutta methods to propagate the mean and
 %square root covariance matrix.
 %
 %The trajectories are plotted along with the measurements. Also plotted is
@@ -79,9 +79,11 @@ function demo2DDataAssociation()
 %separated as the cross-range errors for a monostatic tracking scenario
 %such as this tend to be very high.
 %
+%REFERENCES:
 %[1] Y. Bar-Shalom, S. S. Blackman, and R. J. Fitzgerald, "Dimensionless
-%score function for multiple hypothesis tracking," IEEE Transactions on
-%Aerospace and Electronic Systems, vol. 43, no. 1, pp. 392-400, Jan. 2007.
+%    score function for multiple hypothesis tracking," IEEE Transactions on
+%    Aerospace and Electronic Systems, vol. 43, no. 1, pp. 392-400, Jan.
+%    2007.
 %
 %June 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -141,7 +143,7 @@ deltaT=tObs(2)-tObs(1);
 sigmaR=10;
 sigmaAzel=0.1*(pi/180);
 %The square root measurement covariance matrix, local spherical
-%coordiantes. Here, it is assumed diagonal.
+%coordinates. Here, it is assumed diagonal.
 SR=diag([sigmaR;sigmaAzel;sigmaAzel]);
 
 %Region in range around the targets in which to generate false alarms.
@@ -229,9 +231,9 @@ for curObs=3:numObs
     azBounds=zObsTrue(2,1,curObs)+[-clutAngs;clutAngs];
     elBounds=zObsTrue(3,1,curObs)+[-clutAngs;clutAngs];
     for curFalse=1:numFalse
-        r=UniformD.rand(rClutBounds);
-        az=UniformD.rand(azBounds);
-        el=UniformD.rand(elBounds);
+        r=UniformD.rand(1,rClutBounds);
+        az=UniformD.rand(1,azBounds);
+        el=UniformD.rand(1,elBounds);
         
         zCur(:,curDet)=[r;az;el]+SR*randn(3,1);
         curDet=curDet+1;
@@ -257,12 +259,13 @@ for curObs=3:numObs
         x=xStates(:,:,curObs-1,curMethod);
         S=SStates(:,:,:,curObs-1,curMethod);
         for curTar=1:numTargets
-            [x(:,curTar),S(:,:,curTar)]=MomentMatchPred(x(:,curTar),S(:,:,curTar),a,D,3,tPrev,tCur,xi6,w6);
+            [x(:,curTar),S(:,:,curTar)]=momentMatchPred(x(:,curTar),S(:,:,curTar),a,D,3,tPrev,tCur,xi6,w6);
         end
 
         %Brute-force hypothesis formation and likelihood matrix
         %computation. A is the likelihood matrix.
-        [A,xHyp,PHyp]=makeLRMat(x,S,H,zCur,zCart,SRCart,PD,lambda);
+        measJacob=@(z)calcSpherJacob(z,0);
+        [A,xHyp,PHyp]=makeStandardCartLRMatHyps(x,S,H,zCart,SRCart,PD,lambda,[],zCur,measJacob);
         
         %Perform the single scan assignment
         [xPost,PPost]=singleScanUpdate(xHyp,PHyp,A,algSel1(curMethod),algSel2(curMethod));
@@ -361,48 +364,6 @@ set(h1,'FontSize',20,'FontWeight','bold','FontName','Times')
 set(h2,'FontSize',20,'FontWeight','bold','FontName','Times')
 axis([tObs(2), tObs(end), -300, 300])
 
-end
-
-function [A,xHyp,PHyp]=makeLRMat(xPred,SPred,H,zSpher,zCart,SRCart,PD,lambda)
-%%We are using the dimensionless score function from 
-%Y. Bar-Shalom, S. S. Blackman, and R. J. Fitzgerald, "Dimensionless score
-%function for multiple hypothesis tracking," IEEE Transactions on Aerospace
-%and Electronic Systems, vol. 43, no. 1, pp. 392-400, Jan. 2007.
-
-xDim=size(xPred,1);
-zDim=size(zCart,1);
-numTar=size(xPred,2);
-numMeas=size(zCart,2);
-numHyp=numMeas+1;%The extra one is the missed detection hypothesis.
-
-A=zeros(numTar,numMeas+numTar);
-xHyp=zeros(xDim,numTar,numHyp);
-PHyp=zeros(xDim,xDim,numTar,numHyp);
-
-for curTar=1:numTar
-    xPredCur=xPred(:,curTar);
-    SPredCur=SPred(:,:,curTar);
-
-    for curMeas=1:numMeas
-        zSpherCur=zSpher(:,curMeas);
-        zCartCur=zCart(:,curMeas);
-        SRCartCur=SRCart(:,:,curMeas);
-        [xUpdate, SUpdate,innov,Szz]=sqrtKalmanUpdate(xPredCur,SPredCur,zCartCur,SRCartCur,H);
-        xHyp(:,curTar,curMeas)=xUpdate;
-        PHyp(:,:,curTar,curMeas)=SUpdate*SUpdate';
-        
-        %The clutter density lambda is given in terms of SPHERICAL
-        %coordinates. To LOCALLY convert it to CARTESIAN coordinates, we
-        %have to multiply it by the determinant of the Jacobian.
-        J=calcSpherJacob(zSpherCur,0);
-        A(curTar,curMeas)=PD(curTar)/(det(J)*lambda)*GaussianD.PDFS(innov,zeros(zDim,1),Szz);
-    end
-    
-    %The missed detection likelihood.
-    A(curTar,numMeas+curTar)=(1-PD(curTar));
-    xHyp(:,curTar,end)=xPredCur;
-    PHyp(:,:,curTar,end)=SPredCur*SPredCur';
-end
 end
 
 function [tObs,xObs,zObsTrue]=createBallisticTrajectories(rDot,h,numObs)

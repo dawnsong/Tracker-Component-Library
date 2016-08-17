@@ -7,7 +7,7 @@ function [V1Comp,V2Comp,alpha]=orbVelDet2Pt(r1Val,r2Val,deltaT,angParam,isECEF,l
 %            other planet), and the object (which is not massive). This
 %            function can be useful to help start a track on a ballistic
 %            target and it can be useful in designing transfer orbits. The
-%            function can work in a generic inertial coordiante system, or
+%            function can work in a generic inertial coordinate system, or
 %            it can be used with a generic Earth-centered Earth-fixed
 %            (ECEF) coordinate system. That is, rather than being
 %            rigorously-defined in terms of precession, nutation, Earth
@@ -95,27 +95,12 @@ function [V1Comp,V2Comp,alpha]=orbVelDet2Pt(r1Val,r2Val,deltaT,angParam,isECEF,l
 %                found here is not as susceptible to finite precision
 %                errors.
 %
-%Much of the algorithm is taken from the report
-%R. H. Gooding, "On the solution of Lambert's orbital boundary-value
-%problem," Royal Aerospace Executive, Procurement Executive, Ministry
-%of Defence, Farnborough, Hants, United Kingdom, Tech. Rep. 88027,
-%Apr. 1988.
-%and the paper
-%R. H. Gooding, "A procedure for the solution of Lambert's orbital
-%boundary-value problem," Celetial Mechanics and Dynamical Astronomy,
-%vol. 48, no. 2, pp. 145-165, 1990.
-%which are extensions of 
-%E. R. Lancaster and R. C. Blanchard, "A unified form of Lambert's
-%theorem," National Aeronautics and Space Administration, Goddard
-%Space Flight Center, Greenbelt, MD, Tech. Rep. TN D-5368, Sep. 1969.
-%Note Gooding's the paper does not provide as good an explanation of how
-%the algorithm works than the report.
+%Much of the algorithm is taken from the report [1] and the paper [2],
+%which are extensions of [3]. Note that [2] does not provide as good an
+%explanation of how the algorithm works as [1].
 %
 %As an example for testing the algorithm, one can use the example
-%parameters from Example 7-5 in Chapter 7.6 of
-%D. A. Vallado and W. D. McClain, Fundamentals of Astrodynamics
-%and Applications, 4th ed. Hawthorne, CA: Microcosm press, 2013.
-%which are
+%parameters from Example 7-5 in Chapter 7.6 of [4], which are
 % r1Vec=10^3*[15945.34;0;0];
 % r2Vec=10^3*[12214.83899;10249.46731;0];
 % m=0;
@@ -130,8 +115,24 @@ function [V1Comp,V2Comp,alpha]=orbVelDet2Pt(r1Val,r2Val,deltaT,angParam,isECEF,l
 %
 %The correction for ECEF coordinates just comes from the basic physics of
 %converting between rotating and non-rotating coordinate systems, which is
-%mentioned in Appendix A of "An Overview of Major Terrestrial, Celestial,
-%and Temporal Coordinate Systems for Target Tracking" by David F. Crouse
+%mentioned in Appendix A of [5].
+%
+%REFERENCES:
+%[1] R. H. Gooding, "On the solution of Lambert's orbital boundary-value
+%    problem," Royal Aerospace Executive, Procurement Executive, Ministry
+%    of Defence, Farnborough, Hants, United Kingdom, Tech. Rep. 88027,
+%    Apr. 1988.
+%[2] R. H. Gooding, "A procedure for the solution of Lambert's orbital
+%    boundary-value problem," Celetial Mechanics and Dynamical Astronomy,
+%    vol. 48, no. 2, pp. 145-165, 1990.
+%[3] E. R. Lancaster and R. C. Blanchard, "A unified form of Lambert's
+%    theorem," National Aeronautics and Space Administration, Goddard
+%    Space Flight Center, Greenbelt, MD, Tech. Rep. TN D-5368, Sep. 1969.
+%[4] D. A. Vallado and W. D. McClain, Fundamentals of Astrodynamics
+%    and Applications, 4th ed. Hawthorne, CA: Microcosm press, 2013.
+%[5] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

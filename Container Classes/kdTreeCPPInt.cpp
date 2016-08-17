@@ -3,6 +3,10 @@
  *              be called by the kdTree class in Matlab; not directly by
  *              the user.
  *
+ *As the data of the true C++ class is stored in the CPPData input that is
+ *passed to this function, passing garbage for the CPPData input can cause
+ *Matlab to crash.
+ *
  *The function is called as
  *newTree.CPPData=kdTreeCPPInt('kdTreeCPP',k,N);
  *or

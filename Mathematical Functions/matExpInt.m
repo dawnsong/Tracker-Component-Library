@@ -8,12 +8,14 @@ function F=matExpInt(T,A,B)
 %        A An NXN matrix.
 %        B An NXM matrix. If omitted, the identity matrix is substituted.
 %
-%The algorithm is based on the technique in
-%C. F. Van Loan, "Computing Integrals Involving the Matrix Exponential,"
-%IEEE Transactions on Automatic Control, vol. AC-23, no. 3, pp. 395-404,
-%Jun. 1967.
-%which solves for a large variety of such solutions. Simplifications to
-%avoid computing unneeded solutions were undertaken.
+%The algorithm is based on the technique in [1], which solves for a large
+%variety of such solutions. Simplifications to avoid computing unneeded
+%solutions were undertaken.
+%
+%REFERENCES:
+%[1] C. F. Van Loan, "Computing Integrals Involving the Matrix
+%    Exponential," IEEE Transactions on Automatic Control, vol. AC-23, no.
+%    3, pp. 395-404, Jun. 1967.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

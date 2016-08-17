@@ -27,13 +27,9 @@
 *     d2HBardu2  An instance of the ClusterSet class such that
 *                dHBardu(n+1,m+1)=scalFac*D{\bar{H}^m_n(u)}.
 *
-*The fully normalized derived Legendre functions (Helmholtz polynomials) are
-*described in
-*E. Fantino and S. Casotto, "Methods of harmonic synthesis for global
-*geopotential models and their first-, second- and third-order gradients,"
-*Journal of Geodesy, vol. 83, no. 7, pp. 595-619, Jul. 2009.
-*and the algorithm of that paper is implemented here with the addition of a
-*scale factor, if desired.
+*The fully normalized derived Legendre functions (Helmholtz polynomials)
+*are described in [1] and the algorithm of that paper is implemented here
+*with the addition of a scale factor, if desired.
 *
 *The Helmholtz polynomial of degree n and order m is defined to be
 *H^m_n(u)=1/(n!2^n)D_{n+m}{(u^2-1)^n}
@@ -57,6 +53,12 @@
 *
 *The algorithm is run in Matlab using the command format
 *[HBar,dHBardu,d2HBardu2]=normHelmholtz(u,M,scalFactor);
+*
+*REFERENCES:
+*[1] E. Fantino and S. Casotto, "Methods of harmonic synthesis for global
+*    geopotential models and their first-, second- and third-order
+*    gradients," Journal of Geodesy, vol. 83, no. 7, pp. 595-619, Jul.
+*    2009.
 *
 *January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -101,9 +103,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     
     HBar.numClust=M+1;
     HBar.totalNumEl=numH;
-    HBar.clusterEls=(double*)mxGetData(clusterElsMATLAB);
-    HBar.offsetArray=(size_t*)mxGetData(offsetArrayMATLAB);
-    HBar.clusterSizes=(size_t*)mxGetData(clusterSizesMATLAB);
+    HBar.clusterEls=reinterpret_cast<double*>(mxGetData(clusterElsMATLAB));
+    HBar.offsetArray=reinterpret_cast<size_t*>(mxGetData(offsetArrayMATLAB));
+    HBar.clusterSizes=reinterpret_cast<size_t*>(mxGetData(clusterSizesMATLAB));
     
     //Initialize the offset array and cluster sizes.
     HBar.offsetArray[0]=0;
@@ -128,9 +130,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         
         dHBardu.numClust=M+1;
         dHBardu.totalNumEl=numH;
-        dHBardu.clusterEls=(double*)mxGetData(clusterEls1stDerivMATLAB);
-        dHBardu.offsetArray=(size_t*)mxGetData(offsetArrayMATLAB);
-        dHBardu.clusterSizes=(size_t*)mxGetData(clusterSizesMATLAB);
+        dHBardu.clusterEls=reinterpret_cast<double*>(mxGetData(clusterEls1stDerivMATLAB));
+        dHBardu.offsetArray=reinterpret_cast<size_t*>(mxGetData(offsetArrayMATLAB));
+        dHBardu.clusterSizes=reinterpret_cast<size_t*>(mxGetData(clusterSizesMATLAB));
         
         normHelmHoltzDerivCPP(dHBardu,HBar);
         //Set the second return value
@@ -148,9 +150,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         
         d2HBardu2.numClust=M+1;
         d2HBardu2.totalNumEl=numH;
-        d2HBardu2.clusterEls=(double*)mxGetData(clusterEls2ndDerivMATLAB);
-        d2HBardu2.offsetArray=(size_t*)mxGetData(offsetArrayMATLAB);
-        d2HBardu2.clusterSizes=(size_t*)mxGetData(clusterSizesMATLAB);
+        d2HBardu2.clusterEls=reinterpret_cast<double*>(mxGetData(clusterEls2ndDerivMATLAB));
+        d2HBardu2.offsetArray=reinterpret_cast<size_t*>(mxGetData(offsetArrayMATLAB));
+        d2HBardu2.clusterSizes=reinterpret_cast<size_t*>(mxGetData(clusterSizesMATLAB));
         
         normHelmHoltzDeriv2CPP(d2HBardu2,HBar);
         

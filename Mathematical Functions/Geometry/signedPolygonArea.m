@@ -15,9 +15,11 @@ function A=signedPolygonArea(vertices)
 %OUTPUTS:       A The signed area of the polygon.
 %
 %The formula for computing the signed area of a non-self-intersecting is
-%taken from
-%Weisstein, Eric W. "Polygon Area." From MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/PolygonArea.html
+%taken from [1].
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Polygon Area." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/PolygonArea.html
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -34,6 +34,13 @@ function [UTC1,UTC2]=UT12UTC(UT11,UT12,deltaUTCUT1)
 %of UTC2UT1 and UT12UTC inconsistent by a second when it is near a
 %leapsecond.
 %
+%Many temporal coordinate systems standards are compared in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
+%
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 

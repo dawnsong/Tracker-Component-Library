@@ -3,7 +3,7 @@ function [midpoint,minDist]=closestPointBetween2Lines(a1,b1,a2,b2)
 %                           necessarily intersect, find the point closest
 %                           to both lines. This is done by finding the
 %                           point on each line that is closes to the other
-%                           line, and then averaging the points (got the
+%                           line, and then averaging the points (get the
 %                           point halfway between the lines).
 %
 %INPUTS: a1,b1  3XN matrix of parameters for the first line in N pairs of

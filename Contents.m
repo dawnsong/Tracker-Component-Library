@@ -1,5 +1,5 @@
 % Tracker Component Library
-% Version 1.0 (Jul 2015)  13-Jul-2015
+% Version 2.0 (Aug 2016)  1-Aug-2016
 %
 % This file allows the ver command in Matlab to properly show whether the
 % library is loaded and to properly show the version of the library.

@@ -1,7 +1,9 @@
 /*GETNEXTCOMBO A C++ function to return the next combination in
 *              lexicographic order given the current combination. If the
 *              final combination in the sequence has been reached, then an
-*              empty matrix is returned.
+*              empty matrix is returned. The first element in the
+*              combination is the least significant element for defining
+*              the lexicographic order.
 *
 *INPUTS:    I  The current combination of r elements. The next combination
 *              in lexicographic order is desired. The first element is the
@@ -18,10 +20,7 @@
 * the combinations. If the final combination is put in, an empty matrix
 * will be returned.
 *
-* The algorithm is from
-* C. J. Mifsud, "Algorithm 154: Combination in lexicographical order," 
-* Communications of the ACM, vol. 6, no. 3 pp. 103, Mar. 1963.
-* modified to start from zero instead of one.
+* The algorithm is from [1].
 *
 * The algorithm can be compiled for use in Matlab  using the 
 * CompileCLibraries function.
@@ -29,9 +28,10 @@
 * The algorithm is run in Matlab using the command format
 * I=getNextCombo(I,n)
 *
-* If the values of I and n that are passed are invalid, the function might
-* try to read past the end of an array/ try to write past the end of an
-* array.
+*REFERENCES:
+*[1] C. J. Mifsud, "Algorithm 154: Combination in lexicographical order," 
+*    Communications of the ACM, vol. 6, no. 3 pp. 103, Mar. 1963.
+*    modified to start from zero instead of one.
 *
 *December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -60,11 +60,30 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     
     n=getSizeTFromMatlab(prhs[1]);
     I=copySizeTArrayFromMatlab(prhs[0],&r);
+
+    //Verify that the I vector is not so messed up it will crash Matlab.
+    {
+        size_t i;
+        size_t maxEl=0;
+        
+        //Find the maximum value in I.
+        for(i=0;i<r;i++) {
+            if(maxEl<I[i]) {
+                maxEl=I[i];
+            }
+        }
+        
+        //If the maximum value in I is too big, or I is too big or too
+        //small.
+        if(maxEl>n-1||r>n||r<1) {
+            mexErrMsgTxt("The I vector is invalid.");
+        }
+    }
     
     //If the final combination in lexicographic order was passed.
     if(getNextComboCPP(I,n,r)==true){
         plhs[0]=mxCreateDoubleMatrix(0, 0,mxREAL);
-    }else {
+    } else {
         plhs[0]=mat2MatlabDoubles(I,r,1);
     }
 }

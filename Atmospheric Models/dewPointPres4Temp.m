@@ -28,19 +28,8 @@ function p=dewPointPres4Temp(T,algChoice)
 %                       square meter (Pascals) corresponding to each of the
 %                       temperatures in T.
 %
-%Formulae 0 is from
-%D. Koutsoyiannis, "Clausius-Clapeyron equation and saturation vapour
-%pressure: simple theory reconcided with practice," European Journal of
-%Physics, vol. 33, no. 2, pp. 295-305, Mar. 2012.
-%where formula 1 is also mentioned.
-%Two minor comments were printed on that paper, specifically:
-%T. López-Arias, "Comment on 'Clausius-Clapeyron equation and saturation
-%vapour pressure: simple theory reconcided with practice'," European
-%Journal of Physics, vol. 33, no. 3, pp. L11-L12, May 2012.
-%and
-%D. Koutsoyiannis, "Reply to 'Comment on "Clausius-Clapeyron equation and
-%saturation vapour pressure: simple theory reconcided with practice"',"
-%European Journal of Physics, vol. 33, no. 3, pp. L13-L14, May. 2012.
+%Formulae 0 is from [1], where formula 1 is also mentioned.
+%Two minor comments were printed on that paper, specifically [2] and [3].
 %
 %The paper demonstrates how the traditional form of the frequently used
 %Clausius-Clapeyron equation for finding the saturation of pressure of air
@@ -54,15 +43,26 @@ function p=dewPointPres4Temp(T,algChoice)
 %corrected Clausius-Clapeyron equation can be used to find the saturation
 %pressure of other substances, such as acetone.
 %
-%The Magnus-type equations are from
-%O. A. Alduchov and R. E. Eskridge, "Improved Magnus Form Approximation of
-%Saturation Vapor Pressure," Journal of Applied Meteorology, vol. 35,
-%no. 4, pp. 601-609, Apr. 1996.
-%Note that an additional pressure-dependent Magnus type equation to deal
-%with departures from the ideal gas law is also presented in that paper,
-%but is not provided here.
+%The Magnus-type equations are from [4]. Note that an additional pressure-
+%dependent Magnus type equation to deal with departures from the ideal gas
+%law is also presented in that paper, but is not provided here.
 %
 %Note that the function dewPointTemp4Pres is the inverse of this function.
+%
+%REFERENCES:
+%[1] D. Koutsoyiannis, "Clausius-Clapeyron equation and saturation vapour
+%    pressure: simple theory reconcided with practice," European Journal of
+%    Physics, vol. 33, no. 2, pp. 295-305, Mar. 2012.
+%[2] T. López-Arias, "Comment on 'Clausius-Clapeyron equation and
+%    saturation vapour pressure: simple theory reconcided with practice',"
+%    European Journal of Physics, vol. 33, no. 3, pp. L11-L12, May 2012.
+%[3] D. Koutsoyiannis, "Reply to 'Comment on "Clausius-Clapeyron equation
+%    and saturation vapour pressure: simple theory reconcided with
+%    practice"'," European Journal of Physics, vol. 33, no. 3, pp. L13-L14,
+%    May. 2012.
+%[4] O. A. Alduchov and R. E. Eskridge, "Improved Magnus Form Approximation
+%    of Saturation Vapor Pressure," Journal of Applied Meteorology, vol.
+%    35, no. 4, pp. 601-609, Apr. 1996.
 %
 %February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -5,19 +5,16 @@ classdef AVLTree < handle
 %          search. Duplicate keys are not permitted in the tree.
 %
 %The basic implementation is somewhat based on the description in Chapter
-%10 of
-%B. R. Preiss, Data Structures and Algorithms with Object-Oriented Design
-%Patterns in C++. New York, NY: John Wiley & Sons, Inc., 1999.
-%However, AVL trees are described in most introductory books on data
-%structures. Unlike the implementation described in Preiss, this class is
-%not implemented as a subclass of more general binary tree data structures.
-%Also, no needless empty classes are generated to mark the leaves of the
-%tree. This gets rid of the need for special Left and Right accessor
-%methods.
+%10 of [1]. However, AVL trees are described in most introductory books on
+%data structures. Unlike the implementation described in Preiss, this class
+%is not implemented as a subclass of more general binary tree data
+%structures.Also, no needless empty classes are generated to mark the
+%leaves of the tree. This gets rid of the need for special Left and Right
+%accessor methods.
 %
 %The AVL tree stores KeyVal objects and allows one to search for them by
 %key. In a practical (i.e. C/C++) implementation where an upper bound on
-%the number of keyVal pairs in the tree can be set, it would make sense to
+%the number of KeyVal pairs in the tree can be set, it would make sense to
 %pair the AVLTree class with a custom memory allocation routine for all of
 %the entries in the tree. That is, one allocated all of the possible nodes
 %in the tree as a single block of memory in advance and puts all of the
@@ -35,6 +32,10 @@ classdef AVLTree < handle
 %something is added. However, when dealing with a large amount of data,
 %that is not necessarily the smartest approach when one wants a dynamic
 %searchable data structure in C/C++.
+%
+%REFERENCES:
+%[1] B. R. Preiss, Data Structures and Algorithms with Object-Oriented
+%    Design Patterns in C++. New York, NY: John Wiley & Sons, Inc., 1999.
 %
 %April 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

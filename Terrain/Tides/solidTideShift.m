@@ -52,7 +52,7 @@ function DeltaR=solidTideShift(rStation,rSun,rMoon,Jul1,Jul2,addPermTide)
 %                     of the station (point on the ground) at the
 %                     terrestial time given by Jul1 and Jul2 taking into
 %                     account solid Earth tides. Note that the addPermTide
-%                     term must be consistent with the coordiante system of
+%                     term must be consistent with the coordinate system of
 %                     rStation. If rStation already includes the permanent
 %                     tides (is in a mean-tide model), then addPermTide
 %                     should be false. Otherwise, addPermTide should be
@@ -60,9 +60,8 @@ function DeltaR=solidTideShift(rStation,rSun,rMoon,Jul1,Jul2,addPermTide)
 %
 %The Sun and Moon cause the crust of the Earth to warp and points on the
 %Earth in WGS-84 coordinates to move over time. The formulae for computing
-%tidal shits of the crust are given in Section 7.1 of
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
+%tidal shits of the crust are given in Section 7.1 of [1].
+%
 %Section 7.1.1 discusses solid Earth tides. While the second-order
 %corrections are well documneted, the third order corrections can not be
 %implemented directly from the standard. However, the standard specifies
@@ -94,6 +93,10 @@ function DeltaR=solidTideShift(rStation,rSun,rMoon,Jul1,Jul2,addPermTide)
 %DeltaR = 0.0770042035
 %         0.0630405632
 %         0.0551656815
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

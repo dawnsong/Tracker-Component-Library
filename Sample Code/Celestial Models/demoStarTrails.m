@@ -11,7 +11,7 @@ function demoStarTrails()
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 %The location of the observer on the surface of the Earth in ellipsoidal
-%coordiantes.
+%coordinates.
 obsLoc=[-pi/8;pi-pi/8+pi/8;0];
 
 %Properties of the imaging sensor:
@@ -65,7 +65,7 @@ for minute=0:5:20
     %This returns the apparent star locations in the local ENU coordinate
     %system, where zSpherENU is the location in spherical azimuth and
     %elevation in ENU coordinate and uObs is unit vectors in local ENU
-    %coordiantes.
+    %coordinates.
     [zSpherENU,uStarsENU]=starCat2Obs(dataFile,Jul1,Jul2,obsLoc);
 
     %We have to determine which stars are in the observer's field of view.
@@ -74,7 +74,7 @@ for minute=0:5:20
     uStarLocal=ENU2LocRotMat*uStarsENU;
     
     %Next, obtain the azimuth and elevation of the stars in the local
-    %coordiante system.
+    %coordinate system.
     zStarLocal=Cart2Sphere(uStarLocal);
     %Discard the useless range component.
     zStarLocal=zStarLocal(2:3,:);

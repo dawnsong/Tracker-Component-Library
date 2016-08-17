@@ -39,9 +39,7 @@ function [out1,out2,out3]=LagrangeInterpPoly(x,y)
 %              interpolating polynomial. If N-2=0, then this is a 1XN
 %              vector of zeros.
 %
-%Lagrange Interpolating polynomials are described in Chapter 3.1 of
-%R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston,
-%MA: Brooks/Cole, 2011.
+%Lagrange Interpolating polynomials are described in Chapter 3.1 of [1].
 %The interpolating polynomial at a point xp matching the values in y at the
 %points x is given by
 %P(x)=sum_{i=1}^N L_i(x) *y(i)
@@ -64,6 +62,10 @@ function [out1,out2,out3]=LagrangeInterpPoly(x,y)
 % Li=LagrangeInterpPoly(x);
 % interpPoly=Li*y;
 % interpValZ=polyval(interpPoly,z);
+%
+%REFERENCES:
+%[1] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston,
+%    MA: Brooks/Cole, 2011.
 %
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

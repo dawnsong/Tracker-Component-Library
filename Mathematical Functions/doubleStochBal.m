@@ -23,15 +23,9 @@ function [P,r,c]=doubleStochBal(A,tol,g)
 %           r    One of the two vectors used to transform A into P.
 %           c    The second of the two vectors used to transform A into P.
 %
-%This function is an implementation of the algorithm given in
-%P. A. Knight, "The Sinkhorn-Knopp algorithm: Convergence and
-%applications," SIAM Journal on Matrix Analysis and Applications, vol. 30,
-%no. 1, 2008.
-%and the specific meaning of the values tol and g are discussed in the
-%paper. The underlying Sinkhorn-Knopp algorithm was originally derived in
-%R. Sinkhorn and P. Knopp, "Concerning nonnegative matrices and
-%doubly stochastic matrices," Pacific Journal of Mathematics, vol. 21,
-%no. 2, pp. 343-348, 1967.
+%This function is an implementation of the algorithm given in [1], and the
+%specific meaning of the values tol and g are discussed in the paper. The
+%underlying Sinkhorn-Knopp algorithm was originally derived in [2].
 %
 %The implementation of the termination criterion of the paper has been
 %slightly changed. The termination criterion given in the paper can not be
@@ -40,6 +34,14 @@ function [P,r,c]=doubleStochBal(A,tol,g)
 %criterion is fulfilled without entering the loop even though A is not
 %doubly stochastic. Thus, the while-loop of the paper has been replaced
 %with a do-while loop.
+%
+%REFERENCES:
+%[1] P. A. Knight, "The Sinkhorn-Knopp algorithm: Convergence and
+%    applications," SIAM Journal on Matrix Analysis and Applications, vol.
+%    30, no. 1, 2008.
+%[2] R. Sinkhorn and P. Knopp, "Concerning nonnegative matrices and doubly
+%    stochastic matrices," Pacific Journal of Mathematics, vol. 21, no. 2,
+%    pp. 343-348, 1967.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -220,7 +220,7 @@ for curIter=1:maxIter
     end
 end
 
-%Find the cost fo the flow.
+%Find the cost of the flow.
 FP=F;
 FP(F<0)=0;
 totalCost=sum(sum(FP.*AMatOrig));

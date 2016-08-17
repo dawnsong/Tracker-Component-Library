@@ -56,6 +56,7 @@ function [interpPolyA,interpPolyC]=RKInterpPolys(x0,t0,x1,t1,f,order,solutionCho
 %value in k is f evaluated at x1,t1 (the isFSAL parameter), if so, then an
 %extra evaluation of f is avoided. 
 %
+%REFERENCES:
 %[1] M. K. Horn, "Fourth- and fifth-order, scaled Runge-Kutta algorithms
 %    for treating dense output," SIAM Journal on Numerical Analysis, vol.
 %    20, no. 3, pp. 558-568, 1983.

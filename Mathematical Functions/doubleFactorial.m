@@ -12,11 +12,14 @@ function val=doubleFactorial(x)
 %OUTPUTS: val The double factorial of each value of x.
 %
 %The gamma function/ factorial representations of the double factorial for
-%even and odd values are taken from
-%Weisstein, Eric W. "Double Factorial." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/DoubleFactorial.html
+%even and odd values are taken from [1].
+%
 %The functions are implemented using logarithmic functions so as to
 %minimize the effects of overflow with intermediate results.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Double Factorial." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/DoubleFactorial.html
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

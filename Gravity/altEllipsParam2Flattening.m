@@ -3,7 +3,7 @@ function f=altEllipsParam2Flattening(omega,a,C20Bar,GM)
 %                           EGM2008, are defined using a second degree
 %                           spherical harmonic gravitational coefficient
 %                           and not a flattening factor. This function
-%                           takes the parameters fo the reference ellipsoid
+%                           takes the parameters of the reference ellipsoid
 %                           and returns a flattening factor, so that a more
 %                           standard parameterization can be used.
 %
@@ -20,9 +20,11 @@ function f=altEllipsParam2Flattening(omega,a,C20Bar,GM)
 %
 %OUTPUTS:   f       The flattening factor of the reference ellipsoid. 
 %
-%The conversion is an iterative method taken from 
-%H. Moritz, "Geodetic reference system 1980," Bulletin géodésique,
-%vol. 54, no. 3, pp. 395-405, 1980.
+%The conversion is an iterative method taken from [1].
+%
+%REFERENCES:
+%[1] H. Moritz, "Geodetic reference system 1980," Bulletin géodésique,
+%    vol. 54, no. 3, pp. 395-405, 1980.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

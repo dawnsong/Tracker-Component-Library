@@ -49,6 +49,7 @@ function [setStartList,setLengths,setIdxList,subgraphList]=findStronglyConnected
 %subgraphs. One is just vertex 3, another is just vertex 1, and the last
 %one is vertices 2,6,5, and 4.
 %
+%REFERENCES:
 %[1] J. Cheriyan and K. Mehlhorn, "Algorithms for dense graphs and
 %    networks on the random access computer," Algorithmica, vol. 15, no. 6,
 %    pp. 521-549, Jun. 1996.

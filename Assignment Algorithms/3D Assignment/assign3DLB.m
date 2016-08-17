@@ -60,6 +60,7 @@ function lowerBound=assign3DLB(C,method)
 % lowerBound1=assign3DLB(C,1);
 %One will find lowerBound0=37, but lowerBound1=26, which is not as tight.
 %
+%REFERENCES:
 %[1] B.-J. Kim, W. L. Hightower, P. M. Hahn, Y.-R. Zhu, and L. Sun, "Lower
 %    bounds for the axial three-index assignment problem," European Journal
 %    of Operational Research, vol. 202, no. 3, pp. 654-668, May 2010.

@@ -31,13 +31,8 @@
 *                  function call. If this is the first function call and
 *                  code was just created, then j is an empty matrix.
 *
-*The algorithm is NEXSUB taken from Chapter 1 of
-*A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-*and Calculators, 2nd ed. New York: Academic press, 1978.
-*Gray codes are also discussed in Chapter 7.2.1.1 of
-*D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 2:
-*Generating all Tuples and Permutations, Upper Saddle River, NJ:
-*Addison-Wesley, 2009.
+*The algorithm is NEXSUB taken from Chapter 1 of [1]. Gray codes are also
+*discussed in Chapter 7.2.1.1 of [2].
 *
 *The function called checks against the length of code so that if an
 *invalid value of nCard is passed, it will not read/ write past the end of
@@ -49,6 +44,13 @@
 *
 *The algorithm is run in Matlab using the command format
 *[code,nCard,isLast,j]=getNextGrayCode(code,nCard);
+*
+*REFERENCES:
+*[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+*    and Calculators, 2nd ed. New York: Academic press, 1978.
+*[2] D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 2:
+*    Generating all Tuples and Permutations, Upper Saddle River, NJ:
+*    Addison-Wesley, 2009.
 *
 *October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -62,10 +64,12 @@
 #include <algorithm>
 
 void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray *prhs[]) {
-    size_t n,j;
+    size_t n=0;
+    size_t j=0;
     size_t nCard;
-    bool isLast, lastPassed;
-    mxArray *codeArray;
+    bool isLast=false;
+    bool lastPassed=false;
+    mxArray *codeArray=NULL;
     
     if(nrhs<1){
         mexErrMsgTxt("Not enough inputs.");
@@ -151,9 +155,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     switch(mxGetClassID(codeArray)){
         case mxCHAR_CLASS:
         {
-            mxChar *code=(mxChar*)mxGetData(codeArray);
+            mxChar *code=reinterpret_cast<mxChar*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -162,9 +166,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxLOGICAL_CLASS:
         {
-            mxLogical* code=(mxLogical*)mxGetData(codeArray); 
+            mxLogical* code=reinterpret_cast<mxLogical*>(mxGetData(codeArray)); 
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -173,9 +177,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxDOUBLE_CLASS:
         {
-            double* code=(double*)mxGetData(codeArray);
+            double* code=reinterpret_cast<double*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -184,9 +188,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxSINGLE_CLASS:
         {
-            float* code=(float*)mxGetData(codeArray);
+            float* code=reinterpret_cast<float*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -195,9 +199,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxINT8_CLASS:
         {
-            int8_T* code=(int8_T*)mxGetData(codeArray);
+            int8_T* code=reinterpret_cast<int8_T*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -206,9 +210,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxUINT8_CLASS:
         {
-            uint8_T* code=(uint8_T*)mxGetData(codeArray);
+            uint8_T* code=reinterpret_cast<uint8_T*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -217,9 +221,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxINT16_CLASS:
         {
-            int16_T* code=(int16_T*)mxGetData(codeArray);
+            int16_T* code=reinterpret_cast<int16_T*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -228,9 +232,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxUINT16_CLASS:
         {
-            uint16_T* code=(uint16_T*)mxGetData(codeArray);
+            uint16_T* code=reinterpret_cast<uint16_T*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -239,9 +243,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxINT32_CLASS:
         {
-            int32_T* code=(int32_T*)mxGetData(codeArray);
+            int32_T* code=reinterpret_cast<int32_T*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -250,9 +254,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxUINT32_CLASS:
         {
-            uint32_T* code=(uint32_T*)mxGetData(codeArray);
+            uint32_T* code=reinterpret_cast<uint32_T*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -261,9 +265,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxINT64_CLASS:
         {
-            int64_T* code=(int64_T*)mxGetData(codeArray);
+            int64_T* code=reinterpret_cast<int64_T*>(mxGetData(codeArray));
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
@@ -272,15 +276,22 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         case mxUINT64_CLASS:
         {
-            uint64_T* code=(uint64_T*)mxGetData(codeArray);   
+            uint64_T* code=reinterpret_cast<uint64_T*>(mxGetData(codeArray));   
             
-            if(nCard==(size_t)code[n-1]&&nCard!=0) {
+            if(nCard==static_cast<size_t>(code[n-1])&&nCard!=0) {
                 lastPassed=true;
             } else{
                 isLast=getNextGrayCodeCPP(n, code, nCard, j);
             }
             break;
         }
+        case mxUNKNOWN_CLASS:
+        case mxCELL_CLASS:
+        case mxSTRUCT_CLASS:
+        case mxVOID_CLASS:
+        case mxFUNCTION_CLASS:
+        case mxOPAQUE_CLASS:
+        case mxOBJECT_CLASS:
         default:
             mexErrMsgTxt("The code vector is of an unknown data type.");
     }
@@ -293,7 +304,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         plhs[0]=mxCreateDoubleMatrix(0, 0, mxREAL);
         if(nlhs>1) {
             mxArray *nCardMat=allocUnsignedSizeMatInMatlab(1, 1);
-            *(size_t*)mxGetData(nCardMat)=n;
+            *reinterpret_cast<size_t*>(mxGetData(nCardMat))=n;
 
             plhs[1]=nCardMat;
             if(nlhs>2) {
@@ -314,7 +325,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     plhs[0]=codeArray;
     if(nlhs>1) {
         mxArray *nCardMat=allocUnsignedSizeMatInMatlab(1, 1);
-        *(size_t*)mxGetData(nCardMat)=nCard;
+        *reinterpret_cast<size_t*>(mxGetData(nCardMat))=nCard;
         
         plhs[1]=nCardMat;
         if(nlhs>2) {
@@ -325,7 +336,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
                 mxArray *jMat=allocUnsignedSizeMatInMatlab(1, 1);
                 //Increment j to be an index for Matlab.
                 j++;
-                *(size_t*)mxGetData(jMat)=j;
+                *reinterpret_cast<size_t*>(mxGetData(jMat))=j;
                 
                 plhs[3]=jMat;
             }

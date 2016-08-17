@@ -38,7 +38,7 @@ display('Mauna Loa to Honolulu')
 %which is significantly faster than the exact method.
 [azStartF,distF]=indirectGeodeticProbGen(latLonStart,latLonEnd,ellipsAlt,true);
 
-display('3) Computing the spiraling trajctory with parameters:')
+display('3) Computing the spiraling trajectory with parameters:')
 SpiralOffset=5e3;
 display(['Spiral radius:', num2str(SpiralOffset/10^3),' km'])
 Nw=6;
@@ -54,7 +54,7 @@ uInit=getENUAxes([latLonStart;ellipsAlt]);
 tTotal=distF/cSoundSTP;
 %The times of the state estimates.
 times=linspace(0,tTotal,numSteps);
-%The initial heading in the local tangent plane coordiantes.
+%The initial heading in the local tangent plane coordinates.
 uh=[sin(azStartF);cos(azStartF);0];
 vl=cSoundSTP*uh;%The linear velocity traveled in the local coordinates. 
 %The turn rate to do Nw spirals over the time period allotted.
@@ -69,7 +69,7 @@ xInit=[xyzStart;vTotalInit];
 aDyn=@(x,t)aSpiralSimp([x;vl;omega],t);
 xListGeo=RungeKCurvedAtTimes(xInit,uInit,times,aDyn);
 
-%Convert the Cartesian locations into ellipsoidal coordiantes.
+%Convert the Cartesian locations into ellipsoidal coordinates.
 latLonAlt=Cart2Ellipse(xListGeo(1:3,:));
 
 display('2) Plotting the trajectory and the ellipsoidal height as a function of time.')

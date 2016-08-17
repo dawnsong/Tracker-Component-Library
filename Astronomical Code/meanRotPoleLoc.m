@@ -13,12 +13,13 @@ function xpBarypBar=meanRotPoleLoc(TT1,TT2)
 %                    2010 conventions, given in radians.
 %
 %The 2010 International Earth Rotation System Service (IERS) conventions
-%are
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%This models the secular change in the polar motion variables. The mean
-%rotation pole comes up when dealing with pole tides and when computing the
-%potential due to the rotation of the Earth.
+%are [1]. This models the secular change in the polar motion variables. The
+%mean rotation pole comes up when dealing with pole tides and when
+%computing the potential due to the rotation of the Earth.
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

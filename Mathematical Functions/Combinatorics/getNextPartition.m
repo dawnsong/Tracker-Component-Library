@@ -8,7 +8,10 @@ function [thePartition,r,m,d]=getNextPartition(n,r,m,d)
 %                   partitions. If the last partition is passed, then an
 %                   empty matrix is returned. The total number of
 %                   partitions for a given n can be found using the
-%                   numberOfPartitions function.
+%                   numberOfPartitions function. Unlike the function
+%                   getNextMPartition, this goes through partitions of n
+%                   into all numbers of parts, whereas getNextMPartition
+%                   only goes through partitions of m parts.
 %
 %INPUTS:    n  A positive integer that one wishes to partition. If this is
 %              the only parameter passed, then the first partition in
@@ -32,19 +35,21 @@ function [thePartition,r,m,d]=getNextPartition(n,r,m,d)
 %                      this is the first partition. If the parameters for
 %                      the final partition were passed, then this is an
 %                      empty matrix.
-%           r,m,d      The updated values of r,m, and d that should be
+%           r,m,d      The updated values of r, m, and d that should be
 %                      passed to get the next partition. Note that the
 %                      entire partition is encoded in r, m, and d.
 %
-%The algorithm is the algorithm NEXPAR taken from Chapter 9 of 
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
+%The algorithm is the algorithm NEXPAR taken from Chapter 9 of [1].
 %
 %The function is called as
 %[thePartition,r,m,d]=getNextPartition(n);
 %to get the first parition and as
 %[thePartition,r,m,d]=getNextPartition(n,r,m,d);
 %to get subsequent partitions.
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

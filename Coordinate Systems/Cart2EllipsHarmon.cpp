@@ -17,10 +17,9 @@
 *                   with reduced latitude and longitude given in radians.
 *
 *The ellipsoidal harmonic coordinate system is described in Chapter 1.15 of
-*B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-*SpringerWienNewYork, 2006.
-*Note that some folks use the complement of the reduced latitude in place
-*of the reduced latitude. The complement is pi/2-the reduced latitude.
+*[1]. Note that some folks use the complement of the reduced latitude in
+*place of the reduced latitude. The complement is pi/2-the reduced
+*latitude.
 *
 *The conversion should work for all points that are not at the origin. For
 *points that are particularly close to the origin, (generally, points deep
@@ -40,6 +39,10 @@
 *
 *The algorithm is run in Matlab using the command format
 *pointsHarmon=Cart2EllipsHarmon(cartPoints,E);
+*
+*REFERENCES:
+*[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+*    SpringerWienNewYork, 2006.
 *
 *February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -79,7 +82,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     
     //If the linear eccentricity is not given, then use the WGS-84 value
     //from the Constants class.
-    if(nrhs<2) {
+    if(nrhs<2&&!mxIsEmpty(prhs[1])) {
         mxArray *constantClass, *aMATLAB, *fMATLAB;
         double a,b,f;
         

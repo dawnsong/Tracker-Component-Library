@@ -10,12 +10,13 @@ function R=rotZAxis2Vec(u)
 %OUTPUTS: R     A rotation matrix such that u=R*z, where z is the z-axis
 %               [0;0;1].
 %
-%In Appendix C of 
-%D. F. Crouse, "On measurement-based light-time corrections for bistatic
-%orbital debris tracking," IEEE Transactions on Aerospace and Electronic
-%Systems, 2014, Submitted, 2014.
-%the minimal rotation to point the z-axis in a desired direction is
-%derived.
+%In Appendix C of [1], the minimal rotation to point the z-axis in a
+%desired direction is derived.
+%
+%REFERENCES:
+%[1] D. F. Crouse, "On measurement-based light-time corrections for
+%    bistatic orbital debris tracking," IEEE Transactions on Aerospace and
+%    Electronics Systems, vol. 51, no. 3, pp. 2502-2518,  Jul. 2015.
 %
 %August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

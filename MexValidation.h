@@ -78,16 +78,27 @@
  *                          that can be used in Matlab.
  *allocSignedSizeMatInMatlab Allocate a matrix for holding ptrdiff_t values
  *                          that can be used in Matlab.
+ *allocUnsignedCharMatInMatlab Allocate a matrix for holding unsigned char
+ *                          values that can be used in Matlab.
  *allocUnsignedIntMatInMatlab Allocate a matrix for holding unsigned int
  *                          values that can be used in Matlab.
  *allocSignedIntMatInMatlab Allocate a matrix for holding int values
  *                          that can be used in Matlab.
  *unsignedSizeMat2Matlab    Convert an array or matrix of size_t values
  *                          into a matrix to be returned by Matlab.
+ *unsignedCharMat2Matlab    Convert an array or matrix of unsigned char
+ *                          values into a matrix to be returned by Matlab.
  *signedSizeMat2Matlab      Convert an array or matrix of ptrdiff_t values
  *                          into a matrix to be returned to Matlab.
  *getScalarMatlabClassConst Get a double scalar constant that is defined in
  *                          a Matlab class.
+ *pointerIsAligned          Determine whether a pointer is aligned to a
+ *                          certain number of bytes. This is useful if one
+ *                          wishes to use SIMD instructions in the
+ *                          processor,because Matlab does not specify that
+ *                          matrices will maintain a 16-byte (or other)
+ *                          alignment, which is generally necessary for
+ *                          such instructions to be particularly fast.
  *
  *The following functions are for use when interfacing C and C++ programs:
  *ptr2Matlab                Convert a pointer to a class instance into a
@@ -209,9 +220,11 @@ mxArray *intMat2MatlabDoubles(const int * const arr,const size_t numRow, const s
 mxArray *boolMat2Matlab(const bool * const arr,const size_t numRow, const size_t numCol);
 mxArray *allocUnsignedSizeMatInMatlab(const size_t numRow, const size_t numCol);
 mxArray *allocSignedSizeMatInMatlab(const size_t numRow, const size_t numCol);
+mxArray *allocUnsignedCharMatInMatlab(const size_t numRow, const size_t numCol);
 mxArray *allocUnsignedIntMatInMatlab(const size_t numRow, const size_t numCol);
 mxArray *allocSignedIntMatInMatlab(const size_t numRow, const size_t numCol);
 mxArray *unsignedSizeMat2Matlab(const size_t * const arr, const size_t numRow, const size_t numCol);
+mxArray *unsignedCharMat2Matlab(const unsigned char * const arr, const size_t numRow, const size_t numCol);
 mxArray *signedSizeMat2Matlab(const ptrdiff_t * const arr, const size_t numRow, const size_t numCol);
 double getScalarMatlabClassConst(const char * const className, const char * const constName);
 
@@ -1099,7 +1112,7 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
     } else if(M>1&&N==1){
         numEl=M;
     } else {
-        mexErrMsgTxt("A parameter that should be an array has extra dimensions.");
+        mexErrMsgTxt("A parameter that should be an array has an incorrect dimensionality.");
     }
     
     *arrayLen=numEl;
@@ -1291,7 +1304,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
     } else if(M>1&&N==1){
         numEl=M;
     } else {
-        mexErrMsgTxt("A parameter that should be an array has extra dimensions.");
+        mexErrMsgTxt("A parameter that should be an array has an incorrect dimensionality.");
     }
     
     *arrayLen=numEl;
@@ -1637,6 +1650,10 @@ mxArray *allocSignedSizeMatInMatlab(const size_t numRow, const size_t numCol) {
     return retMat;
 }
 
+mxArray *allocUnsignedCharMatInMatlab(const size_t numRow, const size_t numCol) {
+    return mxCreateNumericMatrix(numRow,numCol,mxUINT8_CLASS,mxREAL);
+}
+
 mxArray *allocUnsignedIntMatInMatlab(const size_t numRow, const size_t numCol) {
     mxArray *retMat=NULL;
     
@@ -1683,6 +1700,18 @@ mxArray *unsignedSizeMat2Matlab(const size_t * const arr, const size_t numRow, c
     return retMat;
 }
 
+mxArray *unsignedCharMat2Matlab(const unsigned char * const arr, const size_t numRow, const size_t numCol) {
+    mxArray *retMat;
+    void *dataPtr;
+    
+    retMat=allocUnsignedCharMatInMatlab(numRow, numCol);
+    
+    dataPtr=mxGetData(retMat);
+    memcpy(dataPtr,arr,numRow*numCol*sizeof(unsigned char));
+
+    return retMat;
+}
+
 mxArray *signedSizeMat2Matlab(const ptrdiff_t * const arr, const size_t numRow, const size_t numCol) {
     mxArray *retMat;
     void *dataPtr;
@@ -1716,6 +1745,10 @@ double getScalarMatlabClassConst(const char * const className, const char * cons
     retVal=getDoubleFromMatlab(valMATLAB);
     mxDestroyArray(valMATLAB);
     return retVal;
+}
+
+bool pointerIsAligned(const void *pointer, const size_t byteCount) {
+    return (uintptr_t)pointer%byteCount == 0;
 }
 
 #ifdef __cplusplus

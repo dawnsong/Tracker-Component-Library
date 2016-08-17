@@ -25,9 +25,7 @@ function angAvg=meanAng(ang,w,dim)
 %                collapsed to one.
 %
 %The method for performing a weighted average of points comes from the
-%definition of population mean angle used in Chapter 9.2.1 of
-%K. V. Mardia and P. E. Jupp, Directional Statistics. Chichester,
-%England: John Wiley & Sons, 2000.
+%definition of population mean angle used in Chapter 9.2.1 of [1].
 %Basically, the angles are converted into 2D unit vectors, the weighted
 %average of the unit vectors is taken, and an inverse tangent is used to
 %transform the 2D unit vectors back into an angle. In the event that the
@@ -35,6 +33,10 @@ function angAvg=meanAng(ang,w,dim)
 %result can be anywhere on the unit circle (due to numerical issues not
 %completely cancelling the vectors). If the vectors cancel perfectly, then
 %atan2(0,0) is the result, which currently returns 0.
+%
+%REFERENCES:
+%[1] K. V. Mardia and P. E. Jupp, Directional Statistics. Chichester,
+%    England: John Wiley & Sons, 2000.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

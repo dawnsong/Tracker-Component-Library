@@ -5,16 +5,9 @@ classdef kdTree < handle
 %        will be called in place of the Matlab routines, since the C++
 %        implementation can be significantly faster.
 %
-%The kd tree for range queries is described in
-%J. L. Bentley, "Multidimensional binary search trees used for associative
-%searching," Communications of the ACM, vol. 18, no. 9, pp. 509-517, Sep.
-%1975.
-%The algorithm for a nearest neighbor search is described in
-%J. H. Friedman, J. L. Bentley, and R. A. Finkel, "An algorithm for finding
-%best matches in logarithmic expected time," ACM Transactions on
-%Mathematical Software, vol. 3, no. 3, pp. 209-226, Sep. 1977.
-%The squared Euclidean distance is used as the metric for the nearest
-%neighbor search.
+%The kd tree for range queries is described in [1]. The algorithm for a
+%nearest neighbor search is described in [2]. The squared Euclidean
+%distance is used as the metric for the nearest neighbor search.
 %
 %This implementation builds the tree from a batch of data all at once. The
 %split point is chosen to be the median along the split dimension. Note
@@ -34,8 +27,20 @@ classdef kdTree < handle
 %whose dimension DISC(1) is less than data(DISC(1),DATAIDX(1)). That is,
 %the node at the root of the subtree is DATAIDX(LOSON(1)). On the other
 %hand, HISON(1) points to the node at the root of the subtree of nodes
-%whose discrininating index is greater than or equal to the one at the
-%split node. 
+%whose discriminating index is greater than or equal to the one at the
+%split node.
+%
+%Modification of the CPPData member of this class or of the error checking
+%code in the members can potentially lead to Matlab crashing as CPPData is
+%a pointer to data in the C++ implementation.
+%
+%REFERENCES:
+%[1] J. L. Bentley, "Multidimensional binary search trees used for
+%    associative searching," Communications of the ACM, vol. 18, no. 9, pp.
+%    509-517, Sep. 1975.
+%[2] J. H. Friedman, J. L. Bentley, and R. A. Finkel, "An algorithm for
+%    finding best matches in logarithmic expected time," ACM Transactions
+%    on Mathematical Software, vol. 3, no. 3, pp. 209-226, Sep. 1977.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -96,11 +101,8 @@ methods
     %                  kd tree. k is the dimensionality of the points and N
     %                  is the number of points.
     %
-    %The tree is generally constructed as described in 
-    %J. L. Bentley, "Multidimensional binary search trees used for 
-    %associative searching," Communications of the ACM, vol. 18, no. 9, pp.
-    %509-517, Sep. 1975.
-    %with all of the nodes stored in array, but with a few changes.
+    %The tree is generally constructed as described in [1]. with all of the
+    %nodes stored in array, but with a few changes.
     %
     %Specifically, the array subtreeSizes is added, which makes the
     %rangeCount function able to execute quickly without having to visit
@@ -112,6 +114,11 @@ methods
     %on the discriminant dimension at each node. However, if a lot of nodes
     %have identical values in various dimensions, then the tree can be
     %unbalanced.
+    %
+    %REFERENCES:
+    %[1] J. L. Bentley, "Multidimensional binary search trees used for 
+    %    associative searching," Communications of the ACM, vol. 18, no. 9,
+    %    pp. 509-517, Sep. 1975.
         
         if(exist('kdTreeCPPInt','file'))
             N=kdTreeCPPInt('getN',theTree.CPPData);
@@ -166,6 +173,9 @@ methods
     %                element in the ClusterSet will be zero.
     %
     %The orthogonal range query algorithm is essentially that described in
+    %[1].
+    %
+    %REFERENCES:
     %J. L. Bentley, "Multidimensional binary search trees used for 
     %associative searching," Communications of the ACM, vol. 18, no. 9, pp.
     %509-517, Sep. 1975.
@@ -182,7 +192,7 @@ methods
             k=kdTreeCPPInt('getk',theTree.CPPData);
             
             if(k~=size(rectMin,1)||k~=size(rectMax,1))
-               error('The coordiantes are not the appropriate sizes.'); 
+               error('The coordinates are not the appropriate sizes.'); 
             end
 
             if(N==0)
@@ -239,7 +249,7 @@ methods
             k=kdTreeCPPInt('getk',theTree.CPPData);
             
             if(k~=size(rectMin,1)||k~=size(rectMax,1))
-               error('The coordiantes are not the appropriate sizes.'); 
+               error('The coordinates are not the appropriate sizes.'); 
             end
             
             if(N==0)
@@ -272,13 +282,16 @@ methods
     %
     %OUTPUTS: idxRange A kX1 vector such that theTree.data(:,idxRange(k))
     %                  is the k-best match.
-    %      distSquared A kX1 vector fo the squared Euclidean distance from
+    %      distSquared A kX1 vector of the squared Euclidean distance from
     %                  points found in idxRange to the given point.
     %
-    %This is essentially the algorithm described in
-    %J. H. Friedman, J. L. Bentley, and R. A. Finkel, "An algorithm for
-    %finding best matches in logarithmic expected time," ACM Transactions
-    %on Mathematical Software, vol. 3, no. 3, pp. 209-226, Sep. 1977.
+    %This is essentially the algorithm described in [1].
+    %
+    %REFERENCES:
+    %[1] J. H. Friedman, J. L. Bentley, and R. A. Finkel, "An algorithm for
+    %    finding best matches in logarithmic expected time," ACM
+    %    Transactions on Mathematical Software, vol. 3, no. 3, pp. 209-226,
+    %    Sep. 1977.
     
         if(nargin<3)
             m=1;
@@ -626,8 +639,8 @@ function val=rectsIntersect(rectMin1,rectMax1,rectMin2,rectMax2)
 end
 
 function val=rectContainedInRect(rectMin1,rectMax1,rectMin2,rectMax2)
-%rectContainedInRect Determine whether a hyperrectangle is completely contained
-%              in another hyperrectangle.
+%rectContainedInRect Determine whether a hyperrectangle is completely
+%              contained in another hyperrectangle.
 
 k=length(rectMin1);
 

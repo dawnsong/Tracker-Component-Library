@@ -42,25 +42,26 @@ function [a,c]=HermiteInterpPoly(x,y)
 %point z is
 %y(z)=a(1)+sum_{k=1}^{n-1}a(k+1)(z-c(1))*(z-c(2))*...*(z-c(k))
 %
-%The algorithm is an implementation of the general divided difference
-%Hermite interpolation algorithm described in Chapter 2.1.5 of
-%J. Stoer and R. Bulirsch, Introduction to Numerical Analysis, 3rd ed.
-%New York: Springer, 2002.
-%In Section 2.1.3 of the book, it is mentioned that the error in the Newton
+%The algorithm is an implementation of the general divided difference in
+%[1]. In Section 2.1.3 of [1], it is mentioned that the error in the Newton
 %polynomial solution can be reduced by ordering the coefficients in a
 %certain manner. As long as the number of points to match is kept small,
 %that is not necessary.
 %
 %If that is difficult to understand, one might want to start with Chapter
-%3.4 of 
-%R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
-%Brooks/Cole, 2011.
-%which describes the basic algorithm only for matching the position and the
-%first derivative.
+%3.4 of [2], which describes the basic algorithm only for matching the
+%position and the first derivative.
 %
 %Often it is best to perform interpolation just between a few points at a
 %time to avoid  wild fluctuations of the fitted polynomial that can result
 %when many points are used and finite precision errors will increase.
+%
+%REFERENCES:
+%[1] Hermite interpolation algorithm described in Chapter 2.1.5 of J. Stoer
+%    and R. Bulirsch, Introduction to Numerical Analysis, 3rd ed. New York:
+%    Springer, 2002.
+%[2] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
+%    Brooks/Cole, 2011.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

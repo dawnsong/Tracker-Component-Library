@@ -1,12 +1,16 @@
 function a=getNextMPartition(param1,m)
-%%GETNEXTMPARTITION Get the next partition of the integer n into m parts.
-%                   This is m nonzero items such that the sum is n. The
-%                   paritions are visited in reverse lexicographic order
-%                   (colex order). The function can be called with two
-%                   parameters to get the first n,m partition, or with 1
-%                   parameter (that being the previous partition) to get
-%                   the next partition. The total number of partitions can
-%                   be found using the function numMPartitions(n,m).
+%%GETNEXTMPARTITION Get the next partition of the integer n into m
+%                   parts. This is m nonzero items such that the sum is n.
+%                   The partitions are visited in reverse lexicographic
+%                   order (colex order). The function can be called with
+%                   two parameters to get the first n,m partition, or with
+%                   1 parameter (that being the previous partition) to
+%                   get the next partition. The total number of
+%                   partitions can be found using the function
+%                   numMPartitions(n,m). As combinations are to
+%                   permutations, partitions are to compositons: The order
+%                   of the terms in an m-partitions do not matter, whereas
+%                   they matter in a composition.
 %
 %INPUTS:param1 If two parameters are passed to the function, then param1 is
 %            n, the integer to be partitioned. Otherwise, param1 is a,
@@ -26,10 +30,7 @@ function a=getNextMPartition(param1,m)
 %            function was called getNextMPartition(n,m), then a is the
 %            first parition.
 %
-%The algorithm is Algorithm H in Chapter 7.2.1.4 of
-%D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
-%Generating all Combinations and Partitions, Upper Saddle River, NJ:
-%Addison-Wesley, 2009.
+%The algorithm is Algorithm H in Chapter 7.2.1.4 of [1].
 %
 %The function can either be called as
 %a=getNextMPartition(n,m);
@@ -41,8 +42,13 @@ function a=getNextMPartition(param1,m)
 %constant value n INCLUDING zeros. This function can be used to produce
 %such a modified set of partitions by initializing it as
 %a=getNextMPartition(n+m,m);
-%and for every partition generating, including the first, the modified
-%partition starting from zero is given by a-1.
+%and for every composition generated, including the first, the modified
+%composition starting from zero is given by a-1.
+%
+%REFERENCES:
+%[1] D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 3:
+%    Generating all Combinations and Partitions, Upper Saddle River, NJ:
+%    Addison-Wesley, 2009.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

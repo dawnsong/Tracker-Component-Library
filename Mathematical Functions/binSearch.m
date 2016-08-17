@@ -20,16 +20,18 @@ function [val, idx]=binSearch(vec,key,choice)
 %           idx     The index of val in the vector vec.
 %
 %This is just a basic binary search. The search space is cut in half each
-%time. In some cases, such as are elaborated in
-%S. Nishihara and H. Nishino, "Binary search revisited: Another advantage
-%of Fibonacci search," IEEE Transactions on Computers, vol. C-36, no. 9,
-%pp. 1132-1135, Sep. 1987.
-%the Fibonacci search can be faster. However, for most problems, there is
-%little difference between a binary and Fibonacci search and in
-%K. J. Overholt, "Optimal binary search methods," BIT Numerical
-%Mathematics, vol. 13, no. 1, pp. 84-91, 1973.
-%it is shown that the binary search has a degree of optimality over the
-%more complicated Fibonacci search in many instances.
+%time. In some cases, such as are elaborated in [1] the Fibonacci search
+%can be faster. However, for most problems, there is little difference
+%between a binary and Fibonacci search and in [2], it is shown that the
+%binary search has a degree of optimality over the more complicated
+%Fibonacci search in many instances.
+%
+%REFERENCES:
+%[1] S. Nishihara and H. Nishino, "Binary search revisited: Another
+%    advantage of Fibonacci search," IEEE Transactions on Computers, vol.
+%    C-36, no. 9, pp. 1132-1135, Sep. 1987.
+%[2] K. J. Overholt, "Optimal binary search methods," BIT Numerical
+%    Mathematics, vol. 13, no. 1, pp. 84-91, 1973.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

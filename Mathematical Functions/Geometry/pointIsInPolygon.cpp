@@ -31,9 +31,7 @@
 *                     for each point. This is not meainingful for points on
 *                     the boundary of the polygon. 
 *
-*The implementation is Algorithms 6 and 7 from
-*K. Hormann and A. Agathos, "The point in polygon problem for arbitrary
-*polygons," Computational Geometry, vol. 20, no. 3, pp. 131-144, Nov. 2001.
+*The implementation is Algorithms 6 and 7 from [1].
 *
 * The algorithm can be compiled for use in Matlab  using the 
 * CompileCLibraries function.
@@ -42,6 +40,11 @@
 * [isInPolygon,omegas]=pointIsInPolygon(vertices,point,boundaryIsImportant);
 * or
 * [isInPolygon,omegas]=pointIsInPolygon(vertices,point);
+*
+*REFERENCES:
+*[1] K. Hormann and A. Agathos, "The point in polygon problem for arbitrary
+*    polygons," Computational Geometry, vol. 20, no. 3, pp. 131-144, Nov.
+*    2001.
 *
 *December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -80,8 +83,8 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
 
     checkRealDoubleArray(prhs[0]);
     checkRealDoubleArray(prhs[1]);
-    P=(double*)mxGetData(prhs[0]);//The vertex data
-    R=(double*)mxGetData(prhs[1]);//The points
+    P=reinterpret_cast<double*>(mxGetData(prhs[0]));//The vertex data
+    R=reinterpret_cast<double*>(mxGetData(prhs[1]));//The points
     
     numRow = mxGetM(prhs[0]);
     numCol = mxGetN(prhs[0]);
@@ -109,10 +112,10 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     omegasMatlab=allocSignedSizeMatInMatlab(numPoints,1);
     isInPolygonMatlab=mxCreateLogicalMatrix(numPoints,1);
     isInPolygon=mxGetLogicals(isInPolygonMatlab);
-    omegas=(ptrdiff_t*)mxGetData(omegasMatlab);
+    omegas=reinterpret_cast<ptrdiff_t*>(mxGetData(omegasMatlab));
 
     for(i=0;i<numPoints;i++) {
-        isInPolygon[i]=(mxLogical)pointIsInPolygonCPP(P,numVertices,R+2*i,boundaryIsImportant,omegas+i);
+        isInPolygon[i]=static_cast<mxLogical>(pointIsInPolygonCPP(P,numVertices,R+2*i,boundaryIsImportant,omegas+i));
     }
 
     //Set the return values

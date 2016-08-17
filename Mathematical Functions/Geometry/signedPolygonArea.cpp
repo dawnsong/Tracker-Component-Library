@@ -14,15 +14,17 @@
  *OUTPUTS:       A The signed area of the polygon.
  *
  *The formula for computing the signed area of a non-self-intersecting is
- *taken from
- *Weisstein, Eric W. "Polygon Area." From MathWorld--A Wolfram Web 
- *Resource. http://mathworld.wolfram.com/PolygonArea.html
+ *taken from [1[.
  *
  *The algorithm can be compiled for use in Matlab  using the 
  *CompileCLibraries function.
  *
  *The algorithm is run in Matlab using the command format
  *A=signedPolygonArea(vertices);
+ *
+ *REFERENCES:
+ *[1] Weisstein, Eric W. "Polygon Area." From MathWorld--A Wolfram Web 
+ *    Resource. http://mathworld.wolfram.com/PolygonArea.html
  *
  *December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  **/
@@ -64,7 +66,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     numVertices=mxGetN(prhs[0]);
-    vertices=(double*)mxGetData(prhs[0]);
+    vertices=reinterpret_cast<double*>(mxGetData(prhs[0]));
     
     A=signedPolygonAreaCPP(vertices,numVertices);
     plhs[0]=doubleMat2Matlab(&A,1,1);

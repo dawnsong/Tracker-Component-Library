@@ -14,10 +14,10 @@
  *                  dates.
  *         dayCount A matrix integer days of the year (as Matlab doubles),
  *                  accounting for leap years, corresponding to the input
- *                  dates.
+ *                  dates. Values in dayCount are integers >=1.
  *         second   A matrix of the (possibly fractional) seconds of the
  *                  day, accounting for leap seconds, corresponding to the
- *                  input dates.
+ *                  input dates. Values in second are >=0.
  *
  *This makes use of the function iauJd2cal in the International
  *Astronomical Union's (IAU) Standard's of Fundamental Astronomy library
@@ -34,7 +34,7 @@
  *
  *Leap years are taken into account. February has 29 days if the year is
  *divisible by 4, unless the year is divisible by 100 unless the year is
- *divisible by 400.
+ *divisible by 400. Leap seconds are also taken into account.
  *
  *UTC began at 1960 January 1.0 (JD 2436934.5) and this function should not
  *be called with an earlier date.

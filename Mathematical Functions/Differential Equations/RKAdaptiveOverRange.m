@@ -119,18 +119,17 @@ function [xVals,tVals,dxdtVals,exitCode,nextStepSize]=RKAdaptiveOverRange(xStart
 %comparison for the absolute tolerance (looking only at the largest
 %error component). Thus theError term uses a threshold factor of
 %AbsTol/RelTol. This is used as a similar threshold ratio when creating an
-%ad-hoc initial estiamte.
+%ad-hoc initial estimate.
 %
-%[1] I. Gladwell, L. F. Shampine, and R. W. Brankin, "Automatic selection of
-%the initial step size for an ODE solver," Journal of Computational and
-%Applied Mathematics, vol. 18, no. 2, pp. 175?192, May 1987.
-%
+%REFERENCES:
+%[1] I. Gladwell, L. F. Shampine, and R. W. Brankin, "Automatic selection
+%    of the initial step size for an ODE solver," Journal of Computational
+%    and Applied Mathematics, vol. 18, no. 2, pp. 175-192, May 1987.
 %[2] G. Hall, "A new stepsize strategy for explicit Runge-Kutta codes,"
-%Advances in Computational Mathematics, vol. 3, no. 4, pp. 343-352, May
-%1995.
-%
-%[3] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston,
-%MA: Brooks/ Cole, 2011.
+%    Advances in Computational Mathematics, vol. 3, no. 4, pp. 343-352, May
+%    1995.
+%[3] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
+%    Brooks/ Cole, 2011.
 %
 %February 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -168,8 +167,8 @@ deltaTSign=sign(tDiff);
 %The sign is separated out so that one can use the algorithm running
 %backwards as well as forwards in time.
 
-%The maximum step size is arbitraily set to 1/5 the total distance.
-deltaTMaxMag=tDiffMag/5;
+%The maximum step size is arbitrarily set to 1/3 the total distance.
+deltaTMaxMag=tDiffMag/3;
 
 if(nargin<4||isempty(initStepSize))
     %If no initial step size is given, then just use the smallest uniform

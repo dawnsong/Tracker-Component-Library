@@ -23,12 +23,13 @@ function T=ChebyshevPoly1(tau,n,tauStart,tauEnd)
 %Where as the function ChebyshevPoly uses a recursion to evaluate the
 %Chebyshev polynomials of order 0 to n at the points, that is not efficient
 %if one wishes to evaluate a single Chebyshev polynomial when n is large.
-%This function uses the identity from
-%Weisstein, Eric W. "Chebyshev Polynomial of the First Kind." From
-%MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html
-%that Chebyshev polynomials can be expressed in terms of trigonometric
-%functions.
+%This function uses the identity from [1] that Chebyshev polynomials can be
+%expressed in terms of trigonometric functions.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Chebyshev Polynomial of the First Kind." From
+%    MathWorld--A Wolfram Web Resource.
+%    http://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

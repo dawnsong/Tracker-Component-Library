@@ -43,21 +43,22 @@ function L=LorentzTransMatrix(vVec,vectorType)
 %           measured in the second coordinate system is -v. Note that
 %           det(L)=1. If vectorType='Complex', the L*transpose(L)=eye(4).
 %
-%A derivation of the real form fo the Lorentz transformation can be found
-%in Chapter 1.2.2 of
-%G. Ludyk, Einstein in Matrix Form: Exact Derivation of the Theory of
-%Special and General Relativity without Tensors. Heidelberg: Springer,
-%2013.
-%The complex form of the Lorentz transformation and its relation to
-%rotation matrices is provided in Appendix D of
-%M. D. Shuster, "A survey of attitude representations," The Journal of
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.-Dec. 1993.
+%A derivation of the real form of the Lorentz transformation can be found
+%in Chapter 1.2.2 of [1]. The complex form of the Lorentz transformation
+%and its relation to rotation matrices is provided in Appendix D of [2].
 %
 %Note that events that are simultaneous in one inertial coordinate system
 %are not necessarily simultaneous in another.
 %
 %In accelerating systems, space-time intervals are generally obtained by
 %integrating over a series of instantaneous Lorentz transformations.
+%
+%REFERENCES:
+%[1] G. Ludyk, Einstein in Matrix Form: Exact Derivation of the Theory of
+%    Special and General Relativity without Tensors. Heidelberg: Springer,
+%    2013.
+%[2] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.-Dec. 1993.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

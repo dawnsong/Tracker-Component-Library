@@ -62,11 +62,8 @@ function orbEls=state2OrbEls(stateVec,elType,GM,epsVal)
 %lambda mean longitude in radians.
 %
 %The algorithm using Gooding's universal orbital elements is very robust to
-%numerical errors. It is implemented using the algorithm of
-%R. H. Gooding, "On universal elements, and conversion procedures to
-%and from position and velocity," Celestial mechanics, vol. 44, no. 3,
-%pp. 283-298, 1988.
-%where the elements are also described.
+%numerical errors. It is implemented using the algorithm of [1], where the
+%elements are also described.
 %
 %The conic orbital elements used in NASA's SPICE Toolkit are implemented
 %using the function cspice_conics function in NASA's SPICE Toolkit. This
@@ -74,25 +71,29 @@ function orbEls=state2OrbEls(stateVec,elType,GM,epsVal)
 %trajectories are likely to occur, then Gooding's universal elements are
 %preferable.
 %
-%Equinoctial orbital elements are discussed in Section 2 of 
-%D. A. Danielson, C. P. Sagovac, B. Neta, and L. W. Early, "Semianalytic
-%satellite theory," Mathematics Department, Naval Postgraduate School,
-%Monterey, CA, Tech. Rep., 1995. [Online]. Available:
-%http://oai.dtic.mil/oai/oai?verb=getRecord&metadataPrefix= html&identifier=ADA531136
-%and in 
-%R. A. Broucke and P. J. Cefola, "On the equinoctial orbit elements,"
-%Celestial Mechanics, vol. 5, no. 3, pp. 303-310, 1972.
-%The diffference between direct and retrograde elements is essentially a
-%matter of handedness.
+%Equinoctial orbital elements are discussed in Section 2 of [2]. and in
+%[3]. The diffference between direct and retrograde elements is essentially
+%a matter of handedness.
 %
-%Orbital elements are discussed in general in Chapter 2.2 of
-%O. Montenbruck and E. Gill, Satellite Orbits: Models, Methods
-%Applications. Berlin: Springer, 2000.
+%Orbital elements are discussed in general in Chapter 2.2 of [4].
 %
 %The inverse of this function is orbEls2State, which can also predict the
 %state forward in time. Adding a time interval in seconds to the tau
 %argument also predicts the trajectory forward in terms of universal
 %orbital elements.
+%
+%REFERENCES:
+%[1] R. H. Gooding, "On universal elements, and conversion procedures to
+%    and from position and velocity," Celestial mechanics, vol. 44, no. 3,
+%    pp. 283-298, 1988.
+%[2] D. A. Danielson, C. P. Sagovac, B. Neta, and L. W. Early,
+%    "Semianalytic satellite theory," Mathematics Department, Naval
+%    Postgraduate School, Monterey, CA, Tech. Rep., 1995. [Online].
+%    Available: http://oai.dtic.mil/oai/oai?verb=getRecord&metadataPrefix= html&identifier=ADA531136
+%[3] R. A. Broucke and P. J. Cefola, "On the equinoctial orbit elements,"
+%    Celestial Mechanics, vol. 5, no. 3, pp. 303-310, 1972.
+%[4] O. Montenbruck and E. Gill, Satellite Orbits: Models, Methods
+%    Applications. Berlin: Springer, 2000.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

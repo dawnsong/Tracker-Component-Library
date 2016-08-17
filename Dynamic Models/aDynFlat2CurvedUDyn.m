@@ -5,7 +5,7 @@ function val=aDynFlat2CurvedUDyn(xStacked,t,aDyn,uDyn)
 %                 that changes as the target moves.  The position
 %                 components of the state are kept in the global coordinate
 %                 system, whereas the other components are kept in the
-%                 local (flat Earth) coordiante system. In the event that
+%                 local (flat Earth) coordinate system. In the event that
 %                 the basis vectors are deterministically known as a
 %                 function of the state, then use the function
 %                 aDynFlat2CurvedUDet.
@@ -37,10 +37,13 @@ function val=aDynFlat2CurvedUDyn(xStacked,t,aDyn,uDyn)
 %                       position derivative, local other derivatives) and
 %                       the local basis vectors.
 %
-%A discussion on mapping flat-Earth models to a curved Earth is given in 
-%D. F. Crouse, "Simulating aerial targets in 3D accounting for the Earth's
-%curvature," Journal of Advances in Information Fusion, submitted, July
-%2014.
+%A discussion on mapping flat-Earth models to a curved Earth is given in
+%[1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

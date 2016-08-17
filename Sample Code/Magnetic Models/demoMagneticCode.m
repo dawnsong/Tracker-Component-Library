@@ -3,9 +3,9 @@
 %                          flux. Plots of the the deviation of true North
 %                          from magnetic North and of the inclination at
 %                          the reference epoch are computed and displayed.
-%                          The magnetic code library (that this function is
-%                          part of) must have been added to Matlab's search
-%                          path for this function to work.
+%                          The Tracker Component Library (that this
+%                          function is part of) must have been added to
+%                          Matlab's search path for this function to work.
 %
 %The computation of the magnetic flux on a 256X256 grid of points is
 %quite fast when the mex files have been compiled. When they have

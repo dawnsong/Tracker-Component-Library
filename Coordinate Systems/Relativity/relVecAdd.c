@@ -17,18 +17,19 @@
  *                 transformed into the reference coordinate system.
  *
  *The formulae for special relativistic velocity addition is derived in
- *Chapter 1.4 of
- *G. Ludyk, Einstein in Matrix Form: Exact Derivation of the Theory of
- *Special and General Relativity without Tensors. Heidelberg: Springer,
- *2013.
- *The magnitudes of vObsFrame and vObjInFrame must both be less than the
- *speed of light.
+ *Chapter 1.4 of [1]. The magnitudes of vObsFrame and vObjInFrame must both
+ *be less than the speed of light (Constants.speedOfLight).
  *
  *The algorithm can be compiled for use in Matlab  using the 
  *CompileCLibraries function.
  *
  *The algorithm is run in Matlab using the command format
  *vObjRef=relVecAdd(vObsFrame,vObjInFrame)
+ *
+ *REFERENCES:
+ *[1] G. Ludyk, Einstein in Matrix Form: Exact Derivation of the Theory of
+ *    Special and General Relativity without Tensors. Heidelberg: Springer,
+ *    2013.
  *
  *March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  **/

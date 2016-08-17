@@ -12,7 +12,7 @@
 %                   direction vectors u but it does change c.
 *      justVertical An optional parameter. If this is given and is
 *                   true, then u and c only for the Up direction will be
-*                   returned.
+*                   returned. The default is false.
 *           a       The semi-major axis of the reference ellipsoid. If
 *                   this argument is omitted, the value in
 *                   Constants.WGS84SemiMajorAxis is used.
@@ -68,7 +68,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     {
     size_t mDim=mxGetM(prhs[0]);
     size_t nDim=mxGetN(prhs[0]);
-    double *thePoint=(double*)mxGetData(prhs[0]);
+    double *thePoint=reinterpret_cast<double*>(mxGetData(prhs[0]));
     //If a point with ellipsoidal height is provided.
     if((mDim==3&&nDim==1)||(mDim==1&&nDim==3)) {
         plhPoint[0]=thePoint[0];
@@ -88,25 +88,25 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     }
     }
 
-    if(nrhs>1) {
+    if(nrhs>1&&!mxIsEmpty(prhs[1])) {
         justVertical=getBoolFromMatlab(prhs[1]);
     }
     else {
         justVertical=false;
     }
     
-    if(nrhs>2) {
+    if(nrhs>2&&!mxIsEmpty(prhs[2])) {
         a=getDoubleFromMatlab(prhs[2]);
     } else {//Load the default value if none is supplied.
         a=getScalarMatlabClassConst("Constants","WGS84SemiMajorAxis");
     }
     
-    if(nrhs>3) {
+    if(nrhs>3&&!mxIsEmpty(prhs[3])) {
         f=getDoubleFromMatlab(prhs[3]);
     } else {//Load the default value if none is supplied.
         f=getScalarMatlabClassConst("Constants","WGS84Flattening");
     }
-    
+        
     //Allocate the return variables.
     if(justVertical==false) {
         uMATLAB=mxCreateDoubleMatrix(3, 3,mxREAL);
@@ -115,8 +115,8 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         uMATLAB=mxCreateDoubleMatrix(3, 1,mxREAL);
         cMATLAB=mxCreateDoubleMatrix(1, 1,mxREAL);
     }
-    u=(double*)mxGetData(uMATLAB);
-    c=(double*)mxGetData(cMATLAB);
+    u=reinterpret_cast<double*>(mxGetData(uMATLAB));
+    c=reinterpret_cast<double*>(mxGetData(cMATLAB));
     
     //Compute the values to return.
     getENUAxesCPP(u,c,plhPoint,justVertical,a,f);

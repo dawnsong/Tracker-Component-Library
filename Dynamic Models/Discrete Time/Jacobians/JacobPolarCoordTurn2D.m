@@ -27,7 +27,7 @@ function J=JacobPolarCoordTurn2D(T,x,turnType,discPoint,tauTurn,tauLinAccel)
 %            target state is either x=[x;y;h;v;omega;al] where omega is the
 %            turn rate and al is the linear acceleration or the target
 %            state is x=[x;y;h;v;at;al] if the turn is expressed in terms
-%            of a transversal acceleration. The dimensionality fo the state
+%            of a transversal acceleration. The dimensionality of the state
 %            is used to determine whether a linear acceleration component
 %            is present. The linear acceleration component changes the
 %            speed. That means that it is the derivative of the speed.
@@ -79,20 +79,20 @@ function J=JacobPolarCoordTurn2D(T,x,turnType,discPoint,tauTurn,tauLinAccel)
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 %The time constant for the linear acceleration.
-if(nargin<6)
+if(nargin<6||isempty(tauLinAccel))
     tauLinAccel=Inf;
 end
 
 %The time constant for the turn.
-if(nargin<5)
+if(nargin<5||isempty(tauTurn))
    tauTurn=Inf;
 end
 
-if(nargin<4)
+if(nargin<4||isempty(discPoint))
     discPoint=0;
 end
 
-if(nargin<3)
+if(nargin<3||isempty(turnType))
     turnType='TurnRate';
 end
 

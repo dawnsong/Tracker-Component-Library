@@ -38,13 +38,15 @@ function val=DPolarLin2D(x,t,q0Dir,param4)
 %acceleration.
 %
 %The idea of decomposing the velocity into direction and speed components
-%is presented in  
-%J. L. Gertz, "Multisensor surveillance for improved aircraft tracking,"
-%The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381?396, 1989.
-%where the direction component is differently defined and additional
-%derivatives are used. 
+%is presented in [1], where the direction component is differently defined
+%and additional derivatives are used. 
 %
 %This diffusion matrix goes with the drift function aPolarLin2D.
+%
+%REFERENCES:
+%[1] J. L. Gertz, "Multisensor surveillance for improved aircraft
+%    tracking," The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396,
+%    1989.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

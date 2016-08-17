@@ -20,20 +20,21 @@ function ellipsLat=reducedLat2EllipsLat(reducedLat,f)
 %                   -pi/2 to pi/2, for each reduced latitude.
 %
 %%The definition of the reduced (parameteric) latitude from Chapter 3 (pg.
-%18) of 
-%J. P. Snyder, "Map projections- a working manual," U.S. Geological
-%Survey, Tech. Rep. 1395, 1987.
-%is used. The conversion relation between the latitudes is in Section 3.4
-%of
-%R. H. Rapp, "Geometric geodesy, part I," Ohio State University
-%Department of Geodetic Science and Surveying, Tech. Rep., Apr. 1991.
-%[Online]. Available: http://hdl.handle.net/1811/24333
+%18) of [1] is used. The conversion relation between the latitudes is in
+%Section 3.4 of [2].
 %
 %The reduced latitude has been used for solving geodescic problems on an
 %ellipsoid by transforming the problem to an equivalent problem on a
 %sphere.
 %
 %The inverse of this function is ellipsLat2ReducedLat.
+%
+%REFERENCES:
+%[1] J. P. Snyder, "Map projections- a working manual," U.S. Geological
+%    Survey, Tech. Rep. 1395, 1987.
+%[2] R. H. Rapp, "Geometric geodesy, part I," Ohio State University
+%    Department of Geodetic Science and Surveying, Tech. Rep., Apr. 1991.
+%    [Online]. Available: http://hdl.handle.net/1811/24333
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

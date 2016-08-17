@@ -20,14 +20,11 @@ function q=rotMat2Quat(R,handed)
 %             is the counterclockwise (right-handed) or clockwise
 %             (left-handed) rotation angle about that unit vector.
 %
-%The formulae for converting a rotation matrix are from
-%W. F. Phillips, C. E. Hailey, and G. A. Gebert, "Review of attitude
-%representations used for aircraft kinematics," Journal of Aircraft,
-%vol. 38, no. 4, pp. 718-737, Jul. - Aug. 2001.
-%where a minor change has been performed to support both right and
-%left-handed quaternions. Both q and -q represent the same rotations. Here,
-%the solution is chosen so that when considering a left-handed rotation,
-%the sign of the largest magnitude element is positive. When considering a
+%The formulae for converting a rotation matrix are from [1], where a minor
+%change has been performed to support both right and left-handed
+%quaternions. Both q and -q represent the same rotations. Here, the
+%solution is chosen so that when considering a left-handed rotation, the
+%sign of the largest magnitude element is positive. When considering a
 %right handed rotation, the sign of the largest element may or may not be
 %positive.
 %
@@ -45,6 +42,11 @@ function q=rotMat2Quat(R,handed)
 %i -1,-k, j
 %j  k,-1,-i
 %k -j, i,-1
+%
+%REFERENCES:
+%[1] W. F. Phillips, C. E. Hailey, and G. A. Gebert, "Review of attitude
+%    representations used for aircraft kinematics," Journal of Aircraft,
+%    vol. 38, no. 4, pp. 718-737, Jul. - Aug. 2001.
 %
 %August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

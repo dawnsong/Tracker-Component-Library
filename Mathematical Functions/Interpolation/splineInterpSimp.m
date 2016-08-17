@@ -26,12 +26,9 @@ function yInterp=splineInterpSimp(xPoints,yPoints,xEval)
 %
 %Spine interpolation on a collections of points provides smooth first and
 %second derivatives. On the other hand, if piecewise Hermite interpolation
-%is used, such as when using the HermiteInterpSimp function or the pchip
-%function, which is built into Matlab, without specifying derivatives, then
-%discontinuities can exist in the interpolated derivatives. On the other
-%hand, piecewise Hermite interpolation using the HermiteInterpSimp and
-%matching derivatives in addition to points will produce smooth
-%interpolated polynomials that are more accurate than spine interpolation.
+%is used, such as when using the pchip function, which is built into
+%Matlab, without specifying derivatives, then discontinuities can exist in
+%the interpolated derivatives.
 %
 %April 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -49,13 +46,13 @@ function yInterp=splineInterpSimp(xPoints,yPoints,xEval)
     %be taken.
     [breaks,coefs,l,k,d] = unmkpp(pp);
     %Make the first derivative polynomial.
-    pp1 = mkpp(breaks,repmat(k-1:-1:1,d*l,1).*coefs(:,1:k-1),d);
+    pp1 = mkpp(breaks,repmat(k-1:-1:1,[d*l,1]).*coefs(:,1:k-1),d);
     %Evaluate the interpolated first derivatives.
     yInterp(2,:)=ppval(pp1,xEval);
     %Break apart and differentiate the first derivative data to
     %get the second derivatives.
     [breaks,coefs,l,k,d] = unmkpp(pp1);
-    pp2 = mkpp(breaks,repmat(k-1:-1:1,d*l,1).*coefs(:,1:k-1),d);
+    pp2 = mkpp(breaks,repmat(k-1:-1:1,[d*l,1]).*coefs(:,1:k-1),d);
     yInterp(3,:)=ppval(pp2,xEval);
 end
 

@@ -1,15 +1,14 @@
 %%DEMOGRAVCODE This file demonstrates the functions for spherical harmonic
-%              synthesis of gravitational and terrain data. This file
-%              requires that the CompileCLibraries have been run, because
-%              the demonstartion will be too slow when run in Matlab-only.
-%              Use the function DemoGravCodeNoCompile for an example that
-%              can be run without compiling the libraries. 
+%              synthesis of gravitational data. This file requires that the
+%              CompileCLibraries function has been run, because the
+%              demonstration will be too slow when run in Matlab-only. Use
+%              the function DemoGravCodeNoCompile for an example that can
+%              be run without compiling the libraries. 
 %
 %This file displays a plot of the geoid using the EGM2008 model,
 %exaggerating the geoid heights by a factor of 10^4. It then plots the
 %tide-free gravity anomaly and vertical deflection at 9km altitude
-%(ignoring the atmosphere) using the EGM2008 model, and finally, it plots
-%the terrain (with ocean) using the Earth2012 model.
+%(ignoring the atmosphere) using the EGM2008 model.
 %
 %Note that the CompileCLibraries function should be run one before this
 %this script is run.
@@ -47,7 +46,8 @@ latLon=[latGrid(:)';lonGrid(:)'];
 %to use. M<=2190 for the EGM2008 model.
 M=360;
 %The model will be used with the same approximations used by the NGA so
-%that the results are consistent with theirs.
+%that the results are consistent with theirs. See the documentation for the =
+%function getEGMGeoidHeight for more details.
 useNGAApprox=true;
 %Get the coefficients for the disturbing potential.
 [C,S]=getEGMWGS84TCoeffs(M,useNGAApprox);
@@ -59,10 +59,6 @@ MZeta=360;%The maximum degree and order of the correction term model.
 [C,S]=getEGMZeta2NCoeffs(MZeta);
 coeffData.CZeta=C;
 coeffData.SZeta=S;
-
-%Use an approximation in the computation that the NGA appears to make in
-%their code. See the documentation for the function getEGMGeoidHeight
-%for more details.
 
 modelType=0;%Use the EGM2008 model.
 %Use a tide-free geoid model.
@@ -198,50 +194,6 @@ set(h1,'FontSize',fSize,'FontWeight','bold','FontName','Times')
 set(h2,'FontSize',fSize,'FontWeight','bold','FontName','Times')
 colormap(jet(256))
 set(get(colorbar('peer',gca),'ylabel'),'string','Arcseconds','FontSize',lSize,'FontWeight','bold','FontName','Times')
-
-%%%%%PLOT THE TERRAIN%%%%%
-display('Computing the Terrain Elevation Plot (with Ocean)')
-
-%Geocentric (spherical) latitude (elevation) and longitude (azimuth) values
-%in radians.
-numPoints=700;
-az=linspace(-90,90,numPoints)*pi/180;
-el=linspace(-180,180,numPoints)*pi/180;
-%The points from the meshgrid function are sorted by elevation.
-[el,az]=meshgrid(el,az);
-azel=[az(:)';el(:)'];
-
-M=500;%M is the maximum degree and order of the terrain model. M<=2160.
-[C,S]=getEarth2012TerrainCoeffs(M);
-
-%Get the range of the terrain at each spherical azimuth and elevation
-%point.
-terRad=spherHarmonicEval(C,S,azel);
-
-%Convert the terrain points from spherical to ellipsoidal coordinates and
-%exaggerate the ellipsoidal heights by a factor of 100.
-ellipsCoord=spher2Ellipse([terRad';azel]);
-ellipsCoord(3,:)=ellipsCoord(3,:)*100;
-
-%Convert the ellipsoidal coordinates to Cartesian coordinates to plot a 3D
-%Earth.
-cartPoints=ellips2Cart(ellipsCoord);
-XC=reshape(cartPoints(1,:),[numPoints,numPoints]);
-YC=reshape(cartPoints(2,:),[numPoints,numPoints]);
-ZC=reshape(cartPoints(3,:),[numPoints,numPoints]);
-ZColor=reshape(ellipsCoord(3,:),[numPoints,numPoints]);
-
-figure(4)
-clf
-surf(XC,YC,ZC,ZColor,'FaceColor','interp',...
-   'EdgeColor','none',...
-   'FaceLighting','phong')
-axis square
-axis tight
-view([15,0])
-camlight left
-set(gca,'visible','off')%Do not show the axes
-colormap(fliplr(hsv(256)))
 
 %LICENSE:
 %

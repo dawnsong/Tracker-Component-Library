@@ -12,15 +12,18 @@
  *OUTPUTS:   point The 2X1 intersection point of the two lines given as
  *                 [x;y] components.
  *
- *The formula in terms of matrix determinants is taken from
- *Weisstein, Eric W. "Line-Line Intersection." From MathWorld--A Wolfram
- *Web Resource. http://mathworld.wolfram.com/Line-LineIntersection.html
+ *The formula in terms of matrix determinants is taken from [1].
  *
  *The algorithm can be compiled for use in Matlab  using the 
  *CompileCLibraries function.
  *
  *The algorithm is run in Matlab using the command format
  *point=twoLineIntersectionPoint2D(line1,line2);
+ *
+ *REFERENCES:
+ *[1] Weisstein, Eric W. "Line-Line Intersection." From MathWorld--A
+ *    Wolfram Web Resource.
+ *    http://mathworld.wolfram.com/Line-LineIntersection.html
  *
  *December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */
@@ -54,12 +57,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         return;  
     }
     
-    line1=(double*)mxGetData(prhs[0]);
-    line2=(double*)mxGetData(prhs[1]);
+    line1=reinterpret_cast<double*>(mxGetData(prhs[0]));
+    line2=reinterpret_cast<double*>(mxGetData(prhs[1]));
 
     //Allocate space for the return point.
     pointMat=mxCreateDoubleMatrix(2,1,mxREAL);
-    point=(double*)mxGetData(pointMat);
+    point=reinterpret_cast<double*>(mxGetData(pointMat));
     
     twoLineIntersectionPoint2DCPP(line1,line2,point);
     

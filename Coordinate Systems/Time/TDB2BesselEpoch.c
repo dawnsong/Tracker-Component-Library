@@ -15,17 +15,14 @@
 *                      dimensionality as the input sets of dates.
 *
 *The relationship between Julian dates in TDB and Besselian epochs is given
-*in
-*[1] J. H. Lieske, "Precession matrix based on IAU (1976) system of
-*astronomical constants," Astronomy and Astrophysics, vol. 73, no. 3, pp.
-*282-284, Mar. 1979.
-*A Besselian epoch is a factional year number denominated in terms of a
-*tropical year. For example, 1900.5 is a time near the middle of the year
-*1900. A Besselian year is not the same duration as a Julian year in TT.
+*in [1]. A Besselian epoch is a factional year number denominated in terms
+*of a tropical year. For example, 1900.5 is a time near the middle of the
+*year 1900. A Besselian year is not the same duration as a Julian year in
+*TT.
 *
 *This is a mex wrapper for the function iauEpb in the International
 *Astronomical Union's (IAU) Standard's of Fundamental Astronomy library.
-*Though the IAU's library does not explicitely say that the Julian date
+*Though the IAU's library does not explicitly say that the Julian date
 *must be in TDB, the Besselian epoch does not make sense unless the date is
 *provided in TDB as one can ascertain from [1]. 
 *
@@ -34,6 +31,11 @@
 *
 *The algorithm is run in Matlab using the command format
 *bessEpoch=TDB2BesselEpoch(Jul1,Jul2);
+*
+*REFERENCES:
+*[1] J. H. Lieske, "Precession matrix based on IAU (1976) system of
+*    astronomical constants," Astronomy and Astrophysics, vol. 73, no. 3,
+*    pp. 282-284, Mar. 1979.
 *
 *March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -76,7 +78,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     BesselRet=(double*)mxGetData(BesselEpochRetMATLAB);
 
     for(i=0;i<numElements;i++) {
-        int retVal;
     /*Call the function in the SOFA library.*/
         BesselRet[i]=iauEpb(Jul1[i], Jul2[i]);
     }

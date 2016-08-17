@@ -13,15 +13,10 @@ function vertices=findConvexHull2D(points)
 %                  repeated at the end even though it is a closed shape.
 %                  The points are provided in counterclockwise order
 %
-%Graham's algorithm is described in Chapter 33.3 of
-%T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, Introduction
-%to Algorithms, 2nd ed. Cambridge, MA: The MIT Press, 2001.
-%Though no method for sorting the points in the necessary counterclockwise
-%order is given and the sorting step is the most difficult part. The
-%sorting can be done without explicitely computing angles as discussed in
-%Chapter 3.5 of
-%J. O'Rourke, Computational Geometry in C, 2nd ed. Cambridge, United
-%Kingdom: Cambridge University Press, 1998.
+%Graham's algorithm is described in Chapter 33.3 of[1], though no method
+%for sorting the points in the necessary counterclockwise order is given
+%and the sorting step is the most difficult part. The sorting can be done
+%without explicitely computing angles as discussed in Chapter 3.5 of [2].
 %However, the author suggests that one only use integers to avoid horrible
 %finite precision problems. Here, the method of determining whether points
 %are oriented  left uses the function turnOrientation, which makes use of
@@ -31,16 +26,22 @@ function vertices=findConvexHull2D(points)
 %precision (points cannot be singles or integer types for this function),
 %then the results will be exact. Given doubles, steps were taken in the
 %turnOrientation function to reduce the likelihood of finite precision
-%errors. However, such errors cannot be completely eliminated without using
-%quadruple precision arithmetic in an intermediate step.
+%errors. However, such errors cannot be completely eliminated without
+%using quadruple precision arithmetic in an intermediate step.
 %
 %The implementation discussed in Cormen's book is simpler than Graham's
-%original implementation, which is given in
-%R. L. Graham, "An efficient algorithm for determining the convex hull of a
-%finite planar set," Information Processing Letters, vol. 1, no. 4, pp.
-%132-133, Jun. 1972.
-%as it does not use complex numbers. The implementation here does not use
-%complex numbers and none of the points can be complex.
+%original implementation, which is given in [3], as it does not use complex
+%numbers. The implementation here does not use complex numbers and none of
+%the points can be complex.
+%
+%REFERENCES:
+%[1]T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, Introduction
+%   to Algorithms, 2nd ed. Cambridge, MA: The MIT Press, 2001.
+%[2] J. O'Rourke, Computational Geometry in C, 2nd ed. Cambridge, United
+%    Kingdom: Cambridge University Press, 1998.
+%[3] R. L. Graham, "An efficient algorithm for determining the convex hull
+%    of a finite planar set," Information Processing Letters, vol. 1, no.
+%    4, pp. 132-133, Jun. 1972.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

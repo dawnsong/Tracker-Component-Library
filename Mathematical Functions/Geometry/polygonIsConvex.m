@@ -16,9 +16,11 @@ function isConvex=polygonIsConvex(vertices)
 %vertices (all pairs of edges) to determine whether the sign ever changes.
 %If the sign never changes going around the polygon, then it is convex.
 %
-%More on convex polygons can be found at
-%Weisstein, Eric W. "Convex Polygon." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/ConvexPolygon.html
+%More on convex polygons can be found at [1].
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Convex Polygon." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/ConvexPolygon.html
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

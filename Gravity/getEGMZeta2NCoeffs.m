@@ -29,15 +29,10 @@ function [C,S]=getEGMZeta2NCoeffs(M,modelType)
 %               multiplied by sines in the harmonic expansion. The
 %               format of S is the same as that of C.
 %
-%When using the method of
-%R. H. Rapp, "Use of potential coefficient models for geoid undulation
-%determinations using a spherical harmonic representation of the height
-%anomaly/geoid undulation difference," Journal of Geodesy, vol. 71,
-%no. 5, pp. 282-289, Apr. 1997.
-%for determining geoid undulations from spherical harmonic gravitational
-%models, the coefficients are used for going from the zeta term to the N
-%term. The function getEGM2008GeoidHeight makes use of the coefficients to
-%compute the geoid height.
+%When using the method of [1] for determining geoid undulations from
+%spherical harmonic gravitational models, the coefficients are used for
+%going from the zeta term to the N term. The function getEGM2008GeoidHeight
+%makes use of the coefficients to compute the geoid height.
 %
 %The EGM2008 coefficient zeta-to-N set can be obtained at
 %http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/egm08_wgs84.html
@@ -57,6 +52,12 @@ function [C,S]=getEGMZeta2NCoeffs(M,modelType)
 %read directly, then the .mat file is created so that subsequent reads are
 %faster. Note that after the .mat file has ben created, the text file can
 %be deleted.
+%
+%REFERENCES:
+%[1] R. H. Rapp, "Use of potential coefficient models for geoid undulation
+%    determinations using a spherical harmonic representation of the height
+%    anomaly/geoid undulation difference," Journal of Geodesy, vol. 71,
+%    no. 5, pp. 282-289, Apr. 1997.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -10,7 +10,7 @@ function [A,idxList]=bubbleSort(A,byCol,gtCompareFunc)
 %           direction of the comparison function (from greater than to less
 %           than) changes the sorting order from ascending to descending.
 %
-%INPUTS: A  An array, matrix, or linear cell array that is to be sorted.
+%INPUTS: A  An array, 2D matrix, or linear cell array that is to be sorted.
 %           When given a matrix, the comparison function gtCompareFunc must
 %           be provided so that it is clear how the columns are compared
 %           (or the rows if byCol is false).
@@ -43,14 +43,16 @@ function [A,idxList]=bubbleSort(A,byCol,gtCompareFunc)
 %           order. For example, if the input A is an array, then
 %           A(idxList) on the input A will give the sorted output A.
 %
-%The implementation of bubbleSort is described in Chapter 5.2.2 of
-%D. Knuth, The Art of Computer Programming: Sorting and Searching, 2nd ed.
-%Reading, MA: Addison-Wesley, 1998, vol. 3.
+%The implementation of bubbleSort is described in Chapter 5.2.2 of [1].
 %
 %Note that sorting large matrices can be slow as each element (so an entire
 %row/ column) is copied during the search. Thus, if one is just sorting
 %according to a particular row, it makes sense ot get the idxList for that
 %one row and then use it to sort everything else.
+%
+%REFERENCES:
+%[1] D. Knuth, The Art of Computer Programming: Sorting and Searching, 2nd
+%    ed. Reading, MA: Addison-Wesley, 1998, vol. 3.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -61,7 +63,7 @@ function [A,idxList]=bubbleSort(A,byCol,gtCompareFunc)
         return;
     end
 
-    if(nargin<2)
+    if(nargin<2||isempty(byCol))
         %If the input is 1-dimensional, then make the byCol parameter go
         %over whichever dimension would sort it. Otherwise, make it go over
         %columns.
@@ -74,7 +76,7 @@ function [A,idxList]=bubbleSort(A,byCol,gtCompareFunc)
         end
     end
 
-    if(nargin<3)
+    if(nargin<3||isempty(gtCompareFunc))
         gtCompareFunc=@(x1,x2)(x1>x2);
     end
 

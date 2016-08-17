@@ -1,41 +1,67 @@
-function [phi2,phi3,dimsOrder,minCostVal,costGap]=assign3D(C,algorithm,maxIter,epsVal)
+function [phi2,phi3,dimsOrder,minCostVal,costGap]=assign3D(C,maximize,algorithm,n2Limits,n3Limits,maxIter,epsVal)
 %ASSIGN3D Solve the axial 3D assignment problem. Such problems are NP-hard
 %         and thus cannot be solved in polynomial time, so both exact (non-
 %         polynomial) and approximate algorithms are given. The
 %         optimization problem being solved is
-%         minimize
+%         minimize (or maximize)
 %         \sum_{i=1}^{n1}\sum_{j=1}^{n2}\sum_{k=1}^{n3}C_{i,j,k}*\rho_{i,j,k}
 %         subject to
-%         \sum_{i=1}^{n1}\sum_{j=1}^{n2}\rho_{i,j,k}<=1 for all k
-%         \sum_{i=1}^{n1}\sum_{k=1}^{n3}\rho_{i,j,k}<=1 for all j
+%         \sum_{i=1}^{n1}\sum_{j=1}^{n2}\rho_{i,j,k}<=n3Limits(k) for all k
+%         \sum_{i=1}^{n1}\sum_{k=1}^{n3}\rho_{i,j,k}<=n2Limits(j) for all j
 %         \sum_{j=1}^{n2}\sum_{k=1}^{n3}\rho_{i,j,k} =1 for all i
-%         assuming that n1<=n2<=n3, and C is and n1Xn2Xn3 cost matrix.
+%         \rho_{i,j,k} = 0 or 1
+%         assuming that n1<=n2<=n3, and C is and n1Xn2Xn3 cost matrix. In
+%         most instances, one assumes n2Limits and n3Limits are all ones.
 %         This is equivalent to the optimization problem
 %         minimize sum_{i} C(i,phi_2(i),phi_3(i))
 %         where phi_2 and phi_3 are length n1 arrangements of n2 and n3
 %         items over which the minimization is performed. The solution is
 %         given in terms of the phi vectors.
 %
-%INPUTS: C An n1Xn2Xn3 cost hypermatrix. The costs are real, positive or
-%          negative numbers > -Inf. If it is not the case that
+%INPUTS: C An n1Xn2Xn3 cost hypermatrix. If it is not the case that
 %          n1<=n2<=n3, then the indices of C are permuted so that is
 %          true. The permutation of the indices is returned in the
 %          dimsOrder vector so that the meaning of the phi2 and phi3 values
-%          returned is clear.
+%          returned is clear. C cannot contain any NaNs and the largest
+%          finite element minus the smallest element is a finite quantity
+%          (does not overflow) when performing minimization and where
+%          the smallest finite element minus the largest element is finite
+%          when performing maximization.  Forbidden assignments can be
+%          given costs of +Inf for minimization and -Inf for maximization.
+%   maximize If true, the minimization problem is transformed into a
+%            maximization problem. The default if this parameter is omitted
+%            is false.
 %     algorithm An optional parameter specifying the algorithm to use to
-%          solve the 3D assignment problem. Possible values are
-%          0 (The default if omitted) Use the relaxation approximation of
-%            [1], which is a special case of [2].
-%          1 Use the relaxation approximation of [3] applied to the problem
-%            at hand.
+%            solve the 3D assignment problem. Possible values are
+%          0 Use the relaxation approximation of [1], which is a special
+%            case of [2]. Note that this method does not support the use of
+%            n2Limits or n3Limits that are not all ones.
+%          1 (The default if omitted or an empty matrix is passed) Use the
+%            relaxation approximation of [3] applied to the problem at
+%            hand.
 %          2 Get an exact solution using brute-force enumeration of
 %            possible solutions without bounding (i.e. more brute force 
 %            than branch and bound). As described below, for an nXnXn cost
-%            matrix, this is done in a manner that is O((n^3)*n!)
-%            complexity.
-%    maxIter This parameter is only used if algorithm=0. It is the maximum
-%            number of iterations to perform. The default value if this
-%            parameter is omitted is 200.
+%            matrix and n3Limits all ones, this is done in a manner that is
+%            O((n^3)*n!) complexity. This method does not support the use
+%            of n2Limits that are not all ones.
+%   n2Limits An optional n2X1 vector that provides the limits on the sums
+%            over the first and third indices for each item in the second
+%            index. All elements of n2Limits must be integers >=1. When
+%            using n2Limits, it is required that n1<=n2<=n3 or n3<=n2<=n1.
+%            That is, the final solution cannot permute n2 from its space.
+%            If this parameter is omitted or an empty matrix is passed, the
+%            limits are assumed to be all ones. 
+%   n3Limits An optional n3X1 vector that provides the limits on the sums
+%            over the first and second indices for each item in the third
+%            index. All elements of n3Limits must be integers >=1. When
+%            using n3Limits, it is required that n1<=n2<=n3 or n2<=n1<=n3.
+%            That is, the final solution cannot permute n3 from its space.
+%            If this parameter is omitted or an empty matrix is passed, the
+%            limits are assumed to be all ones.
+%    maxIter This parameter is only used if algorithm=0 or 1. It is the
+%            maximum number of iterations to perform. The default value if
+%            this parameter is omitted is 200.
 %     epsVal This parameter is only used if algorithm=0. This parameter is
 %            the threshold to use for determining convergence of the
 %            algorithm based on the relative duality gap. The relative
@@ -64,13 +90,13 @@ function [phi2,phi3,dimsOrder,minCostVal,costGap]=assign3D(C,algorithm,maxIter,e
 %The brute-force enumeration algorithm (number 2) goes through all
 %permutations of assignments of the second dimension. Conditioned on those
 %assignments, the problem is reduced to a 2D assignment problem. Thus, the
-%function assign2D is used to solve that problem in O(n^3) time. Thus, if a
-%matrix of size nXnXn is passed, the algorithm takes O((n!)(n^3)) time as
-%it has to run the 2D assignment algorithm n! times, one for each
-%permutation in the first dimension.
+%function assign2D is used to solve that problem in O(n^3) time (or the
+%function solveTransportationProblem is used to solve it when n3Limits are
+%given). Thus, if a matrix of size nXnXn is passed, the algorithm takes
+%O((n!)(n^3)) time as it has to run the 2D assignment algorithm n! times,
+%one for each permutation in the first dimension.
 %
 %REFERENCES:
-%
 %[1] K. Pattipati, S. Deb, Y. Bar-Shalom, and R. B. Washburn Jr., "A
 %    new relaxation algorithm and passive sensor data association," IEEE
 %    Transactions on Automatic Control, vol. 37, no. 2, pp. 198-213, Feb.
@@ -87,25 +113,57 @@ function [phi2,phi3,dimsOrder,minCostVal,costGap]=assign3D(C,algorithm,maxIter,e
 %June 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<2)
-    algorithm=0;
+if(nargin<2||isempty(maximize))
+   maximize=false; 
 end
 
-if(nargin<3)
+if(nargin<3||isempty(algorithm))
+    algorithm=1;
+end
+
+if(nargin<6||isempty(maxIter))
     maxIter=200;
 end
 
-if(nargin<4)
+if(nargin<7||isempty(epsVal))
     epsVal=eps(1);
+end
+
+if(maximize==true)
+    C=-C;
 end
 
 %The algorthms were implemented assuming that n1<=n2<=n3 for the
 %dimensionality of C. If a matrix having a different arrangement of indices
 %is passed, we will permute the indices to make the assumptions below hold.
 %We have to indicate the order of the permutation for return so that the
-%user knows what dims1 and dims2 refer to.
+%user knows what dims1 and dims2 refer to. If one wishes to impose more
+%general constraints using n3Limits, then we have to make sure that n3 was
+%not permuted from its original position. Similarly, to impose more general
+%constraints on n2, we must make sure that n2 is not permuted.
 nVals=size(C);
 [nVals,dimsOrder]=sort(nVals,'ascend');
+
+if(nargin<4||isempty(n2Limits)||all(n2Limits==1))
+    n2Limits=[];
+else
+%We have n2Limits; this is if n2 was permuted and the limits are not just
+%all 1.
+    if(dimsOrder(2)~=2)
+        error('The indices of C cannot permute the second index from its original position when using n2Limits');
+    end
+end
+
+if(nargin<5||isempty(n3Limits)||all(n2Limits==1))
+    n3Limits=[];
+else
+%We have n3Limits; this is if n3 was permitted and the limits are not
+%just all 1.
+    if(dimsOrder(3)~=3)
+        error('The indices of C cannot permute the third index from its original position when using n3Limits');
+    end
+end
+
 C=permute(C,dimsOrder);
 
 n1=nVals(1);
@@ -115,6 +173,10 @@ n3=nVals(3);
 switch(algorithm)
     case 0%The relaxation approximation of 1. equation numbers refer to
           %those in [1].
+        if(~isempty(n2Limits)||~isempty(n3Limits))
+           error('The selected algorithm does not support custom n2Limits nor custom n3Limits.')
+        end
+          
         alpha=2;
         %Initial value for the beta parameter.
         beta=1;
@@ -250,6 +312,9 @@ switch(algorithm)
         %Upper and lower bounds for the cost function encountered thus far.
         lb=-Inf;
         ub=Inf;
+        %Allocate space
+        dim2ForDim1Cur=zeros(n1,1);
+        dim3ForDim1Cur=zeros(n1,1);
         for curIter=1:maxIter
             %Compute the w values in Equation 3.
             CDiff=bsxfun(@minus,C,reshape(u,[1,1,n3]));
@@ -259,7 +324,16 @@ switch(algorithm)
             %Perform the maximization in Equation 4 over xi. As opposed to
             %directly returning xi, the columns for rows (nonzero elements)
             %are returned.
-            [dim2ForDim1Cur, ~, maxVal]=assign2D(w,true);
+            if(~isempty(n2Limits))
+                n1Limits=ones(n1,1);
+                [X, maxVal]=solveTransportationProblem(w,n1Limits,n2Limits,true);
+                for curRow=1:n1
+                   dim2ForDim1Cur(curRow)=find(X(curRow,:));
+                end
+            else
+                [dim2ForDim1Cur, ~, maxVal]=assign2D(w,true);
+            end
+
             phi=maxVal+sum(u);%The dual cost.
             ub=min(ub,phi);%Adjust the upper bound of the dual cost.
         
@@ -272,8 +346,17 @@ switch(algorithm)
                         
             %Perform the miximization in 8 to get eta so the primal
             %variables can be found.
-            [dim3ForDim1Cur,~,primalVal]=assign2D(a,true);
-                        
+            %If custom limits over the third dimension are provided.
+            if(~isempty(n3Limits))
+                n1Limits=ones(n1,1);
+                [X, primalVal]=solveTransportationProblem(a,n1Limits,n3Limits,true);
+                for curRow=1:n1
+                   dim3ForDim1Cur(curRow)=find(X(curRow,:));
+                end
+            else
+                [dim3ForDim1Cur,~,primalVal]=assign2D(a,true);
+            end
+         
             if(primalVal>lb)
                 lb=primalVal;
                 
@@ -328,7 +411,10 @@ switch(algorithm)
         end    
     case 2%Brute-force search without branch-and-bound using 2D assignment
           %to reduce the complexity from O((n!)^2) to O((n!)(n^3)).
-       
+        if(~isempty(n2Limits))
+           error('The selected algorithm does not support custom n2Limits.')
+        end
+
         %Find the brute-force solution.
         n1Fact=factorial(n1);
         %The number of ways n2 elements can be permuted into n1 spaces.
@@ -337,14 +423,25 @@ switch(algorithm)
         %Allocate space
         CInner=zeros(n1,n3);
         minCostVal=Inf;
+        col4Row=zeros(n1,1);
         for rank1=0:(numArrange2-1)
             arrange1=unrankArrangement(rank1,n2,n1);
 
             for i=1:n1
                 CInner(i,:)=reshape(C(i,arrange1(i),:),[1,n3]);
             end
+            
+            %If custom limits over the third dimension are provided.
+            if(~isempty(n3Limits))
+                n1Limits=ones(n1,1);
+                [X, costVal]=solveTransportationProblem(CInner,n1Limits,n3Limits,false);
+                for curRow=1:n1
+                   col4Row(curRow)=find(X(curRow,:));
+                end
+            else
+                [col4Row, ~, costVal]=assign2D(CInner,false);
+            end
 
-            [col4Row, ~, costVal]=assign2D(CInner,false);
             if(costVal<minCostVal)
                 minCostVal=costVal;
                 phi2=arrange1;
@@ -354,9 +451,15 @@ switch(algorithm)
         
         %The globally optimal solution has no cost gap.
         costGap=0;
-        return;
     otherwise
         error('Invalid algorithm specified')
+end
+
+%Adjust the gains for the case where the initial cost matrix is transformed
+%so that maximization can be performed.
+if(maximize==true)
+    minCostVal=-minCostVal;
+    costGap=-costGap;
 end
 
 end

@@ -9,18 +9,20 @@ function val=logInt(x)
 %OUTPUTS: val A matrix of the real values of the logarithmic integral
 %             evaluated at the points in x. Note that val=-Inf if x=1.
 %
-%As noted in
-%Weisstein, Eric W. "Logarithmic Integral." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/LogarithmicIntegral.html
-%The logarithmic integral of x can be written in terms of the exponential
-%integral and natural logarithm functions. The exponential integral is a
-%built-in function in Matlab, so this simply uses the expint function.
+%As noted in [1], the logarithmic integral of x can be written in terms of
+%the exponential integral and natural logarithm functions. The exponential
+%integral is a built-in function in Matlab, so this simply uses the expint
+%function.
 %
 %%If the result obtained using the identity and the expint function is not
 %finite, then x was too large, or too close to zero and asymptotic values
 %of the logarithmic integral are substituted. If x was too large
 %in magnitude then Inf is substituted. If x was too close to 0, then 0 is
 %substituted.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Logarithmic Integral." From MathWorld--A Wolfram
+%    Web Resource. http://mathworld.wolfram.com/LogarithmicIntegral.html
 %
 %June 2014 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

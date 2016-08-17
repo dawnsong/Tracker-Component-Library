@@ -25,21 +25,7 @@
  *d2PBarUValsdTheta2 An instance of the ClusterSet class such that
  *                   dPBarUValsdTheta(n+1,m+1)=scalFac*D2{\bar{P}_{nm}(cos(theta))}/u^m
  *
- *The modified forward row (MFR) algorithm of 
- *S. A. Holmes and W. E. Featherstone, "A unified approach to the Clenshaw
- *summation and the recursive computation of very high degree and
- *order normalised associated Legendre functions," Journal of Geodesy,
- *vol. 76, no. 5, pp. 279-299, May 2002.
- *is used to compute PBarUVals and dPBarUValsdTheta. For d2PBarUValsdTheta2,
- *the algorithm of 
- *S. A. Holmes and W. E. Featherstone, "Short note: Extending simplified
- *high-degree synthesis methods to second latitude derivatives of
- *geopotential," Journal of Geodesy, vol. 76, no. 8, pp. 447-450, Nov. 2002.
- *is used. However, the paper contains a typo. The first term of the first
- *unnumbered equation should be multiplied by an additional (1/u). This
- *function uses the correct formulation.
- *
- *Additional comments are given in the Matlab implementation. This
+ *Comments are given in the Matlab implementation. This
  *implementation tends to be approximately 11,000 times faster than the
  *Matlab implementation.
  *
@@ -96,9 +82,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     
     PBarUVals.numClust=M+1;
     PBarUVals.totalNumEl=numPBarU;
-    PBarUVals.clusterEls=(double*)mxGetData(clusterElsMATLAB);
-    PBarUVals.offsetArray=(size_t*)mxGetData(offsetArrayMATLAB);
-    PBarUVals.clusterSizes=(size_t*)mxGetData(clusterSizesMATLAB);
+    PBarUVals.clusterEls=reinterpret_cast<double*>(mxGetData(clusterElsMATLAB));
+    PBarUVals.offsetArray=reinterpret_cast<size_t*>(mxGetData(offsetArrayMATLAB));
+    PBarUVals.clusterSizes=reinterpret_cast<size_t*>(mxGetData(clusterSizesMATLAB));
     
     //Initialize the offset array and cluster sizes.
     PBarUVals.offsetArray[0]=0;
@@ -123,9 +109,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         
         dPBarUValsdTheta.numClust=M+1;
         dPBarUValsdTheta.totalNumEl=numPBarU;
-        dPBarUValsdTheta.clusterEls=(double*)mxGetData(clusterEls1stDerivMATLAB);
-        dPBarUValsdTheta.offsetArray=(size_t*)mxGetData(offsetArrayMATLAB);
-        dPBarUValsdTheta.clusterSizes=(size_t*)mxGetData(clusterSizesMATLAB);
+        dPBarUValsdTheta.clusterEls=reinterpret_cast<double*>(mxGetData(clusterEls1stDerivMATLAB));
+        dPBarUValsdTheta.offsetArray=reinterpret_cast<size_t*>(mxGetData(offsetArrayMATLAB));
+        dPBarUValsdTheta.clusterSizes=reinterpret_cast<size_t*>(mxGetData(clusterSizesMATLAB));
 
         NALegendreCosRatDerivCPP(dPBarUValsdTheta, PBarUVals, theta);
         
@@ -144,9 +130,9 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         
         d2PBarUValsdTheta2.numClust=M+1;
         d2PBarUValsdTheta2.totalNumEl=numPBarU;
-        d2PBarUValsdTheta2.clusterEls=(double*)mxGetData(clusterEls2ndDerivMATLAB);
-        d2PBarUValsdTheta2.offsetArray=(size_t*)mxGetData(offsetArrayMATLAB);
-        d2PBarUValsdTheta2.clusterSizes=(size_t*)mxGetData(clusterSizesMATLAB);
+        d2PBarUValsdTheta2.clusterEls=reinterpret_cast<double*>(mxGetData(clusterEls2ndDerivMATLAB));
+        d2PBarUValsdTheta2.offsetArray=reinterpret_cast<size_t*>(mxGetData(offsetArrayMATLAB));
+        d2PBarUValsdTheta2.clusterSizes=reinterpret_cast<size_t*>(mxGetData(clusterSizesMATLAB));
         
         NALegendreCosRatDeriv2CPP(d2PBarUValsdTheta2, dPBarUValsdTheta, PBarUVals,theta);
         

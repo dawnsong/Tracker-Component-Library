@@ -24,7 +24,7 @@ function val=aPolarCoordTurn2D(x,t,turnType,tauTurn,tauLinAccel)
 %            x=[x;y;h;v;omega;al] where omega is the turn rate and al
 %            is the linear acceleration or the target state is
 %            x=[x;y;h;v;at;al] if the turn is expressed in terms of a
-%            transversal acceleration. The dimensionality fo the state is
+%            transversal acceleration. The dimensionality of the state is
 %            used to determine whether a linear acceleration component is
 %            present. The linear acceleration component changes the speed.
 %            That means that it is the derivative of the speed.
@@ -51,25 +51,12 @@ function val=aPolarCoordTurn2D(x,t,turnType,tauTurn,tauLinAccel)
 %             turn motion model in 2D. val has the same dimensionality as
 %             x.
 %
-%The basic 2D polar coordianted turn model is described in
-%J. L. Gertz, "Multisensor surveillance for improved aircraft tracking,"
-%The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396, 1989.
-%It is also mentioned in
-%P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
-%for an advanced ATC system," in Multitarget-Multisensor Tracking:
-%Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
-%House, 1992, vol. II, ch. 1.
-%Though no differential equations are given and a more detailed reference
-%cited therein is a hard-to-get dissertation in French. The use of
-%transversal acceleration is discussed in more detail in 
-%H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
-%of a multisensor tracking system for advanced air traffic control," in
-%Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
-%Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
-%Chapter 4.2.3 of
-%S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
-%Systems. Norwood, MA: Artech House, 1999.
-%also provides an overview of turning models using polar coordinates.
+%The basic 2D polar coordinated turn model is described in [1]. It is also
+%mentioned in [2], though no differential equations are given and a more
+%detailed reference cited therein is a hard-to-get dissertation in French.
+%The use of transversal acceleration is discussed in more detail in [3].
+%Chapter 4.2.3 of [4] also provides an overview of turning models using
+%polar coordinates.
 %
 %More information on turning modeling using trasverse and linear
 %acceleration can be found in the comments to the function aCoordTurn2D.
@@ -80,6 +67,21 @@ function val=aPolarCoordTurn2D(x,t,turnType,tauTurn,tauLinAccel)
 %discrete-time functions are direct-discrete models and not discretizations
 %of the continuous-time models as the propagated PDF does not remain
 %Gaussian over time.
+%
+%REFERENCES:
+%[1] J. L. Gertz, "Multisensor surveillance for improved aircraft
+%    tracking," The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396,
+%    1989.
+%[2] P. Vacher, I. Barret, and M. Gauvrit, "Design of a tracking algorithm
+%    for an advanced ATC system," in Multitarget-Multisensor Tracking:
+%    Applications and Advances, Y. Bar-Shalom, Ed. Norwood, MA: Artech
+%    House, 1992, vol. II, ch. 1.
+%[3] H. A. P. Blom, R. A. Hogendoorn, and B. A. van Doorn, "Design
+%    of a multisensor tracking system for advanced air traffic control," in
+%    Multitarget-Multisensor Tracking: Applications and Advances, Y. Bar-
+%    Shalom, Ed. Norwood, MA: Artech House, 1992, vol. II, ch. 2.
+%[4] S. Blackman and R. Popoli, Design and Analysis of Modern Tracking
+%    Systems. Norwood, MA: Artech House, 1999.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

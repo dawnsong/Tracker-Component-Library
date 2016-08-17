@@ -15,19 +15,19 @@ function J=numDiff(x,f,fDim,N,epsilon)
 %           N   A number >=1 specifying the order of the derivative
 %               approximation. N+1 is the order of the error terms. Thus,
 %               N=1 means that the error terms scale as O(N^2). If N and
-%               epsilon are omitted, then N=2 is assumed. Values for n=1
-%               through 8 are explicitely coded in. For values 9 and above,
-%               the coefficients of the derivative of the Lagrange
-%               interpolating polynomial are explicitely solved. If
-%               omitted, a value of N=2 is used.
+%               is omitted or an empty matrix is passed, then N=2 is
+%               assumed. Values for N=1 through 8 are explicitely coded in.
+%               For values 9 and above, the coefficients of the derivative
+%               of the Lagrange interpolating polynomial are explicitely
+%               solved.
 %       epsilon A scalar or xDimX1 vector quantity specifying the
 %               finite step size used for numerical differentiation. If a
 %               scalar value is given, that value is used for
 %               differentiating with respect to elements of xDim. If an
 %               xDimX1 value is given, then the corresponding element of
 %               epsilon is used to differentiate each element of x. If
-%               epsilon is omitted, then epsilon=max(1e-5*x,1e-7);
-%               is used.
+%               epsilon is omitted or an empty matrix is passed, then
+%               epsilon=max(1e-5*x,1e-7); is used.
 %
 %OUTPUTS:  J    A fDimXxDim Jacobian matrix. Each column is the derivative
 %               vector of f with respect to the corresponding element of x.
@@ -35,19 +35,21 @@ function J=numDiff(x,f,fDim,N,epsilon)
 %               matrix, J will be an empty matrix.
 %
 %Central-difference numerical differentiation is discussed in terms of
-%Lagrange interpolating polynomials in Chapter 4.1 of
-%R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
-%Brooks/ Cole, 2011.
-%The Lagrange interpolating polynomials themselves are discussed in Chapter
-%3 of the book. In general, the coefficients of the interpolating
-%polynomial for central difference numerical differentiation come from
-%Equation 4.2, which  expresses them in terms of the first derivative of a
-%Lagrange interpolating polynomial.
+%Lagrange interpolating polynomials in Chapter 4.1 of [1]. The Lagrange
+%interpolating polynomials themselves are discussed in Chapter 3 of the
+%book. In general, the coefficients of the interpolating polynomial for
+%central difference numerical differentiation come from Equation 4.2,
+%which expresses them in terms of the first derivative of a Lagrange
+%interpolating polynomial.
+%
+%REFERENCES:
+%[1] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston, MA:
+%    Brooks/ Cole, 2011.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<4)
+if(nargin<4||isempty(N))
     N=2;
 end
 
@@ -85,7 +87,7 @@ end
 xDim=size(x,1);
 numP=length(a);
 
-if(nargin<5)
+if(nargin<5||isempty(epsilon))
     %If epsilon is not specified, then use some ad-hoc default value
     epsilon=max(1e-5*x,1e-7);
 end

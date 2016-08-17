@@ -48,7 +48,6 @@ function [lambda,cycle]=findMinMaxCycleMean(adjMat,findMin)
 %cycle=[2;3;2].
 %
 %REFERENCES:
-%
 %[1] R. M. Karp, "A characterization of the minimum cycle mean in a
 %    digraph," Discrete Mathematics, vol. 23, no. 3, pp. 309-311, 1978.
 %[2] A. Dasdan and R. K. Gupta, "Faster maximum and minimum mean

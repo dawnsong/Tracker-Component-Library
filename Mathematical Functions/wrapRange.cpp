@@ -72,7 +72,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         return;
     }
     
-    vals=(double*)mxGetData(prhs[0]);
+    vals=reinterpret_cast<double*>(mxGetData(prhs[0]));
     
     minBound=getDoubleFromMatlab(prhs[1]);
     maxBound=getDoubleFromMatlab(prhs[2]);
@@ -87,7 +87,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     
     //Allocate space for the return values.
     retMat=mxCreateDoubleMatrix(numRows,numCols,mxREAL);
-    wrapVals=(double*)mxGetData(retMat);
+    wrapVals=reinterpret_cast<double*>(mxGetData(retMat));
     
     if(mirrorWrap) {
         for(i=0;i<numEls;i++) {

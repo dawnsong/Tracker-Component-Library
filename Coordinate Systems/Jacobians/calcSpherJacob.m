@@ -5,7 +5,7 @@ function J=calcSpherJacob(point,systemType)
 %                 1-way monostatic range in considered, range rate is
 %                 not available, and the point here is given in spherical
 %                 coordinates, whereas the function calcSpherRRJacob takes
-%                 the point in global Cartesian coordiantes.
+%                 the point in global Cartesian coordinates.
 %
 %INPUTS: point   A point in the format [range;azimuth;elevation], where the
 %                two angles are given in radians.
@@ -29,15 +29,15 @@ function J=calcSpherJacob(point,systemType)
 %
 %The derivatives can be computed in a straightforward manner from
 %the basic relation between spherical and Cartesian coordinates, which is
-%given in
-%R. L. Duncombe, "Computational techniques," in Explanatory Supplement
-%to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
-%Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
-%ch. 14.4.4.1.
-%among other sources.
+%given in Chapter 14.4.4.1 of [1], among other sources.
 %
 %Note that singularities exist at the poles; that is when the elevation is
 %+/-(pi/2).
+%
+%REFERENCES:
+%[1] R. L. Duncombe, "Computational techniques," in Explanatory Supplement
+%    to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
+%    Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013.
 %
 %December 2013 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

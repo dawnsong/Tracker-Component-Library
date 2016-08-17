@@ -49,9 +49,10 @@ bool getNextGrayCodeCPP(const size_t n, T* code, size_t &nCard, size_t &j) {
             j++;
         } while(code[j-1]==0&&j<(n-1));
     }
-    code[j]=!code[j];
-    nCard=nCard+2*(size_t)code[j]-1;
-    return nCard==(size_t)code[n-1];
+    //Equivalent to code[j]=!code[j]; We turns 0 to 1 and 1 to 0.
+    code[j]=1-code[j];
+    nCard=nCard+2*static_cast<size_t>(code[j])-1;
+    return nCard==static_cast<size_t>(code[n-1]);
 }
 
 #endif

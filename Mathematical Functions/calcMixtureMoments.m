@@ -8,13 +8,15 @@ function [mu, P]=calcMixtureMoments(xi,w,PHyp,muHyp,diffTransFun)
 %                    w is the set of  weights and the third input PHyp is
 %                    the set of covariance matrices for the hypotheses.
 %                    The final input makes P on the output the mean squared
-%                    error matrix for an estiamte muHyp rather than a
+%                    error matrix for an estimate muHyp rather than a
 %                    covariance matrix.
 %
 %INPUTS:    xi  A numDim X numPoints matrix of column vectors.
 %           w   A numPoints X 1 or 1XnumPoints vector of the weights
-%               associated with each of the column vectors. Note that all
-%               w>=0 and normally sum(w)=1.
+%               associated with each of the column vectors. Normally all
+%               w>0 to assure that P is positive definite. If this
+%               parameter is omitted or an empty matrix is passed, then all
+%               values in w are set to 1/numPoints (uniform distribution).
 %         PHyp  An optional numDimXnumDimXnumPoints parameter. If one
 %               wants to find the covariance matrix of a mixture
 %               distribution, then this is the set of covariances of the
@@ -49,9 +51,12 @@ function [mu, P]=calcMixtureMoments(xi,w,PHyp,muHyp,diffTransFun)
 %component in the mixture.
 %
 %Equations for computing the moments of mixtures are derived in Chapter
-%1.4.16 of
-%Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications
-%to Tracking and Navigation. New York: John Wiley and Sons, Inc, 2001.
+%1.4.16 of [1].
+%
+%REFERENCES:
+%[1] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with
+%    Applications to Tracking and Navigation. New York: John Wiley and
+%    Sons, Inc, 2001.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -68,6 +73,13 @@ if(nargin<3)
     PHyp=[];
 end
 
+xiDim=size(xi,1);
+numPoints=size(xi,2);
+
+if(nargin<2||isempty(w))
+    w=(1/numPoints)*ones(numPoints,1);
+end
+
 %Make sure that w is a column vector
 w=w(:);
 
@@ -80,15 +92,15 @@ if(nargout>1)
         mean2Use=mu;
     end
     
-    %The requirement that all w>=0 is so that we can use bsxfun to quickly
-    %compute P. The differences are transformed by diffTransFun, if
-    %provided.
     if(~isempty(diffTransFun))
-        temp=bsxfun(@times,diffTransFun(bsxfun(@minus,xi,mean2Use)),sqrt(w'));
+        diff=diffTransFun(bsxfun(@minus,xi,mean2Use));
     else
-        temp=bsxfun(@times,bsxfun(@minus,xi,mean2Use),sqrt(w'));
+        diff=bsxfun(@minus,xi,mean2Use);
     end
-    P=temp*temp';
+    P=zeros(xiDim,xiDim);
+    for curPoint=1:numPoints
+        P=P+w(curPoint)*(diff(:,curPoint)*diff(:,curPoint)');
+    end
     
     %Add in the weighted covariance matrices, if provided.
     if(~isempty(PHyp))

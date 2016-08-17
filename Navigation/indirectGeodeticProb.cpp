@@ -30,31 +30,31 @@
  *                  East of true North on the reference ellipsoid.
  *
  *The function is essentially a Matlab interface for the implementation in
- *GeographicLib, which is documented in 
- *The algorithm initially solves the indirect geodetic problem on the
- *surface of the reference ellipsoid using the function geoddistance from
- *C. F. F. Karney. (2013, 2 Jul.) Geodesics on an ellipsoid of revolution.
- *Matlab Central. [Online].
- *Available: http://www.mathworks.com/matlabcentral/fileexchange/39108
- *and
- *C. F. F. Karney, "Algorithms for geodesics," Journal of Geodesy, vol. 87,
- *no. 1, pp. 43?45, Jan. 2013. [Online].
- *Available: http://arxiv.org/pdf/1109.4448.pdf
- *and 
- *C. F. F. Karney. (2013, 31 Aug.) Addenda and errata for papers on
- *geodesics. [Online].
- *Available: http://geographiclib.sourceforge.net/geod-addenda.html
- *and 
- *C. F. F. Karney. (2011, 7 Feb.) Geodesics on an ellipsoid of revolution.
- *[Online]. Available: http://arxiv.org/pdf/1102.1215.pdf
+ *GeographicLib, which is documented in [1], [2], and [3]. GeographicLib
+ *can be downloaded from
+ *http://geographiclib.sourceforge.net
+ *Though a native Matlab version of the relevant function in GepgraphicLib
+ *exists, it is rather slow. hence the need for this interface to the
+ *compiled version.
  *
  *The algorithm can be compiled for use in Matlab using the 
  *CompileCLibraries function.
  *
- * *The algorithm is run in Matlab using the command format
+ *The algorithm is run in Matlab using the command format
  *[azStart,dist,azEnd]=indirectGeodeticProb(latLonStart,latLonEnd);
  *or if something other than the WGS84 reference ellipsoid is used
  *[azStart,dist,azEnd]=indirectGeodeticProb(latLonStart,latLonEnd,a,f);
+ *
+ *REFERENCES:
+ *[1] C. F. F. Karney, "Algorithms for geodesics," Journal of Geodesy, vol.
+ *    87, no. 1, pp. 43?45, Jan. 2013. [Online].
+ *    Available: http://arxiv.org/pdf/1109.4448.pdf
+ *[2] C. F. F. Karney. (2013, 31 Aug.) Addenda and errata for papers on
+ *    geodesics. [Online].
+ *    Available: http://geographiclib.sourceforge.net/geod-addenda.html
+ *[3] C. F. F. Karney. (2011, 7 Feb.) Geodesics on an ellipsoid of
+ *    revolution.
+ *    [Online]. Available: http://arxiv.org/pdf/1102.1215.pdf
  *
  *April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */
@@ -113,8 +113,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     //Get the starting and ending points.
-    latLonStart=(double*)mxGetData(prhs[0]);
-    latLonEnd=(double*)mxGetData(prhs[1]);
+    latLonStart=reinterpret_cast<double*>(mxGetData(prhs[0]));
+    latLonEnd=reinterpret_cast<double*>(mxGetData(prhs[1]));
     
     if(nrhs>2) {
         a=getDoubleFromMatlab(prhs[2]);
@@ -133,9 +133,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     distMATLAB=mxCreateDoubleMatrix(numPoints,1,mxREAL);
     azEndMATLAB=mxCreateDoubleMatrix(numPoints,1,mxREAL);
     
-    azStart=(double*)mxGetData(azStartMATLAB);
-    dist=(double*)mxGetData(distMATLAB);
-    azEnd=(double*)mxGetData(azEndMATLAB);
+    azStart=reinterpret_cast<double*>(mxGetData(azStartMATLAB));
+    dist=reinterpret_cast<double*>(mxGetData(distMATLAB));
+    azEnd=reinterpret_cast<double*>(mxGetData(azEndMATLAB));
     
     //Solve the indirect geodetic problem for each of the point pairs.
     //The class used to solve the problem is chosen based on the value of
@@ -164,7 +164,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             
             curBaseIdx+=2;
         }
-    } else {//For the case where |f|>0.01. All the changes is the class
+    } else {//For the case where |f|>0.01. All that changes is the class
             //used.
         GeodesicExact geod(a, f);
         size_t curPoint,curBaseIdx;

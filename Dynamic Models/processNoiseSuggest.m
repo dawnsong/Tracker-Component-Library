@@ -87,25 +87,11 @@ function procNoiseParam=processNoiseSuggest(algorithm,maxVal,T,sigmaw2,manDur)
 %                         ad-hoc parameter.
 %
 %All of the rule-of-thumb methods for choosing the process noise values are
-%from Chapter 6.2 and 6.3 of
-%Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications
-%to Tracking and Navigation. New York: John Wiley and Sons,
-%Inc, 2001.
-%and modified slightly, as descibed in the comments for the implementation
-%below.
+%from Chapter 6.2 and 6.3 of [1] and modified slightly, as descibed in the
+%comments for the implementation below.
 %
-%The solutions for the ConstMeas and MMSE methods are from
-%W. D. Blair, "Design of nearly constant velocity filters for radar
-%tracking of maneuvering targets," in Proceedings of the IEEE Radar
-%Conference, Atlanta, GA, 7-11 May 2012, pp. 1008-1013.
-%which is an extension of the work in
-%W. D. Blair, "Design of nearly constant velocity track filter for brief
-%maneuvers," in Proceedings of the 14th International Conference on
-%Information Fusion, Chicago, IL, 5-8 Jul. 2011.
-%and
-%W. D. Blair, "Design of nearly constant velocity track filters for
-%tracking maneuvering targets," in Proceedings of the 11th International
-%Conference on Information Fusion, Cologne, Germany, 30 Jun. - 3 Jul. 2008.
+%The solutions for the ConstMeas and MMSE methods are from [2],
+%which is an extension of the work in [3] and [4].
 %
 %The rule-of thumb parameters might be suitable for other dynamic models.
 %For example, when using the Singer model, given with aSinger and DPoly in
@@ -116,6 +102,21 @@ function procNoiseParam=processNoiseSuggest(algorithm,maxVal,T,sigmaw2,manDur)
 %the process noise parameter in the CWPA and the DCWPA models might be good
 %starting points for setting the process noise parameter in the continuous
 %and discrete Singer models.
+%
+%REFERENCES:
+%[1] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with
+%    Applications to Tracking and Navigation. New York: John Wiley and
+%    Sons, Inc, 2001.
+%[2] W. D. Blair, "Design of nearly constant velocity filters for radar
+%    tracking of maneuvering targets," in Proceedings of the IEEE Radar
+%    Conference, Atlanta, GA, 7-11 May 2012, pp. 1008-1013.
+%[3] W. D. Blair, "Design of nearly constant velocity track filter for
+%    brief maneuvers," in Proceedings of the 14th International Conference
+%    on Information Fusion, Chicago, IL, 5-8 Jul. 2011.
+%[4] W. D. Blair, "Design of nearly constant velocity track filters for
+%    tracking maneuvering targets," in Proceedings of the 11th
+%    International Conference on Information Fusion, Cologne, Germany, 30
+%    Jun. - 3 Jul. 2008.
 %
 %April 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -1,6 +1,14 @@
-function [col4row, row4col, gain, u, v]=assign2D(C,maximize)
+function [col4row,row4col,gain,u,v]=assign2D(C,maximize)
 %%ASSIGN2D          Solve the two-dimensional assignment problem with a
-%                   rectangular cost matrix C, scanning row-wise.
+%                   rectangular cost matrix C, scanning row-wise. The
+%                   problem being solved can be formulated as
+%                   minimize (or maximize)
+%                   \sum_{i=1}^{numRow}\sum_{j=1}^{numCol}C_{i,j}*x_{i,j}
+%                   subject to
+%                   \sum_{j=1}^{numCol}x_{i,j} =1 for all i
+%                   \sum_{i=1}^{numRow}x_{i,j}<=1 for all j
+%                   x_{i,j}=0 or 1.
+%                   Assuming that numCol>=numRow.
 %
 %INPUTS:    C           A numRowXnumCol cost matrix that does not contain
 %                       any NaNs and where the largest finite element minus
@@ -50,10 +58,15 @@ function [col4row, row4col, gain, u, v]=assign2D(C,maximize)
 %one can get what the dual variables would have been without the
 %preprocessing step.
 %
-%The algorithm is described in detail in 
-%D. F. Crouse, "Advances in displaying uncertain estimates of multiple
-%targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion, and
-%Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
+%The algorithm is described in detail in [1] and [2].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "On Implementing 2D Rectangular Assignment Algorithms,"
+%    IEEE Transactions on Aerospace and Electronic Systems, vol. 52, no. 4,
+%    pp. 1679-1696, Aug. 2016.
+%[2] D. F. Crouse, "Advances in displaying uncertain estimates of multiple
+%    targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion,
+%    and Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

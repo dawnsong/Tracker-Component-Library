@@ -51,13 +51,15 @@ function [LATRad,equationOfTime,LAT1,LAT2]=TT2LAT(TT1,TT2,rObsITRS,deltaTTUT1,xp
 %                 midnight.
 %
 %The local apparent solar time (LAT) is the local hour angle of the Sun
-%(given as time) plus 12 hours. LAT is discussed in Chapter 1.2 of
-%S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
-%Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
-%Books, 2013.
-%The "apparent" in the name means that light-time and aberration were taken
+%(given as time) plus 12 hours. LAT is discussed in Chapter 1.2 of [1]. The
+%"apparent" in the name means that light-time and aberration were taken
 %into account (The glossary of the book defined "apparent". The coordinate
 %system used for the computations is theTIRS, not the ITRS.
+%
+%REFERENCES:
+%[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
+%    Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
+%    Books, 2013.
 %
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

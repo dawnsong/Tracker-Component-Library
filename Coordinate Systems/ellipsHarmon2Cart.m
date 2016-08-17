@@ -19,11 +19,13 @@ function cartPoints=ellipsHarmon2Cart(pointsHarmon,E)
 %                      converted points with each column having the format
 %                      [x;y;z].
 %
-%Equation 1-150 in Chapter 1.15 of
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
-%is used for the conversion, where the complement of the reduced latitude
-%has been replaced by the reduced latitude.
+%Equation 1-150 in Chapter 1.15 of [1] is used for the conversion, where
+%the complement of the reduced latitude has been replaced by the reduced
+%latitude.
+%
+%REFERENCES:
+%[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

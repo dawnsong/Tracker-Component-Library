@@ -24,9 +24,7 @@
  *
  *OUTPUTS: GAST     The Greenwhich apparent sideral time in radians. 
  *
- *GAST is defined in Section 5.5.7 of
- *G. Petit and B. Luzum, IERS Conventions (2010), International Earth
- *Rotation and Reference Systems Service Std. 36, 2010.
+ *GAST is defined in Section 5.5.7 of [1].
  *
  *This is a wrapper for the functions iauTtut1 and iauGst94, iauGst00a,
  *and iauGst06a in the International Astronomical Union's Standards of
@@ -41,6 +39,10 @@
  *GAAST=TT2GAST(Jul1,Jul2,version);
  *or
  *GAST=TT2GAST(Jul1,Jul2,version,deltaT);
+ *
+ *REFERENCES:
+ *[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+ *    Rotation and Reference Systems Service Std. 36, 2010.
  *
  *April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */

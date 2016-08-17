@@ -1,4 +1,4 @@
-function [pList,intersectionCode]=EllipseIntersect(param1,param2,param3,param4,param5,param6)
+function [pList,intersectionCode]=ellipseIntersect(param1,param2,param3,param4,param5,param6)
 %%ELLIPSEINTERSECT Determine whether two 2D ellipses overlap. If the
 %                  ellipses intersect, then return the point(s) of
 %                  intersection. If they do not, indicate whether one
@@ -20,8 +20,8 @@ function [pList,intersectionCode]=EllipseIntersect(param1,param2,param3,param4,p
 %         thresholds. The parameters are
 %         param1, param2, param3, which shall subsequently be referred to
 %         as mu, P and gamma are a 2X1 vector, a symmetrix positive
-%         definite matrix, and a scalar threshold. the frist 3 parameters
-%         specify an ellipse such that (z-mu)'*inv(P)*(z-mu)=gamma.
+%         definite matrix, and a scalar threshold. the first 3 parameters
+%         specify an ellipse such that (z-mu)'*P*(z-mu)=gamma.
 %         param5, param6, and param7 are respectively the mean, symmetric
 %         matrix and scalar threshold specifying a second ellipse. 
 %
@@ -37,9 +37,11 @@ function [pList,intersectionCode]=EllipseIntersect(param1,param2,param3,param4,p
 %                           A positive integer is the number of
 %                           intersecting points.
 %
-%The algorithm is based in part on information in
-%D. Eberly. (2011, 26 Sep.) Intersection of ellipses. [Online].
-%Available: http://www.geometrictools.com/Documentation/IntersectionOfEllipses.pdf
+%The algorithm is based in part on information in [1].
+%
+%REFERENCES:
+%[1] D. Eberly. (2011, 26 Sep.) Intersection of ellipses. [Online].
+%    Available: http://www.geometrictools.com/Documentation/IntersectionOfEllipses.pdf
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -164,13 +166,13 @@ function a=MatVec2Poly(mu,P,gamma)
 %where z is a 2X1 vector. 
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
-
+    
     a(1)=P(1,1);
     a(2)=P(2,2);
     a(3)=2*P(1,2);
-    a(4)=-2*a(1)*mu(1)-a(3)*mu(2);
-    a(5)=-a(3)*mu(1)-2*a(2)*mu(2);
-    a(6)=a(1)*mu(1)^2+a(2)*mu(2)^2+a(3)*mu(1)*mu(2)-gamma;
+    a(4)=-2*(mu(1)*P(1,1)+mu(2)*P(1,2));
+    a(5)=-2*(mu(1)*P(1,2)+mu(2)*P(2,2));
+    a(6)=mu(1)^2*P(1,1)+2*mu(1)*mu(2)*P(1,2)+mu(2)^2*P(2,2)-gamma;
 end
 
 function mu=Poly2Center(a)

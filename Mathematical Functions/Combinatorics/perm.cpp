@@ -23,22 +23,8 @@
 *
 *OUTPUTS: val The matrix permanent of A.
 *
-* Whereas polynomial-time algorithms exist for calculating determinants, it
-* was proven in
-* L. G. Valiant, "The complexity of computing the permanent," Theoretical
-* Computer Science, vol. 8, no. 2, pp. 189-201, 1979.
-* that matrix permanents can not be computed in polynomial time unless P=NP.
-* However, efficient non-polynomial time algorithms exist. This file
-* implements the method in theorem 4.1 on page 26 in Chapter 2 of
-* H. J. Ryser, Combinatorial Mathematics, ser. The Carus Mathematical
-* Monographs. The Mathematical Association of America, 1963, no. 14.
-* when dealing with general rectangular matrices. When dealing with square
-* matrices, the algorithm PERMAN from Chapter 23 of
-* A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-* and Calculators, 2nd ed. New York: Academic press, 1978.
-* is used as it is more efficient and appears to be less susceptible to
-* finite precision errors. When skipping rows or columns, only Ryser's
-* algorithm is used.
+* Commenbts to the algorithm are given in the comments to the Matlab
+* implementation.
 *
 * The algorithm can be compiled for use in Matlab  using the 
 * CompileCLibraries function.
@@ -61,7 +47,7 @@
 
 void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray *prhs[]) {
     size_t numRow, numCol;
-    mxArray *AMat;
+    mxArray *AMat=NULL;
     double *A,permVal;
 
     if(nrhs<1){
@@ -97,7 +83,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         bool didAlloc=false;
                 
         if(nrhs<3||mxIsEmpty(prhs[2])) {
-            boolColsSkip=(bool*)mxMalloc(numCol*sizeof(bool));
+            boolColsSkip=reinterpret_cast<bool*>(mxMalloc(numCol*sizeof(bool)));
             //Set all of the entries to false since no column is skipped.
             std::fill_n(boolColsSkip, numCol, false);
             arrayLen=numCol;
@@ -116,7 +102,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         
         if(mxIsEmpty(prhs[1])) {
-            boolRowsSkip=(bool*)mxMalloc(numRow*sizeof(bool));
+            boolRowsSkip=reinterpret_cast<bool*>(mxMalloc(numRow*sizeof(bool)));
             //Set all of the entries to false since no column is skipped.
             std::fill_n(boolRowsSkip, numRow, false);
             arrayLen=numRow;
@@ -147,15 +133,15 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         }
         
         if(numRowsKept<=numColsKept) {
-            A=(double*)mxGetData(prhs[0]);
+            A=reinterpret_cast<double*>(mxGetData(prhs[0]));
         } else {
             std::swap(numRowsKept, numColsKept); 
             
             //This is freed using mxDestroyArray
             AMat=mxCreateDoubleMatrix(numRowsKept,numColsKept,mxREAL);
             didAlloc=true;
-            mexCallMATLAB(1, &AMat, 1,  (mxArray **)&prhs[0], "transpose");
-            A=(double*)mxGetData(AMat);
+            mexCallMATLAB(1, &AMat, 1,  const_cast<mxArray **>(&prhs[0]), "transpose");
+            A=reinterpret_cast<double*>(mxGetData(AMat));
         }
         
         //Set the mapping of indices of the rows in the submatrix to
@@ -163,7 +149,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         //columns in the submatrix to columns in the full matrix.
         //The two buffers will be allocated in one go and then freed
         //together in the end.
-        keptBuffer=(size_t*)mxMalloc(sizeof(size_t)*(numRowsKept+numColsKept));
+        keptBuffer=reinterpret_cast<size_t*>(mxMalloc(sizeof(size_t)*(numRowsKept+numColsKept)));
         rows2Keep=keptBuffer;
         cols2Keep=keptBuffer+numRowsKept;
         {//Do the mapping of the rows.
@@ -197,7 +183,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
         
         {
             size_t* buffer;
-            buffer=(size_t*)mxMalloc(numColsKept*sizeof(size_t));
+            buffer=reinterpret_cast<size_t*>(mxMalloc(numColsKept*sizeof(size_t)));
             permVal=permCPPSkip(A, numRow, rows2Keep, cols2Keep, numRowsKept, numColsKept,buffer);
             mxFree(buffer);
         }
@@ -218,28 +204,28 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     
     if(numRow==numCol) {
         double *buffer;
-        A=(double*)mxGetData(prhs[0]);
+        A=reinterpret_cast<double*>(mxGetData(prhs[0]));
         
         //Allocate temporary scratch space.
-        buffer = (double*)mxMalloc((2*numRow+1)*sizeof(double));
+        buffer = reinterpret_cast<double*>(mxMalloc((2*numRow+1)*sizeof(double)));
         permVal=permSquareCPP(A,numRow,buffer);
         mxFree(buffer);
     } else {
         bool didAlloc=false;
         size_t *buffer;
         if(numRow<=numCol) {
-            A=(double*)mxGetData(prhs[0]);
+            A=reinterpret_cast<double*>(mxGetData(prhs[0]));
         } else {
             std::swap(numRow, numCol); 
 
             //This is freed using mxDestroyArray
             AMat=mxCreateDoubleMatrix(numRow,numCol,mxREAL);
             didAlloc=true;
-            mexCallMATLAB(1, &AMat, 1,  (mxArray **)&prhs[0], "transpose");
-            A=(double*)mxGetData(AMat);
+            mexCallMATLAB(1, &AMat, 1,  const_cast<mxArray **>(&prhs[0]), "transpose");
+            A=reinterpret_cast<double*>(mxGetData(AMat));
         }
         
-        buffer=(size_t*)mxMalloc(numCol*sizeof(size_t));
+        buffer=reinterpret_cast<size_t*>(mxMalloc(numCol*sizeof(size_t)));
         permVal=permCPP(A,numRow,numCol,buffer);
         mxFree(buffer);
         //Get rid of temporary space.

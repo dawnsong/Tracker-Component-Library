@@ -52,12 +52,14 @@ function points=Cart2Sphere(cartPoints,systemType,useHalfRange,zTx,zRx,M)
 %                   matrix has the format [r;azimuth;elevation],
 %                   with azimuth and elevation given in radians.
 %
-%The conversion from Cartesian to spherical coordinates is given in
-%R. L. Duncombe, "Computational techniques," in Explanatory Supplement
-%to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
-%Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
-%ch. 14.4.4.2. Modifications have been made to deal with local, bistatic
+%The conversion from Cartesian to spherical coordinates is given in Chapter
+%14.4.4.2 of [1]. Modifications have been made to deal with local, bistatic
 %conversions.
+%
+%REFERENCES:
+%[1] R. L. Duncombe, "Computational techniques," in Explanatory Supplement
+%    to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
+%    Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -114,7 +116,7 @@ points=zeros(3,N);
 for curPoint=1:N
     %The target location in the receiver's coordinate system.
     zCL=M(:,:,curPoint)*(cartPoints(:,curPoint)-zRx(:,curPoint));
-    %The transmitter location in the receiver's local coordiante system.
+    %The transmitter location in the receiver's local coordinate system.
     zTxL=M(:,:,curPoint)*(zTx(:,curPoint)-zRx(:,curPoint));
 
 %Perform the conversion.

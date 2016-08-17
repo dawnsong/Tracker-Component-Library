@@ -1,5 +1,5 @@
 function [MSLPoints,coeffData]=ellips2MSLHelmert(points,useNGAApprox,coeffData)
-%%ELLIPS2MSLHELMERT  Given points in WGS-84 ellipsoidal coordiantes,
+%%ELLIPS2MSLHELMERT  Given points in WGS-84 ellipsoidal coordinates,
 %                    convert the ellipsoidal height components of the
 %                    points into heights above mean-sea level (MSL)
 %                    using Helmert's projection method with the EGM2008
@@ -38,12 +38,10 @@ function [MSLPoints,coeffData]=ellips2MSLHelmert(points,useNGAApprox,coeffData)
 %                   another call of ellips2MSLHelmert or MSL2EllipseHelmert
 %                   to make it faster.
 %
-%As described in Chapter 5.5 of
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
-%The MSL height using Helmert's projection is just the ellipsoidal height
-%minus the geoid height. This function just calls getEGM2008GeoidHeight to
-%get the geoidal height and subtracts it off.
+%As described in Chapter 5.5 of [1], the MSL height using Helmert's
+%projection is just the ellipsoidal height minus the geoid height. This
+%function calls getEGM2008GeoidHeight to get the geoidal height and
+%subtracts it off.
 %
 %Helmert's projection calculated the height using a line from the point to
 %the reference ellipsoid, subtracting off the distance from the point to
@@ -53,6 +51,10 @@ function [MSLPoints,coeffData]=ellips2MSLHelmert(points,useNGAApprox,coeffData)
 %The MSL height obtained is also slightly different. However, the
 %difference is small and Pizzetti's projection is difficult to use, so
 %Helmert's projection is almost always used.
+%
+%REFERENCES:
+%[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

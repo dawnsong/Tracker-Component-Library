@@ -25,9 +25,11 @@ function [NCycle,signVal,perm]=permutationCycles(perm,option)
 %         signVal The sign of the permutation perm.
 %         perm    The value given by the input option.
 %
-%The algorithm is CYCLES from Chapter 16 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
+%The algorithm is CYCLES from Chapter 16 of [1].
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

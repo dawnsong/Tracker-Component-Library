@@ -1,6 +1,6 @@
 function [x,exitCode]=LSEstLMarquardt(fun,x0,hasJacobian,TolG,TolX,delta,deltaAbs,maxIter,maxTries)
 %%LSESTLMARQUARDT Perform minimization of function over x having the
-%           quadratic form F(x)= (1/2)f(x)'*f(x), where x is a vector and
+%           quadratic form F(x)=(1/2)f(x)'*f(x), where x is a vector and
 %           f(x) is a vector function using the Levenberg-Marquardt
 %           algorithm. If no Jacobian for f is available, then a secant
 %           version of the algorithm is used to estimate the Jacobian. This
@@ -62,7 +62,7 @@ function [x,exitCode]=LSEstLMarquardt(fun,x0,hasJacobian,TolG,TolX,delta,deltaAb
 %The Levenberg-Marquart algorithm is a dampened form of the Gauss-Newton
 %method for least squares optimization. Unlike the Gauss-Newton methods, it
 %does not use a line search to determine the stepsize. The original
-%Levenberg-Marquardt algoirthm is described in [1]. The implmentation here
+%Levenberg-Marquardt algoirthm is described in [1]. The implementation here
 %follows that of Algorithm 3.16 in [2]. When the jacobian is not provided,
 %the secand version of the algorithm, partially summarized as Algorithm
 %3.34 in [2], is used. Algorithm 3.34 in 2 omits a number of steps.

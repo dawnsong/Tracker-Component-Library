@@ -103,6 +103,7 @@ function [apexPoints,signVals,exitCode]=trace2EarthMagApex(zCart,modSelParam,a,f
 %magnetic field line have more than one peak, requiring that one find every
 %peak to determine where the apex is.
 %
+%REFERENCES:
 %[1] T. E. VanZandt, W. L. Clark, and J. M. Warnock, "Magnetic apex
 %    coordinates: A magnetic coordinate system for the ionospheric f2
 %    layer," Journal of Geophysical Research, vol. 77, no. 13, pp. 2406-

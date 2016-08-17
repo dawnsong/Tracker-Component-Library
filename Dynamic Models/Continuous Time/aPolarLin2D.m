@@ -22,13 +22,15 @@ function val=aPolarLin2D(x,t,T)
 %             constant heading motion model.
 %
 %The idea of decomposing the velocity into direction and speed components
-%is presented in  
-%J. L. Gertz, "Multisensor surveillance for improved aircraft tracking,"
-%The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381?396, 1989.
-%where the direction component is differently defined and derivative for a
-%turning model are used. 
+%is presented in [1], where the direction component is differently defined
+%and derivative for a turning model are used. 
 %
 %This drift function goes with the diffusion matrix DPolarLin2D.
+%
+%REFERENCES:
+%[1] J. L. Gertz, "Multisensor surveillance for improved aircraft
+%    tracking," The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396,
+%    1989.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

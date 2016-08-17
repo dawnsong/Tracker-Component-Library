@@ -10,16 +10,12 @@ function retVal=permBound(A)
 %
 %OUTPUTS: val An approxmation of the matrix permanent of A.
 %
-%This function implements a modified version fo the the matrix permanent
-%approximation e4 described in
-%J. K. Uhlmann, "Matrix permanent inequalities for approximating joint
-%assignment matrices in tracking systems," Journal of the Franklin
-%Institute, vol. 341, no. 7, pp. 569-593, Nov. 2004.
-%In the case of a zero column sum, the e4 permanent bound by column
-%is bad, but the same approximation by row is good. In general, since the
-%bound is an upper bound regardless of whether it is taken by row or by
-%column, it should be evaluated both by row and by column and the smaller
-%value should be taken. That is what is done here.
+%This function implements a modified version of the the matrix permanent
+%approximation e4 described in [1]. In the case of a zero column sum, the
+%e4 permanent bound by column is bad, but the same approximation by row is
+%good. In general, since the bound is an upper bound regardless of whether
+%it is taken by row or by column, it should be evaluated both by row and by
+%column and the smaller value should be taken. That is what is done here.
 %
 %The above reference also discusses "conditioning techniques" for the
 %matrix under question before finding the bound on the permanent. No
@@ -31,6 +27,11 @@ function retVal=permBound(A)
 %upper bound here for rectangular matrices is obtained through a similar
 %sum. For the case of m>n, the permanent bound of the transposed matrix is
 %returned. The permanent of an empty matrix is defined to be one.
+%
+%REFERENCES:
+%[1] J. K. Uhlmann, "Matrix permanent inequalities for approximating joint
+%    assignment matrices in tracking systems," Journal of the Franklin
+%    Institute, vol. 341, no. 7, pp. 569-593, Nov. 2004.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

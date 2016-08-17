@@ -20,10 +20,7 @@ function [w,mu,P]=mergeGaussianComp(w,mu,P,clust)
 %         P     The covariance matrices of the mixture after merging the
 %               selected components.
 %
-%An expression for the moments of a mixture is given in Chapter 1 of
-%Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications
-%to Tracking and Navigation. New York: John Wiley and Sons,
-%Inc, 2001.
+%An expression for the moments of a mixture is given in Chapter 1 of [1].
 %The simplified form of the covariance sum in the book is not used, since
 %precision problems can cause the merged covariance matrices to fail to
 %remain positive definite. Rather, a less efficient quadratic formulation
@@ -34,6 +31,11 @@ function [w,mu,P]=mergeGaussianComp(w,mu,P,clust)
 %merged like a normal mixture, but their weights are normalized for the
 %merger. The weight of the merged component in the new mixture is the sum
 %of the weights of the components being merged.
+%
+%REFERENCES:
+%[1] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with
+%    Applications to Tracking and Navigation. New York: John Wiley and
+%    Sons, Inc, 2001.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

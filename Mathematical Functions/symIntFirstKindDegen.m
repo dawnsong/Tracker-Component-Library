@@ -12,10 +12,8 @@ function intVal=symIntFirstKindDegen(x,y)
 %OUTPUTS: intVal The value of the degenerate symmetric integral of the
 %                second kind given x and y.
 %
-%An algorthm for this function can be found in
-%B. C. Carlson, "Numerical computation of real or complex elliptic
-%integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
-%and is used for general values.
+%An algorthm for this function can be found in [1]. and is used for general
+%values.
 %
 %However, if real(x)>0 and (real(y)>=0||imag(y)~=0), then the integral can
 %be explicitly solved to get
@@ -25,6 +23,10 @@ function intVal=symIntFirstKindDegen(x,y)
 %Thus, this simpler expressions are used when the necessary criteria are
 %fulfilled. Though, care must be taken, because the simplification does not
 %work when x=y.
+%
+%REFERENCES:
+%[1] B. C. Carlson, "Numerical computation of real or complex elliptic
+%    integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

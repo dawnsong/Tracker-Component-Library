@@ -20,16 +20,17 @@
 *                   to reduced latitude, longitude and the semi-major axis.
 *
 *The ellipsoidal harmonic coordinate system is described in Chapter 1.15
-*of
-*B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-*SpringerWienNewYork, 2006.
-*is an orthogonal coordinate system.
+*of [1] and is an orthogonal coordinate system.
 *
 *The algorithm can be compiled for use in Matlab  using the 
 *CompileCLibraries function.
 *
 *The algorithm is run in Matlab using the command format
 *[u,c]=getEllipsHarmAxes(pointHarmon,E);
+*
+*REFERENCES:
+*[] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+*SpringerWienNewYork, 2006.
 *
 *February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 */
@@ -63,11 +64,11 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     }
     
     checkRealDoubleArray(prhs[0]);
-    pointHarmon=(double*)mxGetData(prhs[0]);
+    pointHarmon=reinterpret_cast<double*>(mxGetData(prhs[0]));
     
     //If the linear eccentricity is not given, then use the WGS-84 value
     //from the Constants class.
-    if(nrhs<2) {
+    if(nrhs<2&&!mxIsEmpty(prhs[1])) {
         mxArray *constantClass, *aMATLAB, *fMATLAB;
         double a,b,f;
         
@@ -95,8 +96,8 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     //Allocate the return variables.
     uMATLAB=mxCreateDoubleMatrix(3, 3,mxREAL);
     cMATLAB=mxCreateDoubleMatrix(3, 1,mxREAL);
-    u=(double*)mxGetData(uMATLAB);
-    c=(double*)mxGetData(cMATLAB);
+    u=reinterpret_cast<double*>(mxGetData(uMATLAB));
+    c=reinterpret_cast<double*>(mxGetData(cMATLAB));
     
     //Compute the values to return.
     getEllipsHarmAxesCPP(u,c,pointHarmon,E);

@@ -29,7 +29,7 @@ function [knownSols,targetStates,exitFlag]=orbDet3Dir(numHalfRevs,obsLocs,unitDi
 %                    origin.
 %        unitDirVecs Unit direction vectors from the observer to the target
 %                    at each of the three times in the global,
-%                    (quasi)-inertial coordiante system. unitDirVecs(:,1)
+%                    (quasi)-inertial coordinate system. unitDirVecs(:,1)
 %                    is the direction from the observer to the target at
 %                    time 1 (unitless).
 %                t12 The time interval between the first and second
@@ -96,15 +96,9 @@ function [knownSols,targetStates,exitFlag]=orbDet3Dir(numHalfRevs,obsLocs,unitDi
 %                      Newton's method turned out singular and thus could
 %                      not be inverted.
 %
-%The algorithm is based on the algorithm of Gooding, which is described in 
-%R. H. Gooding, "A new procedure for the solution of the classical problem
-%of minimal orbit determination from three lines of sight," Celestial
-%Mechanics and Dynamical Astronomy, vol. 66, no. 4, pp. 387?423, 1997.
-%and
-%R. H. Gooding, "A new procedure for orbit determination based on three
-%lines of sight (angles only)," Royal Aerospace Executive, Procurement
-%Executive, Ministry of Defence, Farnborough, Hants, United Kingdom, Tech.
-%Rep. 93004, Apr. 1993.
+%The algorithm is based on the algorithm of Gooding, which is described in
+%[1] and [2].
+%
 %Given initial estimates of the distance of the target from the observer at
 %times 1 and times 3, the algorithm solves Lambert's problem using the
 %function orbVelDet2Pt to determine the velocity of the target at time 1.
@@ -157,9 +151,7 @@ function [knownSols,targetStates,exitFlag]=orbDet3Dir(numHalfRevs,obsLocs,unitDi
 %described by Gooding is used to discourage convergence to old solutions.
 %
 %Additional information on the three-vector orbit determination problem is
-%given in Chapter 7.3 of
-%D. A. Vallado and W. D. McClain, Fundamentals of Astrodynamics
-%and Applications, 4th ed. Hawthorne, CA: Microcosm press, 2013.
+%given in Chapter 7.3 of [3].
 %
 %The algorthm can be demonstrated using the data from the revised first
 %example of Escobal in Gooding's report:
@@ -215,6 +207,18 @@ function [knownSols,targetStates,exitFlag]=orbDet3Dir(numHalfRevs,obsLocs,unitDi
 %This is a 20 helf-revolution solution, so a solution coud potentiall have
 %existed with solSel=0. However, had that been tried in this example, no
 %solutions would have been found.
+%
+%REFERENCES:
+%[1] R. H. Gooding, "A new procedure for the solution of the classical
+%    problem of minimal orbit determination from three lines of sight,"
+%    Celestial Mechanics and Dynamical Astronomy, vol. 66, no. 4, pp.
+%    387-423, 1997.
+%[2] R. H. Gooding, "A new procedure for orbit determination based on three
+%    lines of sight (angles only)," Royal Aerospace Executive, Procurement
+%    Executive, Ministry of Defence, Farnborough, Hants, United Kingdom,
+%    Tech. Rep. 93004, Apr. 1993.
+%[3] D. A. Vallado and W. D. McClain, Fundamentals of Astrodynamics and
+%    Applications, 4th ed. Hawthorne, CA: Microcosm press, 2013.
 %
 %November 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

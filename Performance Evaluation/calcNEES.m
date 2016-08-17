@@ -17,8 +17,12 @@ function NEES=calcNEES(xTrue,xEst,PEst)
 %
 %The NEES is a measure of how well the provided by an estimator matches the
 %actual accuracy of the estimates. The concept of the NEES is discussed in 
-%"Basic Tracking Using Nonlinear 3D monostatic and Bistatic Measurements by
-%David F. Crouse.
+%[1].
+%
+%REFERENCES:
+%[1] David F. Crouse , "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems 
+%    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -27,11 +31,11 @@ xDim=size(xEst,1);
 numEst=size(xEst,2);
 
 if(size(xTrue,2)==1)
-    xTrue=repmat(xTrue,1,numEst);
+    xTrue=repmat(xTrue,[1,numEst]);
 end
 
 if(size(PEst,3)==1)
-    PEst=repmat(PEst,1,1,numEst);
+    PEst=repmat(PEst,[1,1,numEst]);
 end
 
 NEES=0;

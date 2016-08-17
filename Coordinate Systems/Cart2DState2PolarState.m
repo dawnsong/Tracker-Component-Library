@@ -34,15 +34,16 @@ function xPol=Cart2DState2PolarState(xCart,systemType)
 %simple solution is used, not a least squares solution.
 %
 %The use of 2D states where the heading and speed have been separated is
-%discussed in
-%M. Busch and S. Blackman, "Evaluation of IMM filtering for an air
-%defense system application," in Proceedings of SPIE: Signal and Data
-%Processing of Small Targets, vol. 2561, 9 Jul. 1995, pp. 435-447.
-%and
-%J. L. Gertz, "Multisensor surveillance for improved aircraft tracking,"
-%The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396, 1989.
+%discussed in [1] and [2].
 %
 %The opposite of this function is polar2DState2CartState.
+%
+%REFERENCES:
+%[1] M. Busch and S. Blackman, "Evaluation of IMM filtering for an air
+%    defense system application," in Proceedings of SPIE: Signal and Data
+%    Processing of Small Targets, vol. 2561, 9 Jul. 1995, pp. 435-447.
+%[1] J. L. Gertz, "Multisensor surveillance for improved aircraft tracking,"
+%    The Lincoln Laboratory Journal, vol. 2, no. 3, pp. 381-396, 1989.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %%(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

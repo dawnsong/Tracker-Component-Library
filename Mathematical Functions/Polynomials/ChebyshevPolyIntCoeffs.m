@@ -23,14 +23,16 @@ function b=ChebyshevPolyIntCoeffs(a,tauStart,tauEnd)
 %            of the function given by a (with 0 additive constant).
 %
 %The derivative of a weighted Chebyshev polynomial series is another
-%weighted Chebyshev polynomial series, as given in
-%K. S. Breuer and R. M. Everson, "On the errors incurred calculating
-%derivatives using Chebyshev polynomials," Journal of Computational
-%Physics, vol. 99, no. 1, pp. 56-67, Mar. 1992.
-%and is derived by element-by-element differentiation. The integral can be
-%derived in a similar manner.
+%weighted Chebyshev polynomial series, as given in [1] and is derived by
+%element-by-element differentiation. The integral can be derived in a
+%similar manner.
 %
 %The opposite of this function is ChebyshevPolyDerivCoeffs.
+%
+%REFERENCES:
+%[1] K. S. Breuer and R. M. Everson, "On the errors incurred calculating
+%    derivatives using Chebyshev polynomials," Journal of Computational
+%    Physics, vol. 99, no. 1, pp. 56-67, Mar. 1992.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

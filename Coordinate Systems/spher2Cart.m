@@ -4,7 +4,7 @@ function cartPoints=spher2Cart(points,systemType,useHalfRange,zTx,zRx,M)
 %             converted into Cartesian unit vectors. An option allows for
 %             the angles to be specified from different axes. Optionally, a
 %             bistatic range can be used when considering bistatic
-%             measurements in a local spherical coordiante system. 
+%             measurements in a local spherical coordinate system. 
 %
 %INPUTS:  points  One or more points given in terms of range, azimuth and
 %                 elevation, with the angles in radians, or in terms of
@@ -41,7 +41,7 @@ function cartPoints=spher2Cart(points,systemType,useHalfRange,zTx,zRx,M)
 %           same for all of the target states being converted. zTx can have
 %           more than 3 rows; additional rows are ignored. If monostatic or
 %           no range values are provided, an empty matrix can be passed.
-%       zRx The 3X1 [x;y;z] location vector of the receiver in Cartesian
+%       zRx The 3XN [x;y;z] location vectors of the receivers in Cartesian
 %           coordinates.  If this parameter is omitted, then the
 %           receivers are assumed to be at the origin. If only a single
 %           vector is passed, then the receiver location is assumed the
@@ -62,20 +62,23 @@ function cartPoints=spher2Cart(points,systemType,useHalfRange,zTx,zRx,M)
 %                      [x;y;z]. If no range values were passed, then all of
 %                      the vectors are unit direction vectors.
 %
-%The conversion from spherical to Cartesian coordinates is given in
-%R. L. Duncombe, "Computational techniques," in Explanatory Supplement
-%to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
-%Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
-%ch. 14.4.4.1.
+%The conversion from spherical to Cartesian coordinates is given in [1].
 %However, when considering the bistatic scenario, concepts from the
-%bistatic r-u-v to Cartesian conversion described in "Basic Tracking Using
-%Nonlinear 3D Monostatic and Bistatic Measurements" by David F. Crouse.
-%are used.
+%bistatic r-u-v to Cartesian conversion described in [2] are used.
+%
+%REFERENCES:
+%[1] R. L. Duncombe, "Computational techniques," in Explanatory Supplement
+%    to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
+%    Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
+%    ch. 14.4.4.1.
+%[2] D. F. Crouse, "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems
+%    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
 %
 %July 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<2)
+if(nargin<2||isempty(systemType))
     systemType=0;
 end
 
@@ -182,7 +185,7 @@ for curPoint=1:N
     %Convert the vector into the global coordinate system.
     uVec=uVecL(:,curPoint);
     
-    %The transmitter location in the receiver's local coordiante system.
+    %The transmitter location in the receiver's local coordinate system.
     zTxL=M(:,:,curPoint)*(zTx(:,curPoint)-zRx(:,curPoint));
 
     %The range from the transmitter to the target.

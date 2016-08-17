@@ -11,13 +11,14 @@ function vals=Gudermannian(x)
 %OUTPUTS: val   The Gudermannian evaluated at each point in x. The output
 %               can range from -pi/2 to pi/2.
 %
-%A noted on
-%Weisstein, Eric W. "Gudermannian." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/Gudermannian.html
-%the Gudermannian can be easily expressed in terms of hyperbolic tangent
-%and inverse tangent operations.
+%A noted in [1], the Gudermannian can be easily expressed in terms of
+%hyperbolic tangent and inverse tangent operations.
 %
 %The function invGudermannian is the inverse of this function.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Gudermannian." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/Gudermannian.html
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

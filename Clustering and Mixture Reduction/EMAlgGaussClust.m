@@ -18,9 +18,11 @@ function [w,mu,P]=EMAlgGaussClust(z,w,mu,P,numIter)
 %         P     The refined covariance matrix estimates.
 %
 %The EM algorithm for Gaussian mixtures is an implementation of the
-%algorithm described in Chapter 9.2.2 of
-%C. M. Bishop, Pattern Recognition and Machine Learning. Cambridge,
-%United Kingdom: Springer, 2007.
+%algorithm described in Chapter 9.2.2 of [1].
+%
+%REFERENCES:
+%[1] C. M. Bishop, Pattern Recognition and Machine Learning. Cambridge,
+%    United Kingdom: Springer, 2007.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

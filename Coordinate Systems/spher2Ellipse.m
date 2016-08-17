@@ -31,9 +31,12 @@ function points=spher2Ellipse(points,a,f)
 %
 %Azimuth is an angle measured from the x-axis in the x-y plane. Elevation
 %is the angle above the x-y plane. The formula for directly converting
-%between geocentric and geodetic latitudes is described in "An Overview of
-%Major Terrestrial, Celestial, and Temporal Coordinate Systems for Target
-%Tracking" by David F. Crouse.
+%between geocentric and geodetic latitudes is described in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

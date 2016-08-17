@@ -52,21 +52,13 @@ function [azimuth, dist]=indirectRhumbProblem(latLonStart,latLonEnd,height,useHe
 %         dist     The distance that one must travel on a constant-heading
 %                  course to go from latLonStart to latLonEnd.
 %
-%If height=0, the algorithm is mostly taken from
-%K. C. Carlton-Wippern, "On loxodromic navigation," Journal of Navigation,
-%vol. 45, no. 2, pp. 292-297, May 1992.
-%However, a formula using isometric latitudes, which are described in
-%Chapter 3 of
-%J. P. Snyder, "Map projections- a working manual," U.S. Geological
-%Survey, Tech. Rep. 1395, 1987.
-%to get the azimuth angle was used, because it is simpler. The formula is
-%also explicitely mentioned in Equation 2 of
-%J. Alexander, "Loxodromes: A rhumb way to go," Mathematics Magazine,
-%vol. 77, no. 5, pp. 349-356, Dec. 2004.
-%However, the expression for computing the distance from that paper is only
-%for a sphere, not for an ellipsoid, which is why the Carlton-Wippern
-%distance computation using an incomplete elliptic integral of the second
-%kind is preferred.
+%If height=0, the algorithm is mostly taken from [1]. However, a formula
+%using isometric latitudes, which are described in Chapter 3 of [2] to get
+%the azimuth angle was used, because it is simpler. The formula is also
+%explicitely mentioned in Equation 2 of [3]. However, the expression for
+%computing the distance from that paper is only for a sphere, not for an 
+%llipsoid, which is why the Carlton-Wippern distance computation using an
+%incomplete elliptic integral of the second kind is preferred.
 %
 %When the azimuth found by the technique is very close to +/-pi/2 (when one
 %is traveling at nearly a constant latitude), the distance computation
@@ -93,6 +85,14 @@ function [azimuth, dist]=indirectRhumbProblem(latLonStart,latLonEnd,height,useHe
 %than 80m. The search region for the value of dist used in the fminbnd
 %function was set to 0.9*dist to 1.1*dist, where dist is the distance
 %obtained after scaling the distance from the zero-altitude solution.
+%
+%REFERENCES:
+%[1] K. C. Carlton-Wippern, "On loxodromic navigation," Journal of
+%    Navigation, vol. 45, no. 2, pp. 292-297, May 1992.
+%[2] J. P. Snyder, "Map projections- a working manual," U.S. Geological
+%    Survey, Tech. Rep. 1395, 1987.
+%[3] J. Alexander, "Loxodromes: A rhumb way to go," Mathematics Magazine,
+%    vol. 77, no. 5, pp. 349-356, Dec. 2004.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

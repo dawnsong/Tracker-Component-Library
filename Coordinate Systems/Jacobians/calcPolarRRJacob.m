@@ -34,6 +34,13 @@ function J=calcPolarRRJacob(components,xState,systemType)
 %               [range;azimuth;range rate], where a subset of those rows is
 %               provided as specified by the components parameter.
 %
+%The non-relativistic range-rate approximation is derived in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems
+%    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
+%
 %July 2014 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
@@ -76,7 +83,7 @@ function J=calcPolarRRJacob(components,xState,systemType)
     vy=xState(4);
 
     if(hasDirection==true)
-        %The gradients of azimuth in local coordiantes.
+        %The gradients of azimuth in local coordinates.
         dAz=zeros(4,1);
         switch(systemType)
             case 0

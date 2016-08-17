@@ -11,7 +11,7 @@ function [A,idxList]=heapSort(A,byCol,gtCompareFunc)
 %           that heapSort is not a stable sorting algorithm, meaning that
 %           the order of items having the same value might change.
 %
-%INPUTS: A  An array, matrix, or linear cell array that is to be sorted.
+%INPUTS: A  An array, 2D matrix, or linear cell array that is to be sorted.
 %           When given a matrix, the comparison function gtCompareFunc must
 %           be provided so that it is clear how the columns are compared
 %           (or the rows if byCol is false).
@@ -45,18 +45,19 @@ function [A,idxList]=heapSort(A,byCol,gtCompareFunc)
 %           A(idxList) on the input A will give the sorted output A.
 %
 %The algorithm for creating and updating the heap is generally based on the
-%class implementation described in Chapter 6.4 of
-%M.A.Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
-%Reading, MA: Addison-Wesley, 1999.
-%The implementation using such a heap for sorting is described in Chapter
-%5.2.3 of
-%D. Knuth, The Art of Computer Programming: Sorting and Searching, 2nd ed.
-%Reading, MA: Addison-Wesley, 1998, vol. 3.
+%class implementation described in Chapter 6.4 of [1]. The implementation
+%using such a heap for sorting is described in Chapter 5.2.3 of [2].
 %
 %Note that sorting large matrices can be slow as each element (so an entire
 %row/ column) is copied during the search. Thus, if one is just sorting
 %according to a particular row, it makes sense ot get the idxList for that
 %one row and then use it to sort everything else.
+%
+%REFERENCES:
+%[1] M.A.Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
+%    Reading, MA: Addison-Wesley, 1999.
+%[2] D. Knuth, The Art of Computer Programming: Sorting and Searching, 2nd
+%    ed. Reading, MA: Addison-Wesley, 1998, vol. 3.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -67,7 +68,7 @@ function [A,idxList]=heapSort(A,byCol,gtCompareFunc)
         return;
     end
 
-    if(nargin<2)
+    if(nargin<2||isempty(byCol))
         %If the input is 1-dimensional, then make the byCol parameter go
         %over whichever dimension would sort it. Otherwise, make it go over
         %columns.
@@ -80,7 +81,7 @@ function [A,idxList]=heapSort(A,byCol,gtCompareFunc)
         end
     end
 
-    if(nargin<3)
+    if(nargin<3||isempty(gtCompareFunc))
        gtCompareFunc=@(x1,x2)(x1>x2);
     end
     

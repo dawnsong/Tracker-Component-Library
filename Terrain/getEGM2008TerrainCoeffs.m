@@ -24,28 +24,55 @@ function [C,S]=getEGM2008TerrainCoeffs(M)
 %               multiplied by sines in the harmonic expansion. The
 %               format of S is the as that of C.
 %
-%This function first checks for a .mat file with the coefficients in it.
-%The .mat file is small and can be read quite quickly. However, if one does
-%not exist, then it tries to read the EGM2008_to2190_TideFree text file
-%that one can obtain directly from the NGA. Reading from the text file is
-%extremely slow.
+%The EGM2008 model is documented in [1] and [2].
 %
 %More on using the spherical harmonic coefficients is given in the comments
 %for the function spherHarmonicEval and the format and use of
 %the coefficients is also documented in 
 %http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/README_FIRST.pdf
-%The coefficients are for finding heights above mean sea level. However,
-%the geopotential used to define mean sea level does not appear to be
-%specified anywhere.
+%The coefficients are for finding heights above mean sea level, which means
+%that the geoid height must be added to get the true height above the
+%WGS-84 reference ellipsoid. See the function getEGMGeoidHeight to obtain
+%the height. The coefficients can be downloaded from
+%http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/first_release.html
+%in a file called Coeff_Height_and_Depth_to2190_DTM2006.0 .
 %
-%The EGM2008 model is documented in 
-%N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "The
-%development and evaluation of the Earth gravitational model 2008
-%(EGM2008)," Journal of Geophysical Research, vol. 117, no. B4, Apr.
-%2012.
-%N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "Correction to
-%"The development and evaluation of the Earth gravitational model 2008
-%(EGM2008)"," Journal of Geophysical Research, vol. 118, 2013.
+%As reading the data from the file can be slow, this function first checks
+%for a .mat file with the coefficients in it in the folder named "data"
+%that is in the same folder as this function. If
+%such a file does not exist, then the coefficients are read in from the
+%appropriate .dat file and if all 2190 coefficients are requested, then a
+%.mat file is created so that the text in the .dat file need not be read
+%again, because reading the text file is extremely slow.
+%
+%EXAMPLE:
+%The fact that this stores elevations above the geoid can make it confusing
+%to find a point on the terrain at a particular latitude and longitude.
+%Here we give an example:
+% %WGS-84 latitude and longitude in radians.
+% latLon=[19.4721;-155.5922]*(pi/180);
+% [C,S]=getEGM2008TerrainCoeffs();
+% %To use the terrain coefficients, the latitude must be changed from
+% %geodetic to geocentric. We will assume that the latitude is given in
+% %WGS-84 coordinates, as is standard with GPS.
+% latSpher=ellipsLat2SpherLat(latLon(1));
+% azElSphere=[latLon(2);latSpher];
+% orthoHeight=spherHarmonicEval(C,S,azElSphere);
+% %The tide-free geoid should be the reference for the model. The function
+% %getEGMGeoidHeight loads the coefficients for the gravitational model,
+% %though we can also pass then in a structure to speed it up during
+% %repeated calls.
+% geoidHeight=getEGMGeoidHeight(latLon,0,true,0);
+% CartLoc=ellips2Cart([latLon;geoidHeight+orthoHeight])
+%
+%REFERENCES:
+%[1] N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "The
+%    development and evaluation of the Earth gravitational model 2008
+%    (EGM2008)," Journal of Geophysical Research, vol. 117, no. B4, Apr.
+%    2012.
+%[2] N. K. Pavlis, S. A. Holmes, S. C. Kenyon, and F. J. K., "Correction to
+%    "The development and evaluation of the Earth gravitational model 2008
+%    (EGM2008)"," Journal of Geophysical Research, vol. 118, 2013.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -68,8 +95,8 @@ ScriptFolder = fileparts(ScriptPath);
 
 %First, see if a .mat file with all of the data exists. If so, then use
 %that and ignore everything else.
-if(exist([ScriptFolder,'/data/EGM2008TerrainCoeffs.mat'],'file'))
-    load([ScriptFolder,'/data/EGM2008TerrainCoeffs.mat'],'CCoeffs','SCoeffs','clustSizes','offsets');
+if(exist([ScriptFolder,'/data/Coeff_Height_and_Depth_to2190_DTM2006.0.mat'],'file'))
+    load([ScriptFolder,'/data/Coeff_Height_and_Depth_to2190_DTM2006.0.mat'],'CCoeffs','SCoeffs','clustSizes','offsets');
     %Create the ClusterSet classes to hold the data.
     C=ClusterSet();
     S=ClusterSet();
@@ -106,6 +133,16 @@ for curRow=1:numRows
     m=data{2}(curRow);%The order of the coefficient.
     C(n+1,m+1)=data{3}(curRow);
     S(n+1,m+1)=data{4}(curRow);
+end
+
+%Save the coefficients into a .mat file so that they can be read more
+%quickly next time.
+if(M==2190)
+    CCoeffs=C.clusterEls;
+    SCoeffs=S.clusterEls;
+    clustSizes=C.clusterSizes;
+    offsets=C.offsetArray;
+    save([ScriptFolder,'/data/Coeff_Height_and_Depth_to2190_DTM2006.0.mat'],'CCoeffs','SCoeffs','clustSizes','offsets')
 end
 end
 

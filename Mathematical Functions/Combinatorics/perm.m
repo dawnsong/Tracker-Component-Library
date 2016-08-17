@@ -28,21 +28,38 @@ function val=perm(A,boolRowsSkip,boolColsSkip)
 %             necessary.
 %
 %Whereas polynomial-time algorithms exist for calculating determinants, it
-%was proven in
-%L. G. Valiant, "The complexity of computing the permanent," Theoretical
-%Computer Science, vol. 8, no. 2, pp. 189-201, 1979.
-%that matrix permanents can not be computed in polynomial time unless P=NP.
-%However, efficient non-polynomial time algorithms exist. This file
-%implements the method in theorem 4.1 on page 26 in Chapter 2 of
-%H. J. Ryser, Combinatorial Mathematics, ser. The Carus Mathematical
-%Monographs. The Mathematical Association of America, 1963, no. 14.
-%when dealing with general rectangular matrices. When dealing with square
-%matrices, the algorithm PERMAN from Chapter 23 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%is used as it is more efficient and appears to be less susceptible to
-%finite precision errors. When skipping rows or columns, only Ryser's
-%algorithm is used.
+%was proven in [1] that matrix permanents can not be computed in polynomial
+%time unless P=NP. However, efficient non-polynomial time algorithms exist.
+%This file implements the method in theorem 4.1 on page 26 in Chapter 2 of
+%[2] when dealing with general rectangular matrices. When dealing with
+%square matrices, the algorithm PERMAN from Chapter 23 of [3] is used as it
+%is more efficient and appears to be less susceptible to finite precision
+%errors. When skipping rows or columns, only Ryser's algorithm is used.
+%
+%EXAMPLE:
+%Suppose that one is given a boolean matrix where 1 indicates that a target
+%gates with a measurement and a 0 indicates that it does not gate. To deal
+%with the possibility of missed detections, one often adds dummy
+%measurements, one per target, each gating with only one target. The total
+%number of possible target-measurement (and missed detection) assignments
+%equals the permanent of the matrix.
+% %For 5 targets, 5 measurements (everything gates) and no missed
+% %detections
+% perm(ones(5,5))
+% %One gets 120, there are 120 possible assignments (factorial(5)).
+% %For 5 targets target where everything gates with the possibility of
+% %missed detections, one has
+% perm([ones(5,5),eye(5)])
+% %Leading to 1546 possible assignments to measurements and missed
+% %detections.
+%
+%REFERENCES:
+%[1] L. G. Valiant, "The complexity of computing the permanent,"
+%    Theoretical Computer Science, vol. 8, no. 2, pp. 189-201, 1979.
+%[2] H. J. Ryser, Combinatorial Mathematics, ser. The Carus Mathematical
+%    Monographs. The Mathematical Association of America, 1963, no. 14.
+%[3] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

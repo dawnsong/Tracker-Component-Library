@@ -46,7 +46,7 @@ function xList=RKAdaptiveAtTimes(xInit,theTimes,f,initStepSize,order,solutionCho
 %May 2015 David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<9)
+if(nargin<9||isempty(maxSteps))
     maxSteps=1024;
 end
 
@@ -57,15 +57,15 @@ end
 if(nargin<7||isempty(RelTol))
     RelTol=1e-3;
 end
-if(nargin<6)
+if(nargin<6||isempty(solutionChoice))
     solutionChoice=0;
 end
 
-if(nargin<5)
+if(nargin<5||isempty(order))
     order=5;
 end
 
-if(nargin<4)
+if(nargin<4||isempty(initStepSize))
     initStepSize=[];
 end
 

@@ -30,21 +30,23 @@ function f=evalContFrac(bFunc,aFunc,epsVal,maxIter)
 %
 %The algorithm is the modified Lentz's method. A good description of the
 %method, demonstrating its origin is given in Chapter II and Appendix C of
-%C.-Y. Shih, "An investigation of a stable algorithm for the evaluation
-%of fractional order Bessel functions," Master?s thesis, Emporia
-%State University, Emporia, KS, Nov. 1993. [Online]. Available:
-%https://esirc.emporia.edu/bitstream/handle/123456789/1773/Shih%201993.pdf
-%The origin of the algorithm is
-%W. J. Lentz, "Generating Bessel functions in Mie scattering calculations
-%using continued fractions," Applied optics, vol. 15, no. 3, pp. 668-671,
-%Mar. 1976.
-%However, the algorithm is harder to understand outside of the context of
-%Bessel functions when consulting that paper.
+%[1]. The origin of the algorithm is [2]. However, the algorithm is harder
+%to understand outside of the context of Bessel functions when consulting
+%[2].
 %
 %An example of a continued fraction is an approximation to pi:
 % bFunc=@(i)((i==1)*0+(i~=1)*(2*(i-1)-1));
 % aFunc=@(i)(4*(i==1)+(i-1)^2*(i~=1));
 % piApprox=evalContFrac(bFunc,aFunc)
+%
+%REFERENCES:
+%[1] C.-Y. Shih, "An investigation of a stable algorithm for the evaluation
+%    of fractional order Bessel functions," Master?s thesis, Emporia
+%    State University, Emporia, KS, Nov. 1993. [Online]. Available:
+%    https://esirc.emporia.edu/bitstream/handle/123456789/1773/Shih%201993.pdf
+%[2] W. J. Lentz, "Generating Bessel functions in Mie scattering
+%    calculations using continued fractions," Applied optics, vol. 15, no.
+%    3, pp. 668-671, Mar. 1976.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

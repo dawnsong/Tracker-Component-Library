@@ -47,15 +47,21 @@ function [C,S,a,c]=getWMMCoeffs(year,fullyNormalize)
 %Details on the normalization of the coefficients is given in the comments
 %to the function spherHarmonicEval.
 %
-%Documentation for the WMM is given in
-%S. Maus, S. McLean, M. Nair, and C. Rollins, "The US/UK
-%world magnetic model for 2010-2015," National Oceanographic and
-%Atmospheric Organization, Tech. Rep. NESDIS/NGDC, 2010. [Online].
-%Available: http://www.ngdc.noaa.gov/geomag/WMM/
-%and information on Schmidt semi-normalized Legendre functions is given in
-%D. E. Winch, D. J. Ivers, J. P. R. Turner, and R. J. Stening,
-%"Geomagnetism and Schmidt quasi-normalization," Geophysical Journal
-%International, vol. 160, no. 2, pp. 487-504, Feb. 2005.
+%Documentation for the WMM is given in [1] and information on Schmidt semi-
+%normalized Legendre functions is given in [2]. The coefficients are
+%distributed at
+%http://www.ngdc.noaa.gov/geomag/WMM/DoDWMM.shtml
+%and being made by the U.S. Government are not subject to copyright
+%protection.
+%
+%REFERENCES:
+%[1] S. Maus, S. McLean, M. Nair, and C. Rollins, "The US/UK world magnetic
+%    model for 2010-2015," National Oceanographic and Atmospheric
+%    Organization, Tech. Rep. NESDIS/NGDC, 2010. [Online].
+%    Available: http://www.ngdc.noaa.gov/geomag/WMM/
+%[2] D. E. Winch, D. J. Ivers, J. P. R. Turner, and R. J. Stening,
+%    "Geomagnetism and Schmidt quasi-normalization," Geophysical Journal
+%    International, vol. 160, no. 2, pp. 487-504, Feb. 2005.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

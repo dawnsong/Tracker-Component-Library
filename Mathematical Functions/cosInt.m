@@ -11,11 +11,8 @@ function val=cosInt(x)
 %             at the points in x.
 %
 %The cosine integral can be related to the exponential integral as
-%discussed in
-%Weisstein, Eric W. "Cosine Integral." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/CosineIntegral.html
-%This function uses Matlab's built-in expint function to evaluate the
-%cosine integral using the expint function.
+%discussed in [1]. This function uses Matlab's built-in expint function to
+%evaluate the cosine integral using the expint function.
 %
 %The cosine integral asymptotically approaches zero. If the results from
 %the exponential integral functions are not finite, then it is assumed that
@@ -26,6 +23,10 @@ function val=cosInt(x)
 %provided, then the value of cosInt(abs(x)) is returned. Strict definitions
 %of the cosine integral are usually such that negative values return
 %complex numbers.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Cosine Integral." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/CosineIntegral.html
 %
 %June 2014 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

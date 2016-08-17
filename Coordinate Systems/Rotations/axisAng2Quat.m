@@ -20,10 +20,12 @@ function q=axisAng2Quat(u,theta)
 %            ordered in terms of hypercomplex numbers as
 %            q(1)+i*q(2)+j*q(3)+k*q(4).
 %
-%Quaternions and rotations are discussed in
-%M. D. Shuster, "A survey of attitude representations," The Journal of
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. -Dec. 1993.
-%wherein the convention for the quaternions is left-handed.
+%Quaternions and rotations are discussed in [1].
+%
+%REFERENCES:
+%[1] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct. -Dec. 1993.
+%    wherein the convention for the quaternions is left-handed.
 %
 %August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

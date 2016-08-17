@@ -12,11 +12,13 @@ function [thePartition,k,mult]=randPartition(n)
 %                      the digit i appears in the partition. Note that k
 %                      and mult together uniquely specify the partition.
 %
-%The algorithm is the RANPAR function described in Chapter 10 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%The algorithm has been modified to call the numberOfPartitions rather than
+%The algorithm is the RANPAR function described in Chapter 10 of [1]. The
+%algorithm has been modified to call the numberOfPartitions rather than
 %using its own recursion to find the number of partitions from 1 to n.
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

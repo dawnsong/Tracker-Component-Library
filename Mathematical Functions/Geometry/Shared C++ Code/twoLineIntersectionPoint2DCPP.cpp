@@ -10,6 +10,8 @@
  */
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
 
+#include "mathGeometricFuncs.hpp"
+
 void twoLineIntersectionPoint2DCPP(const double *line1, const double *line2,double *point) {
     //detL1=det(line1);
     const double detL1=line1[0]*line1[3]-line1[1]*line1[2];

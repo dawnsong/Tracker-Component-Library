@@ -66,14 +66,13 @@ function [C,S,a,c,CStdDev,SStdDev]=getMoonGravCoeffs(M,isTideFree)
 %get the zero-tide model.
 %
 %REFERENCES:
-%
 %[1] A. S. Konopliv, R. S. Park, D.-N. Yuan, S. W. Asmar, and et. al.,
 %    "The JPL lunar gravity field to spherical harmonic degree 660 from
 %    the GRAIL primary mission," Journal of Geophysical Research: Planets,
 %    vol. 118, no. 7, pp. 1415-1434, Jul. 2013.
 %[2] A. S. Konopliv, R. S. Park, D.-N. Yuan, S. W. Asmar, and et. al.,
 %    "High-resolution lunar gravity fields from the GRAIL primary and
-%    extended missions,? Geophysical Research Letters, vol. 41, no. 5, pp.
+%    extended missions," Geophysical Research Letters, vol. 41, no. 5, pp.
 %    1452-1458, 16 Mar. 2014.
 %[3] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
 %    Rotation and Reference Systems Service Std. 36, 2010.

@@ -41,16 +41,17 @@ function [CTide,STide]=addTideOffset(C,S,TT1,TT2,deltaTTUT1,xpyp,dXdY)
 %                     the oceanic tides.
 %
 %This function combines the offsets for the coefficients due to tides as
-%described in
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%The function solarBodyVec is used to determine the locations of the sun
-%and the moon in ICRS coordinates as needed for the function
-%gravSolidTideOffset.
+%described in [1]. The function solarBodyVec is used to determine the
+%locations of the Sun and the Moon in ICRS coordinates as needed for the
+%function gravSolidTideOffset.
 %
 %To determine the precision of the method, the comments for the functions 
 %gravPoleTideOffset, gravSolidTideOffset, and gravOceanTideOffset should be
 %consulted.
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

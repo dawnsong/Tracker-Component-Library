@@ -9,10 +9,12 @@ function rank=rankPermutation(perm)
 %OUTPUTS: rank  The rank of the permutation in a lexicographic ordering of
 %               permutations, counting from zero.
 %
-%The algorithm is from
-%J. Liebehenschel, "Ranking and unranking of lexicographically ordered
-%words: An average-case analysis," Journal of Automata, Languages and
-%Combinatorics, vol. 26, no. 4 pp. 227-268, Jul. 2004.
+%The algorithm is from [1].
+%
+%REFERENCES:
+%[1] J. Liebehenschel, "Ranking and unranking of lexicographically ordered
+%    words: An average-case analysis," Journal of Automata, Languages and
+%    Combinatorics, vol. 26, no. 4 pp. 227-268, Jul. 2004.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

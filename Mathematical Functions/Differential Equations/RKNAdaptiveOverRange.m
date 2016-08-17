@@ -144,8 +144,8 @@ deltaTSign=sign(tDiff);
 %The sign is separated out so that one can use the algorithm running
 %backwards as well as forwards in time.
 
-%The maximum step size is arbitraily set to 1/5 the total distance.
-maxStepSize=tDiffMag/5;
+%The maximum step size is arbitraily set to 1/3 the total distance.
+maxStepSize=tDiffMag/3;
 
 %Determine the orders of the main and subsidiary embedded Runge-Kutta
 %formulae that were chosen. The order of convergence for the step size

@@ -21,6 +21,13 @@
  *The algorithm is run in Matlab using the command format
  *[Jul1,Jul2]=TAI2UT1(Jul1,Jul2);
  *
+ *Many temporal coordinate systems standards are compared in [1].
+ *
+ *REFERENCES:
+ *[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+ *    temporal coordinate systems for target tracking", Report, U. S. Naval
+ *    Research Laboratory, to appear, 2016.
+ *
  *March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
@@ -30,8 +37,6 @@
 /*This header is for the SOFA library.*/
 #include "sofa.h"
 #include "MexValidation.h"
-//Needed for isnan
-#include <math.h>
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     double Jul1, Jul2,deltaT;

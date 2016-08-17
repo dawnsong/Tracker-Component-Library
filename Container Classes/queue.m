@@ -1,15 +1,22 @@
 classdef queue < handle
 %%QUEUE   A queue class. it manages a linked list implemented using the
 %         dlNode class. Items from the top and bottom of the queue can be
-%         directly accessed.
+%         directly accessed. 
 %
 %The concept of an queue is described in many introductory computer science
-%texts, such as Chapter 5.4 of
-%W. Ford, and W. Topp, Data Structures with C++. Upper Saddle River, NJ:
-%Prentice Hall, 1996.
-%The implementation is generic and uses a linked list. In some instances,
-%the more efficient but somewhat more limited priority_queue class is
-%preferable to use.
+%texts, such as Chapter 5.4 of [1]. The implementation is generic and uses
+%a linked list. In some instances, the more efficient but somewhat more
+%limited priority_queue class (discussed therein) is preferable to use.
+%
+%Note that in many applications, it is better to just preallocate an array
+%to use as a queue and to use an index to identify the current element in
+%the array that is at the top of the queue. A queue like this one will
+%cause memory allocation and deallocation events every time something is
+%added or deleted, which might be slow.
+%
+%REFERENCES:
+%[1] W. Ford, and W. Topp, Data Structures with C++. Upper Saddle River,
+%    NJ: Prentice Hall, 1996.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

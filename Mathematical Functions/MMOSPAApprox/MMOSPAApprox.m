@@ -45,10 +45,12 @@ function [MMOSPAEst,orderList]=MMOSPAApprox(x,w,numScans)
 %approximation close to the true MMOSPA estimate.
 %
 %The algorithm as well as the concept of MOSPA error are described in
-%detail in 
-%D. F. Crouse, "Advances in displaying uncertain estimates of multiple
-%targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion, and
-%Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
+%detail in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Advances in displaying uncertain estimates of multiple
+%    targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion,
+%    and Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

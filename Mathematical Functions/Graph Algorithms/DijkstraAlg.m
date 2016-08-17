@@ -44,26 +44,20 @@ function [retPath,retDist]=DijkstraAlg(adjMat,sourceIdx,destIdx,allowNegCosts)
 %                 cycle exists in the graph, then an empty matrix is
 %                 returned. 
 %
-%The algorithms implemented here are described in Chapter 9.3 of
-%M.A.Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
-%Reading, MA: Addison-Wesley, 1999.
+%The algorithms implemented here are described in Chapter 9.3 of [1].
 %Specifically, the algorithm given no negative costs is Chapter 9.3.2 and
 %the algorithm for the case of possibly negative costs is 9.3.3.
 %
 %Solving the shortest augmenting path algorithm  using Dijkstra's algorithm
-%is also discussed in Chapter 24.3 of
-%T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, Introduction
-%to Algorithms, 2nd ed. Cambridge, MA: The MIT Press, 2001.
+%is also discussed in Chapter 24.3 of [2].
 %
 %If in addition to detecting the presence of negative cycles accessible
 %from the source, one wishes to find the vertices in the cycle, then the
 %function BellmanFordAlg should be used instead of this one.
 %
 %The algorithm can be demonstrated on the same problem given in Figure 8 of
-%G. D. Forney Jr., "The Viterbi algorithm," Proceedings of the IEEE,
-%vol. 61, no. 3, pp. 268-278, Mar. 1973.
-%for the Viterbi algorithm, as the Dijkstra algorithm is more general than
-%the Viterbi algorithm. In this instance, the nodes in Figure 8 are
+%[3] for the Viterbi algorithm, as the Dijkstra algorithm is more general
+%than the Viterbi algorithm. In this instance, the nodes in Figure 8 are
 %numbered increasing for each column, down, from left to right. Thus, the
 %adjacency matrix and the shortest path from nodes 1 to 14 are given by the
 %commands
@@ -90,6 +84,15 @@ function [retPath,retDist]=DijkstraAlg(adjMat,sourceIdx,destIdx,allowNegCosts)
 % adjMat(13,14)=1;
 % [path,dist]=DijkstraAlg(adjMat,1,14);
 %where the answer should be path=[1;3;7;9;12;14]; and dist=3;
+%
+%REFERENCES:
+%[1] M.A.Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
+%    Reading, MA: Addison-Wesley, 1999.
+%[2] T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein,
+%    Introduction to Algorithms, 2nd ed. Cambridge, MA: The MIT Press,
+%    2001.
+%[3] G. D. Forney Jr., "The Viterbi algorithm," Proceedings of the IEEE,
+%    vol. 61, no. 3, pp. 268-278, Mar. 1973.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

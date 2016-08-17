@@ -23,15 +23,8 @@
  *                       If the clipping region is engulfed by the polygon,
  *                       then the polygon will be the clipping region.
  *
- *The Sutherland-Hodgman algorithm is originally from
- *I. E. Sutherland and G. W. Hodgman, "Reentrant polygon clipping,"
- *Communications of the ACM, vol. 17, no. 1, pp. 32-42, Jan. 1974.
- *though the authors focus a lot of its attention on clipping polyhedra to
- *planes. A quick search online will yield many result explaining how it
- *works in 2D in a more intuitive manner. The original paper also includes a
- *technique for diving a polygon into multiple parts when it is split by the
- *clipping region rather than just having coincident edges on the edge of
- *the clipping region. 
+ *The algorithm is described in more detail in the comments to the Matlab
+ *implementation.
  *
  *The Sutherland-Hodgman algorithm requires that the vertices in the
  *clipping polygon be in counterclockwise order.
@@ -60,34 +53,8 @@
 //To determine the intersection point of two lines.
 #include "mathGeometricFuncs.hpp"
 
-bool vertexIsInsideClipEdge(const double *vertex,const double *clipVertex1,const double *clipEdge) {
-//Determine whether a vertex is inside of the clipping region given an
-//edge. This relies on the fact that the clipping region is convex and goes
-//in a counterclockwise direction. Thus, the sign of the angle with respect
-//to the clipping edge is used to determine whether it is inside or outside.
-//This could be done by extending the vectors to 3D (padding a zero on the
-//ends) and then using a cross product, whereby the z component would tell
-//us the sign, but the value of the z-component is the same as the
-//determinant value used here.
-//
-//INPUTS:  vertex The 2X1 vertex to test whether it is on the correct size
-//                of the edge to be in the clipping region.
-//    clipVertex1 The first 2X1 vertex of the boundary used to form the
-//                edge for clipping.
-//       clipEdge The edge vector, which would be clipVertex2-clipVertex1.
-//
-//The code below is equivalent to
-//isInsideClipEdge=det([vertex-clipVertex1,clipEdge])<=0;
-//but should be slightly less susceptible to finite precision errors.
-    double S[4];
-    
-    S[0]=-clipEdge[0]*vertex[1];
-    S[1]=clipEdge[1]*vertex[0];
-    S[2]=-clipEdge[1]*clipVertex1[0];
-    S[3]=clipEdge[0]*clipVertex1[1];
-    
-    return exactSignOfSumCPP(S,4)<=0;
-}
+//Prototype
+bool vertexIsInsideClipEdge(const double *vertex,const double *clipVertex1,const double *clipEdge);
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     size_t numPolyVertices, numClipVertices; 
@@ -130,7 +97,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("The clipping polygon must have at least three vertices.");
         return;
     }
-    convexClipPolygon=(double*)mxGetData(prhs[1]);
+    convexClipPolygon=reinterpret_cast<double*>(mxGetData(prhs[1]));
     
     //The clipping polygon must have its vertices going in a
     //counterclockwise order. Check whether that is the case. If not, then
@@ -145,13 +112,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         //The maximum possible number of vertices in the clipped polygon.
         const size_t maxClippedVertices=(numPolyVertices*3)/2+1;
         size_t i;
-        double *inputEls=(double*)mxGetData(prhs[0]);
+        double *inputEls=reinterpret_cast<double*>(mxGetData(prhs[0]));
                 
         curPolygonMat=mxCreateDoubleMatrix(2,maxClippedVertices,mxREAL);
         clippedPolygonNewMat=mxCreateDoubleMatrix(2,maxClippedVertices,mxREAL);
         
-        curPolygon=(double*)mxGetData(curPolygonMat);
-        clippedPolygonNew=(double*)mxGetData(clippedPolygonNewMat);
+        curPolygon=reinterpret_cast<double*>(mxGetData(curPolygonMat));
+        clippedPolygonNew=reinterpret_cast<double*>(mxGetData(clippedPolygonNewMat));
         
         //Copy the values in prhs[0] into curPolygon.        
         for(i=0;i<2*numPolyVertices;i++) {
@@ -242,7 +209,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     //curPolygonMat or clippedPolygonNewMat, since the buffers were
     //exchanged during the loops. Determine which is curPolygon and return
     //it, freeing the other. 
-    if(curPolygon==(double*)mxGetData(curPolygonMat)) {
+    if(curPolygon==reinterpret_cast<double*>(mxGetData(curPolygonMat))) {
         //Resize to fit.
         mxSetN(curPolygonMat,numVertices);
         plhs[0]=curPolygonMat;
@@ -252,6 +219,35 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         plhs[0]=clippedPolygonNewMat;
         mxDestroyArray(curPolygonMat);
     }
+}
+
+bool vertexIsInsideClipEdge(const double *vertex,const double *clipVertex1,const double *clipEdge) {
+//Determine whether a vertex is inside of the clipping region given an
+//edge. This relies on the fact that the clipping region is convex and goes
+//in a counterclockwise direction. Thus, the sign of the angle with respect
+//to the clipping edge is used to determine whether it is inside or outside.
+//This could be done by extending the vectors to 3D (padding a zero on the
+//ends) and then using a cross product, whereby the z component would tell
+//us the sign, but the value of the z-component is the same as the
+//determinant value used here.
+//
+//INPUTS:  vertex The 2X1 vertex to test whether it is on the correct size
+//                of the edge to be in the clipping region.
+//    clipVertex1 The first 2X1 vertex of the boundary used to form the
+//                edge for clipping.
+//       clipEdge The edge vector, which would be clipVertex2-clipVertex1.
+//
+//The code below is equivalent to
+//isInsideClipEdge=det([vertex-clipVertex1,clipEdge])<=0;
+//but should be slightly less susceptible to finite precision errors.
+    double S[4];
+    
+    S[0]=-clipEdge[0]*vertex[1];
+    S[1]=clipEdge[1]*vertex[0];
+    S[2]=-clipEdge[1]*clipVertex1[0];
+    S[3]=clipEdge[0]*clipVertex1[1];
+    
+    return exactSignOfSumCPP(S,4)<=0;
 }
 
 /*LICENSE:

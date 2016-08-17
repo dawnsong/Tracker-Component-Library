@@ -2,10 +2,12 @@ function I=getNextCombo(I,n)
 %%GETNEXTCOMBO Return the next combination in lexicographic order given the
 %              current combination. If the final combination in the
 %              sequence has been reached, then an empty matrix is returned.
+%              The first element in the combination is the least
+%              significant element for defining the lexicographic order.
 %
 %INPUTS:    I  The current combination of r elements. The next combination
 %              in lexicographic order is desired. The first element is the
-%              most significant and one begins with I=[0;1;2;...;r].
+%              least significant and one begins with I=[0;1;2;...;r].
 %           n  The number of items from which r items are chosen for
 %              combinations. The elements of I can range from 0 to n-1.
 %
@@ -18,10 +20,12 @@ function I=getNextCombo(I,n)
 %combinations. If the final combination is put in, an empty matrix will be
 %returned.
 %
-%The algorithm is from
-%C. J. Mifsud, "Algorithm 154: Combination in lexicographical order," 
-%Communications of the ACM, vol. 6, no. 3 pp. 103, Mar. 1963.
-%modified to start from zero instead of one.
+%The algorithm is from [1], modified to start at 0 instead of 1.
+%
+%REFERENCES:
+%[1] C. J. Mifsud, "Algorithm 154: Combination in lexicographical order," 
+%    Communications of the ACM, vol. 6, no. 3 pp. 103, Mar. 1963.
+%    modified to start from zero instead of one.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

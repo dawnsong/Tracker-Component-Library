@@ -47,9 +47,11 @@ function [C,S,a,c]=getEGMWGS84TCoeffs(M,useNGAApprox,modelType)
 %the inclusion occurs when using the EGM2008 model, but not when using the
 %EGM96 model as the reference code 
 %
-%The disturbing potential is described in Chapter 2.12 of
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
+%The disturbing potential is described in Chapter 2.12 of [1].
+%
+%REFERENCES:
+%[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

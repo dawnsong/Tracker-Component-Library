@@ -18,11 +18,18 @@ function M=randRotMat(numDim)
 %rotations will not be uniformely distributed in space. The technique
 %chosen here is to choose Euler angles for a zxz rotation series as
 %described in 
-%M. D. Shuster, "Uniform attitude probability distributions," The Journal
-%of the Astronautical Sciences, vol. 51, no. 4, pp. 451-475, Oct. - Dec.
-%2003.
+
 %where the rotations about the z-axes are uniformely distributed from
 %0-2*pi, and the rotation about the x-axis is not uniformly distributed.
+%
+%Note that general random orthonormal matrices as produced by randOrthoMat
+%can have determinantes of +1 or -1, whereal all valid rotation matrices
+%have determinante of +1.
+%
+%REFERENCES:
+%[1] M. D. Shuster, "Uniform attitude probability distributions," The
+%    Journal of the Astronautical Sciences, vol. 51, no. 4, pp. 451-475,
+%    Oct. - Dec. 2003.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -45,7 +52,7 @@ switch(numDim)
         %Turn the Euler angles into a rotation matrix.
         M=Euler3Ang2RotMat(theta1,theta2,theta3,'zxz');
     otherwise
-        error('The dimensionality fo the rotation matrix must be 2 or 3.')
+        error('The dimensionality of the rotation matrix must be 2 or 3.')
 end
 end
 

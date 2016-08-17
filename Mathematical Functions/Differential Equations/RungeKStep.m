@@ -56,8 +56,8 @@ function [xPredMain,xPredSubsid,k,orders,isFSAL]=RungeKStep(xVal,curT,f,deltaT,f
 %                   (3,0) Bogacki and Shampine's RK3(2)4F formula of [8].
 %                   (3,1) Fehlberg's RK3(4)5F method (Formula 1), Table VII
 %                         of [3].
-%                   (3,2) Fehlberg's RK3(4)5F method (Formula 2), Table VIII
-%                         of [3].
+%                   (3,2) Fehlberg's RK3(4)5F method (Formula 2), Table
+%                         VIII of [3].
 %                   (3,3) The Cash-Karp RK3(2)4 algorithm of [10].
 %                   (4,0) Fehlberg's RK4(5)6 formula, Table III in [3].
 %                   (4,1) The Cash-Karp RK4(3)6 algorithm of [10].
@@ -136,56 +136,44 @@ function [xPredMain,xPredSubsid,k,orders,isFSAL]=RungeKStep(xVal,curT,f,deltaT,f
 %C as a compromise between 'M' and 'S',
 %The Eq1 to Eq3 suffixes with Higham and Hall's paper just identify the
 %formula.
-%s
+%
 %REFERENCES:
-%
 %[1] J. Butcher, "On Runge-Kutta processes of high order," Journal of the
-%Australian Mathematical Society, vol. 4, no. 2, pp. 179-194, May 1964.
-%
+%    Australian Mathematical Society, vol. 4, no. 2, pp. 179-194, May 1964.
 %[2] E. Fehlberg, "Classical fifth-, sixth-, seventh-, and eighth-order
-%Runge-Kutta formulas with stepsize control," George C. Marshall Space
-%Flight Center, National Aeronautics and Space Administration, Marshall,
-%AL, Tech. Rep. NASA TR R-287, Oct. 1968.
-%
+%    Runge-Kutta formulas with stepsize control," George C. Marshall Space
+%    Flight Center, National Aeronautics and Space Administration,
+%    Marshall, AL, Tech. Rep. NASA TR R-287, Oct. 1968.
 %[3] E. Fehlberg, "Low-order classical Runge-Kutta formulas with stepsize
-%control and their application to some heat transfer problems," George C.
-%Marshall Space Flight Center, National Aeronautics and Space
-%Administration, Marshall, AL, Tech. Rep. NASA TR R-315, Jul. 1969.
-%
+%    control and their application to some heat transfer problems," George
+%    C. Marshall Space Flight Center, National Aeronautics and Space
+%    Administration, Marshall, AL, Tech. Rep. NASA TR R-315, Jul. 1969.
 %[4] J. H. Verner, "Explicit Runge-Kutta methods with estimates of the
-%local truncation error," SIAM Journal on Numerical Analysis, vol. 15, no.
-%4, pp. 772-790, 1978.
-%
+%    local truncation error," SIAM Journal on Numerical Analysis, vol. 15,
+%    no. 4, pp. 772-790, 1978.
 %[5] J. R. Dormand and P. J. Prince, "A family of embedded Runge-Kutta
-%formulae," Journal of Computational and Applied Mathematics, vol. 6,
-%no. 1, pp. 19-26, Mar. 1980.
-%
+%    formulae," Journal of Computational and Applied Mathematics, vol. 6,
+%    no. 1, pp. 19-26, Mar. 1980.
 %[6] P. J. Prince and J. R. Dormand, "High order embedded Runge-Kutta
-%formulae," Journal of Computational and Applied Mathematics, vol. 7,
-%no. 1, pp. 67-75, Mar. 1981.
-%
+%    formulae," Journal of Computational and Applied Mathematics, vol. 7,
+%    no. 1, pp. 67-75, Mar. 1981.
 %[7] J. R. Dormand and P. J. Prince, "A reconsideration of some embedded
-%Runge-Kutta formulae," Journal of Computational and Applied Mathematics,
-%vol. 15, no. 2, pp. 203-211, Jun. 1986.
-%
+%    Runge-Kutta formulae," Journal of Computational and Applied
+%    Mathematics, vol. 15, no. 2, pp. 203-211, Jun. 1986.
 %[8] P. Bogacki and L. F. Shampine, "A 3(2) pair of Runge-Kutta formulas,"
-%Applied Mathematics Letters, vol. 2, no. 4, pp. 321?325, 1989.
-%
+%    Applied Mathematics Letters, vol. 2, no. 4, pp. 321?325, 1989.
 %[9] D. J. Higham and G. Hall, "Embedded Runge-Kutta formulae with stable
-%equilibrium states," Journal of Computational and Applied Mathematics,
-%vol. 29, no. 1, pp. 25-33, Jan. 1990.
-%
+%    equilibrium states," Journal of Computational and Applied Mathematics,
+%    vol. 29, no. 1, pp. 25-33, Jan. 1990.
 %[10] J. R. Cash and A. H. Karp, "A variable order Runge-Kutta method for
-%initial value problems with rapidly varying right-hand sides," ACM
-%Transactions on Mathematical Software, vol. 16, no. 3, pp. 201-222,
-%Sep. 1990.
-%
+%    initial value problems with rapidly varying right-hand sides," ACM
+%    Transactions on Mathematical Software, vol. 16, no. 3, pp. 201-222,
+%    Sep. 1990.
 %[11] R. L. Burden and J. D. Faires, Numerical Analysis, 9th ed. Boston,
-%MA: Brooks/ Cole, 2011.
-%
+%    MA: Brooks/ Cole, 2011.
 %[12] M. K. Horn, "Scaled Runge-Kutta algorithms for treating the problem
-%of dense output," National Aeronautics and Space Administration,
-%Houston, TX, Tech. Rep. 58239, 1982.
+%    of dense output," National Aeronautics and Space Administration,
+%    Houston, TX, Tech. Rep. 58239, 1982.
 %
 %February 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

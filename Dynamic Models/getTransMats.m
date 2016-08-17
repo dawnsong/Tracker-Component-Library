@@ -20,12 +20,14 @@ function FMats=getTransMats(F,baseIdx)
 %Using the baseIdx parameter set to b, one would use instead
 %FMats(:,:,a)*x(:,b)
 %
-%The transition matrices are derived as the Phi function in
-%A. B. Poore, B. J. Slocumb, B. J. Suchomel, F. H. Obermeyer, S. M. Herman,
-%and S. M. Gadaleta, "Batch maximum likelihood (ML) and maximum a
-%posteriori (MAP) estimation with process noise for tracking applications,"
-%in Proceedings of SPIE: Signal and Data Processing of Small Targets,
-%vol. 5204, San Diego, CA, 3 Aug. 2003, pp. 188-199.
+%The transition matrices are derived as the Phi function in [1].
+%
+%REFERENCES:
+%[1] A. B. Poore, B. J. Slocumb, B. J. Suchomel, F. H. Obermeyer, S. M.
+%    Herman, and S. M. Gadaleta, "Batch maximum likelihood (ML) and maximum
+%    a posteriori (MAP) estimation with process noise for tracking
+%    applications," in Proceedings of SPIE: Signal and Data Processing of
+%    Small Targets, vol. 5204, San Diego, CA, 3 Aug. 2003, pp. 188-199.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

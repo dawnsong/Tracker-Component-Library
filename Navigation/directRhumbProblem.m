@@ -37,31 +37,32 @@ function latLonEnd=directRhumbProblem(latLonStart,azimuth,dist,height,a,f,numSte
 %                    be after starting at latLonStart and traveling a
 %                    distance of dist at a constant heading on azimuth.
 %
-%The algorithm for zero-altitude is taken from
-%K. C. Carlton-Wippern, "On loxodromic navigation," Journal of Navigation,
-%vol. 45, no. 2, pp. 292-297, May 1992.
-%However, a formula using isometric latitudes, which are described in
-%Chapter 3 of
-%J. P. Snyder, "Map projections- a working manual," U.S. Geological
-%Survey, Tech. Rep. 1395, 1987.
-%to get the azimuth angle was used, because it is simpler. The formula is
-%also explicitely mentioned in Equation 2 of
-%The formula is also explicitely mentioned in Equation 2 of
-%J. Alexander, "Loxodromes: A rhumb way to go," Mathematics Magazine,
-%vol. 77, no. 5, pp. 349-356, Dec. 2004.
-%However, the expression for computing the distance from that paper is only
-%for a sphere, not for an ellipsoid, which is why the Carlton-Wippern
-%distance computation using an incomplete elliptic integral of the second
-%kind is preferred.
+%The algorithm for zero-altitude is taken from [1]. However, a formula
+%using isometric latitudes, which are described in Chapter 3 of [2] to get
+%the azimuth angle was used, because it is simpler. The formula is
+%also explicitely mentioned in Equation 2 of [3]. However, the expression
+%for computing the distance from [3] is only for a sphere, not for an
+%ellipsoid, which is why the Carlton-Wippern distance computation using an
+%incomplete elliptic integral of the second kind is preferred.
 %
 %The algorithm is generally the opposite of indirectRhumbProblem, except
 %when a starting or ending point is at a geographic pole, as discussed in
 %the comments to the indirectRhumbProblem function.
 %
-%The solution for a non-zero altitude is based on
-%D. F. Crouse, "Simulating Aerial Targets in 3D Accounting for the Earth's
-%Curvature," Journal of Advances in Information Fusion, submitted 2014.
-%The function is significantly faster if a zero altitude is used.
+%The solution for a non-zero altitude is based on [4]. The function is
+%significantly faster if a zero altitude is used.
+%
+%REFERENCES:
+%[1] K. C. Carlton-Wippern, "On loxodromic navigation," Journal of 
+%    Navigation, vol. 45, no. 2, pp. 292-297, May 1992.
+%[2] J. P. Snyder, "Map projections- a working manual," U.S. Geological
+%    Survey, Tech. Rep. 1395, 1987.
+%[3] The formula is also explicitely mentioned in Equation 2 of J.
+%    Alexander, "Loxodromes: A rhumb way to go," Mathematics Magazine,
+%    vol. 77, no. 5, pp. 349-356, Dec. 2004.
+%[4] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -220,4 +221,3 @@ end
 %SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO INDEMNIFY THE NAVAL
 %RESEARCH LABORATORY FOR ALL THIRD-PARTY CLAIMS RESULTING FROM THE ACTIONS
 %OF RECIPIENT IN THE USE OF THE SOFTWARE.
-

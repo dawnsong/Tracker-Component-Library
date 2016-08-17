@@ -31,20 +31,14 @@ function [deltaC,deltaS]=gravSolidTideOffset(rMoon,rSun,TT1,TT2)
 %               multiplied by sines in the harmonic expansion. The
 %               format of S is the same as that of C.
 %
-%The algorithm is the one described in Chapter 5 of
-%S. E. Urban and P. K. Seidelmann, Explanatory Supplement to the
-%Astronomical Almanac, 3rd ed., Eds. Mill Valley, CA: University Science
-%Books, 2013.
-%except values for k_{2m}^{(+)} taken from the 2010 IERS conventions for an
-%elastic Earth model are added, because the Explanatory Supplement to the
-%Astronomical Almanac does not provide the necessary coefficients.
+%The algorithm is the one described in Chapter 5 of [1], except values for
+%k_{2m}^{(+)} taken from the 2010 IERS conventions in [2] for an elastic
+%Earth model are added, because [1] does not provide the necessary
+%coefficients.
 %
-%The model provided in the Explanatory Supplement to the Astronomical
-%Almanac is not as high order a model as that used in Section 6 of
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%However, the second step of the model in the International Earth Rotation
-%System Service's 2010 conventions is not easy to understand.
+%The model provided in [1] is not as high order a model as that used in
+%Section 6 of [2]. However, the second step of the model in[2] is not easy
+%to understand.
 %
 %To test this function, one can use the same values for the Sun and Moon
 %that are given in the IERS's implementation, DEHANTTIDEINEL.F for a
@@ -58,6 +52,13 @@ function [deltaC,deltaS]=gravSolidTideOffset(rMoon,rSun,TT1,TT2)
 %To get the full offset in the gravitational coefficients due to tides,
 %the functions gravSolidTideOffset, gravOceanTideOffset and
 %gravPoleTideOffset have to be combined.
+%
+%REFERENCES:
+%[1] S. E. Urban and P. K. Seidelmann, Explanatory Supplement to the
+%    Astronomical Almanac, 3rd ed., Eds. Mill Valley, CA: University
+%    Science Books, 2013.
+%[2] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

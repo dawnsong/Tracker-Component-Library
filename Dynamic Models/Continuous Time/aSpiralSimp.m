@@ -20,9 +20,12 @@ function aVals=aSpiralSimp(xPoints,t)
 %OUTPUTS: aVals The flat-Earth time-derivative of the state.
 %
 %A derivation of the simplified flat-Earth spiraling dynamic model is given
-%in
-%D. F. Crouse, "Simulating Aerial Targets in 3D Accounting for the Earth's
-%Curvature," Journal of Advances in Information Fusion, submitted 2014.
+%in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

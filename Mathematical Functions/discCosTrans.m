@@ -11,22 +11,23 @@ function C=discCosTrans(x,type)
 %                element k of the result is the sum from n=0 to N-1 of
 %                2*x(n)*cos(pi*k*(n+1/2)/N), where all indexation is from
 %                0.
-%           'Unitary' The default if omitted. This is the same as type II,
-%                     except for scaling. The scaling is
-%                     CU(1)=CII(1)/(2*sqrt(N));
-%                     CU(2:end)=CII(2:end)*0.5*sqrt(2/N);
-%                     where CII is the type 2 transform and CU is the
-%                     unitary transform.
+%      'Unitary' The default if omitted. This is the same as type II,
+%                except for scaling. The scaling is
+%                CU(1)=CII(1)/(2*sqrt(N));
+%                CU(2:end)=CII(2:end)*0.5*sqrt(2/N); where CII is the type
+%                2 transform and CU is the unitary transform.
 %
 %OUTPUTS: C The (N+1)X1 or 1X(N+1) real discrete cosine transformation of
 %           x. 
 %
-%The algorithm implemented is taken from
-%J. Makhoul, "A fast cosine transform in one and two dimensions," IEEE
-%Transactions on Acoustics, Speech, and Signal Processing, vol. ASSP-
-%28, no. 1, pp. 27-34, Feb. 1980.
+%The algorithm implemented is taken from [1].
 %
 %The inverse of this function is invDiscCosTrans.
+%
+%REFERENCES:
+%[1] J. Makhoul, "A fast cosine transform in one and two dimensions," IEEE
+%    Transactions on Acoustics, Speech, and Signal Processing, vol. ASSP-
+%    28, no. 1, pp. 27-34, Feb. 1980.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -19,12 +19,14 @@ function [P0,T0]=extrapMSLPresTemp(P,z,T)
 %         T0 The extrapolated temperature at MSL. If T is not provided,
 %            then T0 will just be Constants.standardTemp
 %
-%%The atmospheric model is defined in
-%U.S. Standard Atmosphere, 1976, National Oceanic and Atmospheric
-%Administration Std., Oct. 1976.
-%and the full model goes up to 1000km altitude. Up to an altitude of 32km,
-%the U.S. standard atmosphere is identical to the International Civil
-%Aviation Organization's (ICAO) standard atmosphere.
+%%The atmospheric model is defined in [1], and the full model goes up to
+%1000km altitude. Up to an altitude of 32km, the U.S. standard atmosphere
+%is identical to the International Civil Aviation Organization's (ICAO)
+%standard atmosphere.
+%
+%REFERENCES:
+%[1] U.S. Standard Atmosphere, 1976, National Oceanic and Atmospheric
+%    Administration Std., Oct. 1976.
 %
 %June 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

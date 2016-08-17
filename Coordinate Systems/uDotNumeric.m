@@ -1,9 +1,9 @@
 function uDot=uDotNumeric(u,x,t,vertFunc,epsVal)
 %%UDOTNUMERIC Use numerical differentiation to obtain the derivative of the
 %             basis vectors for the local cordinate system of a moving
-%             observer on a curved surface. Such an evolving coordiante
-%             system has been termed "wander coordiante" or "naturally
-%             evolving coordiantes". Targets moving in non-maneuvering,
+%             observer on a curved surface. Such an evolving coordinate
+%             system has been termed "wander coordinate" or "naturally
+%             evolving coordinates". Targets moving in non-maneuvering,
 %             level flight with a coordinate system evolving as per this
 %             coordinate system will follow geodesic curves. When traveling
 %             on/ over a reference ellipsoid, the function uDotEllipsoid is
@@ -32,10 +32,13 @@ function uDot=uDotNumeric(u,x,t,vertFunc,epsVal)
 %
 %OUTPUTS: uDot The derivative of the basis vector u with respect to time.
 %
-%The solution is detailed in
-%D. F. Crouse, "Simulating aerial targets in 3D accounting for the Earth's
-%Curvature," Journal of Advances in Information Fusion, submitted, July
-%2014.
+%The solution is detailed in [1]. Compare to uDotEllipsoid where an
+%explicit solutions for an ellipsoidal surface is possible.
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -124,31 +124,32 @@ function [rICRS,rITRS]=solarBodyVec(Jul1,Jul2,timeCoordSys,Object,algorithm,obsS
 %(NAIF's) SPICE toolkit's function cspice_spkezr is used with NASA's DE430
 %ephemerides to determine the location of the object. Light-time and
 %aberration corrections are applied. Those effects are defined in Chapter 7
-%of
-%S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
-%Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
-%Books, 2013.
-%Note that unlike the function iauAb in the IAU's Standards of Fundamental
-%Astronomy library, no attempt is made to correct for the sun's
+%of [1]. Note that unlike the function iauAb in the IAU's Standards of
+%Fundamental Astronomy library, no attempt is made to correct for the Sun's
 %gravitational potential, which adds an error of up to 4 microarcseconds.
 %Additionally, gravitational deflection from the sun and other planets is
 %not taken into account.
 %
 %The low precision algorithm for the Sun and Moon that is used if
-%algorithm=2 are taken from pages C5 and D22 of
-%Department of Defense, Navy, Nautical Almanac Office, The Astronomical
-%Almanac for the Year 2014. Department of the Navy, 2013.
-%where it is documented that the algorithm for the Sun is accurate to one
-%arcminute for years from 1950 to 2050 and the algorithm for the moon is 
-%accurate to 0.3 degrees in ecliptic longitude and 0.2 degrees in ecliptic
-%latitude for the years 1950 to 2050.
+%algorithm=2 are taken from pages C5 and D22 of [2], where it is documented
+%that the algorithm for the Sun is accurate to one arcminute for years from
+%1950 to 2050 and the algorithm for the moon is  accurate to 0.3 degrees in
+%ecliptic longitude and 0.2 degrees in ecliptic latitude for the years 1950
+%to 2050.
 %
 %Note that although the function calls for the SPICE toolkit refer to the
-%J2000.0 cooridnate system, the DE430 ephemerides are NOT given in J2000.0
+%J2000.0 coordinate system, the DE430 ephemerides are NOT given in J2000.0
 %coordinates. Rather, as documented in the comments to
 %http://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_080317.tf
 %They are given aligned with the ICRS. Thus, no conversions between J2000.0
 %and ICRS coordinates are necessary.
+%
+%REFERENCES:
+%[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
+%    Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
+%    Books, 2013.
+%[2] Department of Defense, Navy, Nautical Almanac Office, The Astronomical
+%    Almanac for the Year 2014. Department of the Navy, 2013.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

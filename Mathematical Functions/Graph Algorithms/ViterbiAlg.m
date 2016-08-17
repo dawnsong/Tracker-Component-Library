@@ -26,11 +26,9 @@ function [minCostPath,minCost]=ViterbiAlg(costMats)
 %        minCost      The cost of the minCost path. This is the sum of the
 %                     transition costs in costMats.
 %
-%A good explanation of the Viterbi algorithm is given in
-%G. D. Forney Jr., "The Viterbi algorithm," Proceedings of the IEEE,
-%vol. 61, no. 3, pp. 268-278, Mar. 1973.
-%The total cost is the sum of all of the edge costs. The example in Figure
-%8 of the paper can be implemented using
+%A good explanation of the Viterbi algorithm is given in [1]. The total
+%cost is the sum of all of the edge costs. The example in Figure 8 of the
+%paper can be implemented using
 % costMats=inf(4,4,5);
 % costMats(1,1,1)=1;
 % costMats(1,3,1)=1;
@@ -54,6 +52,10 @@ function [minCostPath,minCost]=ViterbiAlg(costMats)
 % costMats(2,1,5)=1;
 % [minCostPath,minCost]=ViterbiAlg(costMats)
 %whereby the minimum cost path is [1;3;4;2;1;1] and the minimum cost is 3.
+%
+%REFERENCES:
+%[1] G. D. Forney Jr., "The Viterbi algorithm," Proceedings of the IEEE,
+%    vol. 61, no. 3, pp. 268-278, Mar. 1973.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

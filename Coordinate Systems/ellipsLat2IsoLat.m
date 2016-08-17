@@ -22,12 +22,13 @@ function isoLat=ellipsLat2IsoLat(ellipsLat,f)
 %(1-e^2)*sec(L)/(1-e^2*sin(L)^2) dL, where e is the first numerical
 %eccentricity of the ellipse. It has an explicit solution, which is
 %used below. The explicit solution is taken from Chapter 3 (Equation 3-7)
-%of
-%J. P. Snyder, "Map projections- a working manual," U.S. Geological
-%Survey, Tech. Rep. 1395, 1987.
-%and has been transformed to a slightly simpler form.
+%of [1] and has been transformed to a slightly simpler form.
 %
 %The inverse of this function is isoLat2EllipsLat.
+%
+%REFERENCES:
+%[1] J. P. Snyder, "Map projections- a working manual," U.S. Geological
+%    Survey, Tech. Rep. 1395, 1987.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

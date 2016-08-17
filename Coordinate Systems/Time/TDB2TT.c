@@ -43,6 +43,13 @@
  *or
  *[Jul1,Jul2]=TDB2TT(Jul1,Jul2);
  *
+ *Many temporal coordinate systems standards are compared in [1].
+ *
+ *REFERENCES:
+ *[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+ *    temporal coordinate systems for target tracking", Report, U. S. Naval
+ *    Research Laboratory, to appear, 2016.
+ *
  *April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
@@ -57,7 +64,7 @@
 double getDeltaTFromEOP(double TT1,double TT2);
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-    double TDB1,TDB2,TT1,TT2,deltaTTUT1;
+    double TDB1,TDB2,TT1,TT2,deltaTTUT1=0;
     double u, v, elon;
     int retVal,curIter;
     bool iterateDeltaT;

@@ -43,19 +43,8 @@
 *               beta has fewer columns as A, because the final numRow
 *               columns are collapsed into one column on return.
 *
-*The notion of using matrix permanents for evaluating 2D assignment
-*probabilities, with a focus on target-measurement association
-*probabilities is from
-*J. K. Uhlmann, "Matrix permanent inequalities for approximating joint 
-*assignment matrices in tracking systems," Journal of the Franklin 
-*Institute, vol. 341, pp. 569-593, 2004.
-*The generalization to missed detections is as simple as the generalization
-*of the matrix permanent to a rectangular matrix.
-*
-*The concept of the target-measurement association probability in the JPDAF
-*tracker is discussed in Chapter 6.2 of
-*Y. Bar-Shalom, P. K. Willett, and X. Tian, Tracking and Data Fusion.
-*Storrs, CT: YBS Publishing, 2011.
+*Details of the algorithm are given in the comments to the Matlab
+*implementation.
 *
 *The algorithm can be compiled for use in Matlab  using the 
 *CompileCLibraries function.

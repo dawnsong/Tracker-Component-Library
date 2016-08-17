@@ -43,20 +43,26 @@ function [C,S,a,c]=getIGRFCoeffs(year,fullyNormalize)
 %Details on the normalization of the coefficients is given in the comments
 %to the function spherHarmonicEval.
 %
-%Documentation for the IGRF model is given in
-%International Association of Geomagnetism and Aeronomy, Working
-%Group V-MOD, "International geomagnetic reference field: Eleventh
-%generation," Geophysical Journal International, vol. 183, no. 3, pp.
-%1216-1230, Dec. 2010.
-%and information on Schmidt semi-normalized Legendre functions is given in
-%D. E. Winch, D. J. Ivers, J. P. R. Turner, and R. J. Stening,
-%"Geomagnetism and Schmidt quasi-normalization," Geophysical Journal
-%International, vol. 160, no. 2, pp. 487?504, Feb. 2005.
+%Documentation for the IGRF model is given in [1] and information on
+%Schmidt semi-normalized Legendre functions is given in [2]. The
+%coefficients originate from
+%http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
+%and being created by the government are not subject to copyright
+%protection.
 %
 %Note that the IGRF is not a crustal magnetic model; it is just the main
 %field of the Earth. The Enhanced Magnetic Model (EMM) from the National
 %Oceanic and Atmospheric Administration's (NOAA's) National Geophysical
 %Data Center is a complete magnetic model.
+%
+%REFERENCES:
+%[1] International Association of Geomagnetism and Aeronomy, Working
+%    Group V-MOD, "International geomagnetic reference field: Eleventh
+%    generation," Geophysical Journal International, vol. 183, no. 3, pp.
+%    1216-1230, Dec. 2010.
+%[2] D. E. Winch, D. J. Ivers, J. P. R. Turner, and R. J. Stening,
+%    "Geomagnetism and Schmidt quasi-normalization," Geophysical Journal
+%    International, vol. 160, no. 2, pp. 487?504, Feb. 2005.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

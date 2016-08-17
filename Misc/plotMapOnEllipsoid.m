@@ -22,7 +22,7 @@ function h=plotMapOnEllipsoid(path2Map,a,f)
 %OUTPUTS:  h      The handle to the surfaceplot object created.
 %
 %This function turns the axes off when plotting and sets the scaling to
-%equal.
+%'equal'.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

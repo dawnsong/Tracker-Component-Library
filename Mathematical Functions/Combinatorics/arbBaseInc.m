@@ -15,14 +15,16 @@ function digVec=arbBaseInc(digVec,base)
 %
 %This is just a simple function for computing the next n-tuple in a certain
 %base. It is essentially a recursion for the method described in Chapter
-%7.2.1.1 of
-%D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 2:
-%Generating all Tuples and Permutations, Upper Saddle River, NJ:
-%Addison-Wesley, 2009.
+%7.2.1.1 of [1].
 %
 %This function can be used in a loop to go through all possible groups of
 %a certain number of values allowing for repeats when starting from a 
 %vector of zeros.
+%
+%REFERENCES:
+%[1] D. E. Knuth, The Art of Computer Programming. Vol. 4, Fascicle 2:
+%    Generating all Tuples and Permutations, Upper Saddle River, NJ:
+%    Addison-Wesley, 2009.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -22,21 +22,22 @@
 %                       and Eskridge paper that is cited below.
 %
 %As is the case in the function dewPointPres4Temp, which is the inverse of
-%this function, formulae 0 is from
-%D. Koutsoyiannis, "Clausius-Clapeyron equation and saturation vapour
-%pressure: simple theory reconcided with practice," European Journal of
-%Physics, vol. 33, no. 2, pp. 295-305, Mar. 2012.
-%where the numerical inversion method given in equations 44 and 45 in
-%Section 5 of the paper are used.
+%this function, formulae 0 is from [1], where the numerical inversion
+%method given in equations 44 and 45 in Section 5 of the paper are used.
 %
 %Formulas 1 and 2 are obtained by solving for the inverse of the Magnus
-%approximations given in
-%O. A. Alduchov and R. E. Eskridge, "Improved Magnus Form Approximation of
-%Saturation Vapor Pressure," Journal of Applied Meteorology, vol. 35,
-%no. 4, pp. 601-609, Apr. 1996.
-%Simple, explicit solutions for the function inverses can be found.
+%approximations given in [2]. Simple, explicit solutions for the function
+%inverses can be found.
 %
 %Note that the function dewPointPres4Temp is the inverse of this function.
+%
+%REFERENCES:
+%[1] D. Koutsoyiannis, "Clausius-Clapeyron equation and saturation vapour
+%    pressure: simple theory reconcided with practice," European Journal of
+%    Physics, vol. 33, no. 2, pp. 295-305, Mar. 2012.
+%[2] O. A. Alduchov and R. E. Eskridge, "Improved Magnus Form Approximation
+%    of Saturation Vapor Pressure," Journal of Applied Meteorology, vol.
+%    35, no. 4, pp. 601-609, Apr. 1996.
 %
 %February 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

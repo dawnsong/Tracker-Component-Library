@@ -3,7 +3,7 @@ function u=geogHeading2uVec(point,geoEastOfNorth,a,f)
 %                 at a point on a reference ellipsoid to unit vectors in
 %                 ECEF coordinates.
 %
-%INPUTS: point  The location of the point in geodetic latitude and
+%INPUTS:  point  The location of the point in geodetic latitude and
 %                longitude in radians at which the headings are taken.
 %                Point can be [latitude;longitude] or
 %                [latitude;longitude;height]. The height component is

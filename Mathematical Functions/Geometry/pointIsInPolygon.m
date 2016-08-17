@@ -31,9 +31,12 @@ function [isInPolygon,omegas]=pointIsInPolygon(vertices,point,boundaryIsImportan
 %                     for each point. This is not meainingful for points on
 %                     the boundary of the polygon. 
 %
-%The implementation is Algorithms 6 and 7 from
-%K. Hormann and A. Agathos, "The point in polygon problem for arbitrary
-%polygons," Computational Geometry, vol. 20, no. 3, pp. 131-144, Nov. 2001.
+%The implementation is Algorithms 6 and 7 from [1].
+%
+%REFERENCES:
+%[1] K. Hormann and A. Agathos, "The point in polygon problem for arbitrary
+%    polygons," Computational Geometry, vol. 20, no. 3, pp. 131-144, Nov.
+%    2001.
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

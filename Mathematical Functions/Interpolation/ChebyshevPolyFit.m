@@ -26,15 +26,17 @@ function a=ChebyshevPolyFit(f,n,tauStart,tauEnd)
 %
 %The coefficients are deterministically found by evaluating the function f
 %at a predictable set of points based on the Chebyshev Approximation
-%Formula that is mentioned in
-%Weisstein, Eric W. "Chebyshev Approximation Formula." From MathWorld--A
-%Wolfram Web Resource.
-%http://mathworld.wolfram.com/ChebyshevApproximationFormula.html
-%At each of the points chosen for evaluation, which are the zeros of the
-%highest-order Chebyshev polynomial, the function is matched exactly.
+%Formula that is mentioned in [1]. At each of the points chosen for
+%evaluation, which are the zeros of the highest-order Chebyshev polynomial,
+%the function is matched exactly.
 %
 %The discrete costine transform was used to implement the sum in a
-%computationally efficient manner..
+%computationally efficient manner.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Chebyshev Approximation Formula." From
+%    MathWorld--A Wolfram Web Resource.
+%    http://mathworld.wolfram.com/ChebyshevApproximationFormula.html
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

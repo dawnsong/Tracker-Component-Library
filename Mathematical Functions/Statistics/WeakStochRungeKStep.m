@@ -70,15 +70,17 @@ function xSim=WeakStochRungeKStep(method,xCur,curT,a,D,deltaT,W,V,dadt,dadx,dDdx
 %OUTPUTS: xSim   The simulated target state at time curT+deltaT.
 %
 %The algorithm for the Euler-Marayama method is described in Chapter 10.2
-%of
-%P. E. Kloeden and E. Platen, Numerical Solution of Stochastic Differential
-%Equations. Berlin: Springer, 1999.
+%of [1].
 %
 %The algorithms for both the additive and non-additive explicit order 2.0
-%Taylor scheme are described in Section 15.1 of Kloeden.
+%Taylor scheme are described in Section 15.1 of [1]..
 %
 %The algorithm for the simplified order 2.0 Taylor scheme is described in
-%Section 14.2 of Kloeden.
+%Section 14.2 of [1]..
+%
+%REFERENCES:
+%[1] P. E. Kloeden and E. Platen, Numerical Solution of Stochastic
+%    Differential Equations. Berlin: Springer, 1999.
 %
 %April 2015 David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -89,10 +91,10 @@ dColDim=size(DCur,2);
 xDim=size(aCur,1);
 
 %Generate the random component following Eq. 11.2.4,11.2.8-10 in Kloeden
-if nargin<7 || isempty(W)
+if(nargin<7 || isempty(W))
     W=sqrt(deltaT)*randn(dColDim);
 end
-if nargin<8 || isempty(V)
+if(nargin<8 || isempty(V))
     V=-deltaT*eye(dColDim);
     for j=1:dColDim
         for j2=(j+1):dColDim

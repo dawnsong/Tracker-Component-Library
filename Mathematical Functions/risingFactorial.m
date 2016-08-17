@@ -15,16 +15,18 @@ function val=risingFactorial(x,n)
 %             or a matrix.
 %
 %OUTPUTS: val The rising factorial <x>_n for each x and the corresponding
-%             n/ for each n and a single x depending on what is a matrix
+%             n or for each n and a single x depending on what is a matrix
 %             and what is scalar.
 %
 %Rising factorials often arise when dealing with combinatorial problems and
 %hypergeometric functions.
 %
-%The rising factorial is discussed in
-%Weisstein, Eric W. "Rising Factorial." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/RisingFactorial.html
+%The rising factorial is discussed in [1].
 %Note that risingFactorial(1,n)=factorial(n)
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Rising Factorial." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/RisingFactorial.html
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

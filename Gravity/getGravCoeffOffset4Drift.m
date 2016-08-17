@@ -37,15 +37,17 @@ function [deltaC,deltaS]=getGravCoeffOffset4Drift(TT1,TT2,model)
 %date. A Julian year has exactly 365.25 days of exactly 86400 seconds.
 %
 %The drift terms for the low-order coefficients in the EGM2008 model are
-%documented in Table 6.2 on page 80 of
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%The adjustments for polar motion are from page 81.
+%documented in Table 6.2 on page 80 of [1]; the adjustments for polar
+%motion are from page 81.
 %
 %The drift terms for the EGM96 model were included in the readme file for
 %the model when it was distributed by NASA. Given newer data it is likely
 %that these drift terms are incorrect/ out of date since newer models do
 %not put drifts on the S terms.
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

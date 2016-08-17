@@ -78,39 +78,45 @@ function [SGP4Elements,didConverge]=state2SGP4Elements(stateVec,dragTerm,dragTyp
 %                   converged to an accurate solution.
 %
 %The algorithm first converts the state vector into the set of orbital
-%elements described in 
-%R. H. Gooding, "On universal elements, and conversion procedures to
-%and from position and velocity," Celestial mechanics, vol. 44, no. 3,
-%pp. 283-298, 1988.
-%via the state2OrbEls function. These orbital elements are then manipulated
-%to obtain the orbital elements for the SGP4 propagator under a simple
-%Keplerian dynamic model. Newton's method is then used to refine the
-%initial estimate for the SGP4 propagator models. The basic idea behind the
-%technique is from
-%D. E. Andersen, "Computing mean orbital elements from a state vector,"
-%Master's thesis, Air Force Institute of Technology, Wright- Patterson Air
-%Force Base, OH, Dec. 1994.
-%Though the code provided therein is not used.
+%elements described in [1] via the state2OrbEls function. These orbital
+%elements are then manipulated to obtain the orbital elements for the SGP4
+%propagator under a simple Keplerian dynamic model. Newton's method is then
+%used to refine the initial estimate for the SGP4 propagator models. The
+%basic idea behind the technique is from [2], though the code provided
+%therein is not used.
 %
 %The reference value of the atmospheric density in kg/m^2 used in the SGP4
-%propagator as given in Appendix B of 
-%D. A. Vallado, P. Crawford, R. Hujsak, and T. S. Kelso, "Revisiting
-%spacetrack report # 3: Rev 2," in Proceedings of the AIAA/AAS
-%Astrodynamics Specialist Conference and Exhibit, Keystone, CO, 21-24 Aug.
-%2006. [Online].
+%propagator as given in Appendix B of [3].
 %
 %The relationship between the semi-major axis and the mean motion is taken
-%from
-%D. A. Vallado and P. Crawford, "SGP4 orbit determination," in Proceedings
-%of the AIAA/AAS Astrodynamics Specialist Conference and Exhibit, Honolulu,
-%HI, 18-21 Aug. 2008.
-%That paper also uses a Newton's method approach to find SGP4 orbital
-%elements.
+%from [4]. That paper also uses a Newton's method approach to find SGP4
+%orbital elements.
 %
 %The algorithm will not work if the state vector is a non-orbital
 %trajectory. The algorithm is sensitive to the initialization value
 %produced by Gooding's algorithm and can fail if the initialization is not
 %sufficiently accurate.
+%
+%Note that this is NOT based on the official SGP4 orbital propagator used
+%by the U.S. Air Force and cannot be assumed to be as reliable or produce
+%identical results to the official propagator. Information on obtaining the
+%U.S. Air Force's official propagator is given at
+%http://www.afspc.af.mil/units/ASDA/
+%
+%REFERENCES:
+%[1] R. H. Gooding, "On universal elements, and conversion procedures to
+%    and from position and velocity," Celestial mechanics, vol. 44, no. 3,
+%    pp. 283-298, 1988.
+%[2] D. E. Andersen, "Computing mean orbital elements from a state vector,"
+%    Master's thesis, Air Force Institute of Technology, Wright- Patterson
+%    Air Force Base, OH, Dec. 1994.
+%[3] D. A. Vallado, P. Crawford, R. Hujsak, and T. S. Kelso, "Revisiting
+%    spacetrack report # 3: Rev 2," in Proceedings of the AIAA/AAS
+%    Astrodynamics Specialist Conference and Exhibit, Keystone, CO, 21-24
+%    Aug. 2006.
+%[4] D. A. Vallado and P. Crawford, "SGP4 orbit determination," in
+%    Proceedings of the AIAA/AAS Astrodynamics Specialist Conference and
+%    Exhibit, Honolulu, HI, 18-21 Aug. 2008.
 %
 %January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -21,13 +21,15 @@ function val=isLeapYear(year)
 %function issues an error when one tries to determine whether a year prior
 %to 1753 was a leap year.
 %
-%More information on the gregorian calendar and leap years is given in
-%E. G. Richards, "Calendars," in Explanatory Supplement to the Astronomical
-%Almanac, 3rd ed., S. E. Urban and P. K. Seidelmann, Eds. Mill
-%Valley, CA: University Science Books, 2013, ch. 15.
+%More information on the gregorian calendar and leap years is given in [1].
 %
 %February has 29 days if the year is divisible by 4, unless the year is
 %divisible by 100 unless the year is divisible by 400.
+%
+%REFERENCES:
+%[1] E. G. Richards, "Calendars," in Explanatory Supplement to the
+%    Astronomical Almanac, 3rd ed., S. E. Urban and P. K. Seidelmann, Eds.
+%    Mill Valley, CA: University Science Books, 2013, ch. 15.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

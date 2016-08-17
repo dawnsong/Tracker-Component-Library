@@ -3,7 +3,9 @@ classdef MurtyData < handle
 %           using an efficient algorithm that inherits the dual variables
 %           from the shortest path 2D assignment algorithm at the previous
 %           step. This file includes and uses the function
-%           ShortestPathUpdate to update a partial assignment.
+%           ShortestPathUpdate to update a partial assignment. Most people
+%           will be more interested in directly using the function
+%           kBest2DAssign than using this helper class.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -221,7 +223,9 @@ function [col4row, row4col, gain, u, v]=ShortestPathUpdate(C,activeRow,forbidden
 %%SHORTESTPATHUPDATE Update a partial assignment with the shortest path
 %                    algorithm, inheriting the dual variables.
 %
-%This algorithm is based on
+%This algorithm is based on [1].
+%
+%REFERENCES:
 %M. L. Miller, H. S. Stone, and J. Cox, Ingemar, "Optimizing Murty's ranked
 %assignment method," IEEE Transactions on Aerospace and Electronic Systems,
 %vol. 33, no. 3, pp. 851?862, Jul. 1997.

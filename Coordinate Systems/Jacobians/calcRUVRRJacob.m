@@ -50,9 +50,12 @@ function J=calcRUVRRJacob(components,xState,useHalfRange,sTx,sRx,M)
 %               the components parameter. The bistatic range and range rate
 %               components are divided by 2 if useHalfRange=true.
 %
-%A derivation of the components of the Jacobian is given in "Basic Tracking
-%Using Nonlinear 3D Monostatic and Bistatic Measurements" by David F.
-%Crouse.
+%A derivation of the components of the Jacobian is given in [1]. 
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems
+%    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
 %
 %October 2013 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -99,7 +102,7 @@ function J=calcRUVRRJacob(components,xState,useHalfRange,sTx,sRx,M)
             hasRangeRate=true;
     end
 
-    %These are still in global Cartesian coordiantes.
+    %These are still in global Cartesian coordinates.
     dtr=xState(1:3,1)-sRx(1:3,1);
     dtl=xState(1:3,1)-sTx(1:3,1);
 
@@ -110,13 +113,13 @@ function J=calcRUVRRJacob(components,xState,useHalfRange,sTx,sRx,M)
     z=tL(3);
     
     if(hasDirection==true)
-        %The gradient of u in local coordiantes.
+        %The gradient of u in local coordinates.
         du=zeros(6,1);
         du(1)=(y^2+z^2)/tMag^3;
         du(2)=-x*y/tMag^3;
         du(3)=-x*z/tMag^3;
 
-        %The gradient of v in local coordiantes.
+        %The gradient of v in local coordinates.
         dv=zeros(6,1);
         dv(1)=-x*y/tMag^3;
         dv(2)=(x^2+z^2)/tMag^3;
@@ -136,7 +139,7 @@ function J=calcRUVRRJacob(components,xState,useHalfRange,sTx,sRx,M)
         drB(1:3)=dtr/norm(dtr)+dtl/norm(dtl);
     end
 
-    %The gradient of the range-rate in local coordiantes.
+    %The gradient of the range-rate in local coordinates.
     if(hasRangeRate)
         drd=zeros(6,1);
         dvr=xState(4:6)-sRx(4:6);

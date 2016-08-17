@@ -44,11 +44,14 @@ function rr=getRangeRate(xTar,useHalfRange,xTx,xRx,numDim)
 %
 %This assumes that the target state that is provided has the same
 %dimensionality as the states of the transmitter and receiver and that all
-%of the states are in Cartesian coordiantes.
+%of the states are in Cartesian coordinates.
 %
-%A derivation of this non-relativistic approximation is given in "Basic
-%Tracking Using Nonlinear 3D Monostatic and Bistatic Measurements" by David
-%F. Crouse.
+%A derivation of this non-relativistic approximation is given in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems
+%    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
 %
 %July 2012 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -8,20 +8,79 @@ function val=FibonacciNum(n)
 %INPUTS: n   A scalar or matrix of integer Fibonacci number positions, n>0.
 %
 %OUTPUTS: val The values of the Fibonacci numbers at the positions given in
-%             n.
+%             n. These should be exact for n<70.
 %
-%The non-recursive formula is taken from
-%Chandra, Pravin and Weisstein, Eric W. "Fibonacci Number." From
-%MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/FibonacciNumber.html
+%The recursive and non-recursive formulae are taken from [1]. The recursive
+%formula is used up to n=78, as after that, finite precision errors
+%dominate. For n=79 onewards, the non-recusive formula is used. The formula
+%is written in a slightly more convoluted manner than one might expect
+%using log and exp to try to minimize finite precision errors as
+%much as possible. The issue comes with the exponent of phi. The
+%non-recusive formula is not used when the recursive formula is exact as
+%the non-recusive formula loses a few bits of precision before the recusive
+%formula (in the n=70's.) However, the non-recusive formula is faster and
+%has more bits of precision for very large values of n.
 %
-%October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
+%REFERENCES:
+%[1] Chandra, Pravin and Weisstein, Eric W. "Fibonacci Number." From
+%    MathWorld--A Wolfram Web Resource.
+%    http://mathworld.wolfram.com/FibonacciNumber.html
+%
+%November 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-%The golden ratio.
-phi=(1+sqrt(5))/2;
+%Allocate space
+val=zeros(size(n));
 
-val=round(phi.^n/sqrt(5));
+if(any(n~=fix(n)|imag(n)~=0|n<=0))
+   error('n has the wrong format')
+end
+
+%Set the starting cases.
+val(n==1|n==2)=1;
+
+%Select values that are small enough so that the recursion can be used
+%without a loss of precision
+sel=(n<=78)&(n>2);
+
+y=n(sel);
+%Use the definition involving the recursion.
+if(~isempty(y))
+    numY=numel(y);
+    res=zeros(numY,1);
+    
+    %We sort it in increasing order, so that we do not have to go back.
+    y=sort(y);
+    
+    fCur=1;
+    fPrev=1;
+    curY=1;
+    curN=3;
+    while(curY<=numY)
+        f=fCur+fPrev;
+        
+        if(y(curY)==curN)
+            res(curY)=f;
+            curY=curY+1;
+        end
+        
+        fPrev=fCur;
+        fCur=f;
+        
+        curN=curN+1;
+    end
+    
+    val(sel)=res;
+end
+y=n(~sel);
+%Deal with big numbers
+if(~isempty(y))
+    %The golden ratio.
+    phi=(1+sqrt(5))/2;
+
+    val(~sel)=round(exp(y*log(phi)-log(sqrt(5))));
+end
+
 end
 
 %LICENSE:

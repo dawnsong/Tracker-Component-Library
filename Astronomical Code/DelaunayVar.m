@@ -16,13 +16,15 @@ function vec=DelaunayVar(TDB1,TDB2)
 %              vec(5) Mean Longitude of the Ascending Node of the Moon:
 %                     Omega
 %
-%This function implements Equation 5.43 in Section 5.7.2 of
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%The units in those equations are degrees (and arcseconds). However, in
-%Equation 6.8 in Section 6.2, it looks like the angles should be in
-%radians, since one is using trigonometric functions. Thus, the return
-%value here is put into radians to be convenient.
+%This function implements Equation 5.43 in Section 5.7.2 of [1]. The units
+%in those equations are degrees (and arcseconds). However, in Equation 6.8
+%in Section 6.2, it looks like the angles should be in radians, since one
+%is using trigonometric functions. Thus, the return value here is put into
+%radians to be convenient.
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

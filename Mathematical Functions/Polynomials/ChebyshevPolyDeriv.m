@@ -32,11 +32,13 @@ function [dT,T]=ChebyshevPolyDeriv(tau,n,tauStart,tauEnd)
 %
 %The recursion for the derivatives come from simply differentiating the
 %recursion formula for the Chebyshev polynomials themselves, which is in
-%X. X. Newhall, "Numerical representation of planetary ephemerides,"
-%Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
-%and in Chapter 3.3.3 of
-%O. Montenbruck and E. Gill, Satellite Orbits, 4th ed. Heidelberg:
-%Springer, 2012.
+%[1] and in Chapter 3.3.3 of [2].
+%
+%REFERENCES:
+%[1] X. X. Newhall, "Numerical representation of planetary ephemerides,"
+%    Celestial Mechanics, vol. 45, no. 1-3, pp. 305-310, 1989.
+%[2] O. Montenbruck and E. Gill, Satellite Orbits, 4th ed. Heidelberg:
+%    Springer, 2012.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

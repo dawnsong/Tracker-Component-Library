@@ -27,9 +27,11 @@ function GMST=TAI2GMST(Jul1,Jul2,version,deltaT)
 %
 %The function just calls TAI2TT and then TT2GMST.
 %
-%GMST is defined in Section 5.5.7 of
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
+%GMST is defined in Section 5.5.7 of [1].
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

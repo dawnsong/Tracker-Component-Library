@@ -27,13 +27,9 @@ function [HBar,dHBardu,d2HBardu2]=normHelmholtz(u,M,scalFactor)
 %     d2HBardu2  An instance of the ClusterSet class such that
 %                dHBardu(n+1,m+1)=scalFac*D{\bar{H}^m_n(u)}.
 %
-%The fully normalized derived Legendre functions (Helmholtz polynomials) are
-%described in
-%E. Fantino and S. Casotto, "Methods of harmonic synthesis for global
-%geopotential models and their first-, second- and third-order gradients,"
-%Journal of Geodesy, vol. 83, no. 7, pp. 595-619, Jul. 2009.
-%and the algorithm of that paper is implemented here with the addition of a
-%scale factor, if desired.
+%The fully normalized derived Legendre functions (Helmholtz polynomials)
+%are described in [1] and the algorithm of that paper is implemented here
+%with the addition of a scale factor, if desired.
 %
 %The Helmholtz polynomial of degree n and order m is defined to be
 %H^m_n(u)=1/(n!2^n)D_{n+m}{(u^2-1)^n}
@@ -43,6 +39,12 @@ function [HBar,dHBardu,d2HBardu2]=normHelmholtz(u,M,scalFactor)
 %where k=1 if m=0 and k=2 otherwise. This normalization is consistent with
 %the normalization that the National Geospatial Intelligence Agency (NGA)
 %uses with the coefficients for the EGM96 and EGM2008 gravitational models.
+%
+%REFERENCES:
+%[1] E. Fantino and S. Casotto, "Methods of harmonic synthesis for global
+%    geopotential models and their first-, second- and third-order
+%    gradients," Journal of Geodesy, vol. 83, no. 7, pp. 595-619, Jul.
+%    2009.
 %
 %January 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

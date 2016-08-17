@@ -6,7 +6,7 @@ function [month,dayOfMonth]=dayOfYear2MonthDay(year,dayOfYear)
 %
 %INPUTS: year       A matrix of integer years in the Gregorian calendar.
 %        dayOfYear  A matrix of integer days of the year in the Gregorian
-%                   calendar startig from 1. 
+%                   calendar starting from 1. 
 %                   
 %OUTPUTS: month A matrix of the corresponding months of the year for each
 %               year-day pair inputted (1-12).

@@ -34,12 +34,15 @@ function LAST=TT2LAST(Jul1,Jul2,rObsITRS,version,deltaT,xpyp)
 %OUTPUTS: LAST     The local apparent sidereal time in radians.
 %
 %The relation between LMST and Greenwhich apparent sidereal time (GAST) is
-%documented in
-%G. H. Kaplan, ?The IAU resolutions on astronomical reference systems, time
-%scales, and Earth rotation models: Explanation and implementation,?
-%U.S. Naval Observatory, Tech. Rep. 179, 20 Oct. 2005. [Online].
-%Available: http://aa:usno:navy:mil/publications/docs/Circular 179:pdf
-%LAST is GAST added the the East longitude of the observer in the TIRS.
+%documented in [1]. LAST is GAST added to the the East longitude of the
+%observer in the TIRS.
+%
+%REFERENCES:
+%[1] G. H. Kaplan, "The IAU resolutions on astronomical reference systems,
+%    time scales, and Earth rotation models: Explanation and
+%    implementation," U.S. Naval Observatory, Tech. Rep. 179, 20 Oct. 2005.
+%    [Online].
+%    Available: http://aa:usno:navy:mil/publications/docs/Circular 179:pdf
 %
 %April 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

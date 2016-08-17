@@ -31,7 +31,7 @@ display('1) Determining the refraction-free outline of the Sun')
 %needed. It is (in meters).
 sunRad=696000e3;
 
-%Find the Cartesian location of the Sun in WGS-84 ECEF coordiantes,
+%Find the Cartesian location of the Sun in WGS-84 ECEF coordinates,
 %correcting for aberration and light-time, but not for atmospheric
 %refraction.
 [~,rSunITRS]=solarBodyVec(JulUTC1,JulUTC2,'UTC','SUN',0,[obsLoc;0;0;0],'ITRS');
@@ -64,7 +64,7 @@ uENU=getENUAxes([lat;lon;0]);
 %Find the rotation matrix to go from ECEF to ENU.
 ECEF2ENURotMat=findTransParam(eye(3),uENU);
 
-%Rotate into the local ENU coordiante system
+%Rotate into the local ENU coordinate system
 for curPoint=1:numPoints
     outlineLocs(:,curPoint)=ECEF2ENURotMat*outlineLocs(:,curPoint);
 end

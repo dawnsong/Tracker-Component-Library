@@ -27,20 +27,21 @@ function v=polyIntValNewton(z,a,c,K)
 %y(z)=a(1)+sum_{k=1}^{n-1}a(k+1)(z-c(1))*(z-c(2))*...*(z-c(k))
 %This function will evaluate numDim integrals of such functions
 %
-%The algorithm VALUE taken from Chapter 19 of 
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%Provides a recursion for evaluating polynomials in Newton form. The
-%integral algorithm comes from integrating the recursion. The evaluation of
-%the integral has the form
+%The algorithm VALUE taken from Chapter 19 of [1] provides a recursion for
+%evaluating polynomials in Newton form. The integral algorithm comes from
+%integrating the recursion. The evaluation of the integral has the form
 %Y(z)=sum{k=1}^{n}a(k)sum_{m=1}^{k}(-1)^(k-m)*z^m/m*sum(prod(C_{k-m}(c(1:k-1))
 %where C_{k}(c) is all the possible combinations of the vector c, taken k
 %at a time, and prod(C) is the product of all the elements in each set.
 %
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
+%
 %February 2015 David Karnick, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if nargin<4
+if(nargin<4||isempty(K))
     K=0;
 end
 

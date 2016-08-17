@@ -1,191 +1,170 @@
-/**DECODEAISSTRING Decode an Automatic Identification System (AIS)
- *                 message given as a string of characters. This can be a
- *                 full National Marine Electronics Association (NMEA)
- *                 formatted ASCII text message, just the payload
- *                 characters of such a message, or a cell array of
- *                 messages, whereby multiple fragment messages are pieced
- *                 together. If a cell array of messages is provided, the
- *                 first message is decoded and the number of fragments
- *                 combined for the message is given allowing one to call
- *                 this function multiple times, eliminating the first few
- *                 entries of the cell array each time, to decode a large
- *                 set of messages.
+/**DECODEAISSTRING Decode one or more Automatic Identification System (AIS)
+ *                 messages given a full National Marine Electronics
+ *                 Association (NMEA) formatted ASCII text messages.
+ *                 Multiple part messages can also be decoded. Information
+ *                 appended by the receiver after the message checksum is
+ *                 ignored.
  *
- *INPUTS:   NMEAStrings A character string of a single NMEA message, either
- *                      as a full message or just the data payload, or a
- *                      one-dimensional cell array containing multiple full
- *                      NMEA messages.
- *          param2      The use of the second parameter depends on whether
- *                      a character string or a cell array is passed. If 
- *                      just a character string is passed, then param2 is 
- *                      numPadBits -This parameter is only needed if just
- *                      the payload is passed and not a full NMEA string,
- *                      which typically beings with !AIVDM. In such an
- *                      instance, this is the number of bits that were
- *                      included to pad the message to a 6-bit boundary.
- *                      If this is omitted, it is assume to be zero. If a
- *                      full NMEA message string is given, then this is not
- *                      used.
- *                      If a cell array is passed, then this is
- *                      decodeAll  -This boolean parameter is true if all
- *                      of the messages in the cell array should be decoded
- *                      with all of the results put into cell arrays.
- *                      Otherwise, just the first message is decoded. The
- *                      default if this parameter is omitted is false.
+ *INPUTS: NMEAStrings A character string containing one or more Automatic
+ *                 Identification System (AIS) messages given as National
+ *                 Marine Electronics Association (NMEA) formatted ASCII
+ *                 text. Each message is on its own line.
  *
- *OUTPUTS:decodedMessage A structure whose components are the decoded
- *                    message elements. If an incomplete or
- *                    invalid message is provided, an empty matrix will be
- *                    returned. If only a partially recognized message is
- *                    given, then only the known fields will be returned in
- *                    the structure. If NMEAStrings is a cell array and
- *                    param2 (decodeAll) is true, then this is a cell array
- *                    of decoded messages for all of the messages.
- *       numFragsUsed The number of NMEA messages that were combined to
- *                    form the decoded message or that were reviewed before
- *                    determining that the message is invalid/ cannot be
- *                    decoded. If NMEAStrings is a single character string,
- *                    this is 1. If NMEAStrings is a cell array, this is
- *                    the number of cells examined and determined to form a
- *                    valid message/ an invalid message or an incomplete
- *                    message fragment. If NMEAStrings is a cell array and
- *                    param2 (decodeAll) is true, then this is an array
- *                    of the number of fragments used for all of the
- *                    messages.
- *          errorCode A value indicating any type of decoding error that
- *                    might have occurred resulting in decodedMessage being
- *                    an empty matrix. Otherwise, this is just the string
- *                   'AIS-OK'. If NMEAStrings is a cell array and
- *                    param2 (decodeAll) is true, then this is a cell array
- *                    of the errorDesc values for for all of the
- *                    messages. Possible error codes are
- *                    0  The message decoding system was not properly
- *                       initialized (should not occur).
- *                    1  There was no error decoding the message.
- *                    2  Bad bit count.
- *                    3  Bad NMEA character.
- *                    4  Bad pointer (should not occur).
- *                    5  Unknown message type (should not occur, since
- *                       unknown message ID's are returned as a
- *                       decodedMessage contianing nothing but the message
- *                       ID).
- *                    6  Message not implemented (should not occur).
- *                    7  Message subtype not implemented (should not occur).
- *                    8  AIS_ERR_EXPECTED_STRING (should not occur).
- *                    9  Bad message content.
- *                    10 Message is too long.
- *                    11 Bad sub message.
- *                    12 Bad sub sub message.
- *                    13 Bad NMEA checksum.
- *                    14 Bad sequence of fragments for reconstructing
- *                       multipart messages.
- *
- *         reportName The name of the general type of message decoded.
- *                    If NMEAStrings is a cell array and param2 (decodeAll)
- *                    is true, then this is a cell array of the report
- *                    names for for all of the messages.
- *  reportDescription A string describing the type of message decoded. If
- *                    NMEAStrings is a cell array and param2 (decodeAll)
- *                    is true, then this is a cell array of the report
- *                    descriptions for for all of the messages.
- *  fieldDescriptions A structure array with the same general fields as
- *                    decodedMessage but where each field contains a string
- *                    describing what is in the field. If NMEAStrings is a
- *                    cell array and param2 (decodeAll) is true, then this
- *                    is a cell array of the field descriptions for all of
- *                    the messages.
+ *OUTPUTS:decodedMessage A cell array of structures whose components are
+ *                    the decoded message elements, one message per cell.
+ *                    If an incomplete or invalid message is provided, it
+ *                    will be skipped.
+ *         reportName A cell array of the names of the general type of
+ *                    each message decoded.
+ *  reportDescription A cell array of strings describing the type of each
+ *                    message decoded.
+ *  fieldDescriptions A cell array holding a structure array with the same
+ *                    general fields as each cell element of decodedMessage
+ *                    but where each field contains a string describing
+ *                    what is in the field.
  *
  *AIS messages are used for tracking cooperative ships and for the exchange
  *of information of interest to ships, such as tidal information. The basic
- *standard is
- *"Technical characteristics for an automatic identification system using
- * time division multiple access in the VHF maritime mobile frequency
- * band," International Telecommunication Union, Radiocommunication Sector
- * Std. ITU-R M.1371-5, Feb. 2014. [Online].
- * Available: http://www.itu.int/rec/R- REC- M.1371/en
- *with additional messages defined in
- *"Guidance on the use of AIS application-specific messages," International
- * Maritime Organization, 2 Jun. 2013. [Online].
- * Available: http://www.iho.int/mtg_docs/com_wg/IHOTC/IHOTC_Misc/IMO%20SN_Circ289.pdf
- *and in
- *"International standard for tracking and tracing on inland waterways
- * (VTT)," United Nations Economic and Social Council, Economic Commission
- * for Europe, Inland Transport Committee, New York and Geneva, 2007.
- * [Online]. Available: http://www.unece.org/fileadmin/DAM/trans/doc/finaldocs/sc3/ECE-TRANS-SC3-176e.pdf
- *Note that an older version of the ITU standard as well as
- *"Guidance on the application of AIS binary messages," International
- * Maritime Organization, 28 May 2004. [Online].
- * Available: http://www.imo.org/blast/blastDataHelper.asp?data id=10741&filename=236.pdf
+ *standard is [1] with additional messages defined in [2], [3], and at
+ *http://www.e-navigation.nl/sites/default/files/asm_files/GN%20Release%202-23MAR15.pdf
+ *and in [4]. Note that an older version of the ITU standard as well as [5]
  *contain some message types that have been removed from the newer
  *standards.
  *
- *A full NMEA message looks like
- *!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0*5C
- *Just the payload of the message is
- *177KQJ5000G?tO`K>RA1wUbN0TKH
- *When decoding a single message given as a character string, then the full
- *NMEA message or just the payload can be used. When using a cell array of
- *messages, only full messages can be used. The two characters after the *
- *are the checksum. When using full messages, the decoding will fail if the
- *checksum is invalid. When using only partial messages, the numPadBits.
- *Newer NMEA messages can be preceded by tag blocks that begin with \. This
- *function assumes there are no tag blocks. Also, any data appended after a
- *comma after the checksum is ignored. Some receivers append data such as
- *times to the end. The NMEA message format is said to be described in the
- *NMEA 0183 Standard, which can be purchased from
- *http://www.nmea.org/content/nmea_standards/nmea_0183_v_410.asp
- *However, due to the high price of the standard, it was not consulted when
- *writing this function.
- *
- *This function relies on libais from 
+ *This function is essentially a Matlab interface for libais from 
  *https://github.com/schwehr/libais
- *The library does not support all possible message types. Also, the
- *library is a work in progress and does not decode all messages properly.
- *Messages that the library is known to incorrectly decode are treated as
- *unsupported messages. The library probably does not work on big-endian
- *processors (Intel processors are little-endian).
+ *The library does not support all possible message types. Messages
+ *8_367_22 and 8_366_22 from the library have not been implemented as it
+ *appears that the standards are in flux/ or are not fully implemented in
+ *the library. Messages 6_0_0 and 8_366_56 will not yet work as
+ *decode_body.cpp in the library still lacks a appropriate switch
+ *statements.
  *
  *The algorithm can be compiled for use in Matlab using the 
  *CompileCLibraries function.
  *
  *The algorithm is run in Matlab using the command format
- *[decodedMessage, numFragsUsed, errorCode,reportName,reportDescription,fieldDescriptions]=decodeAISString(NMEAStrings,numPadBits);
- *when given a character string that is just the payload of an NMEA
- *message, or as
- *[decodedMessage, numFragsUsed, errorCode,reportName,reportDescription,fieldDescriptions]=decodeAISString(NMEAStrings);
- *when given a character string that is a full NMEA message, or as
- *[decodedMessage, numFragsUsed, errorCode,reportName,reportDescription,fieldDescriptions]=decodeAISString(NMEAStrings,decodeAll);
- *when given a cell array.
+ *[decodedMessage,reportName,reportDescription,fieldDescriptions]=decodeAISString(NMEAStrings)
+ *
+ *Sample NMEA messages from LibAIS for the different message types are
+ *Message 1
+ *NMEAStrings='!AIVDM,1,1,,A,100WhdhP0nJRdiFFHFvm??v00L12,0*13,raishub,1342569600';
+ *Message 2
+ *NMEAStrings='!AIVDM,1,1,,B,284;UGTdP4301>3L;B@Wk3TnU@A1,0*7C,raishub,1342572913';
+ *Message 3
+ *NMEAStrings='!AIVDM,1,1,,B,34hoV<5000Jw95`GWokbFTuf0000,0*6C,raishub,1342569600';
+ *Message 4
+ *NMEAStrings='!AIVDM,1,1,,B,4h3Owoiuiq000rdhR6G>oQ?020S:,0*10,raishub,1342569600';
+ *Message 5 (two fragments put together using sprintf)
+ *NMEAStrings=sprintf('!SAVDM,2,1,6,A,55NOvQP1u>QIL@O??SL985`u>0EQ18E=>222221J1p`884i6N344Sll1@m80,0*0C,b003669956,1426118503\n!SAVDM,2,2,6,A,TRA1iH88880,2*6F,b003669956,1426118503');
+ *Message 6_0_0
+ *NMEAStrings='!AIVDM,1,1,,A,6>l4v:h0006D000000P@0T0,2*56';
+ *Message 6_1_0
+ *NMEAStrings='!AIVDM,1,1,,B,65Ps:8=:0MjP0420<4U>1@E=B10i>04<fp0,2*23';
+ *Message 7
+ *NMEAStrings='!AIVDM,1,1,,A,7jvPoD@mMq;U,0*09';
+ *Message 8_1_11
+ *NMEAStrings='!AIVDM,1,1,,A,8@2<HV@0BkLN:0frqMPaQPtBRRIrwwejwwwwwwwwwwwwwwwwwwwwwwwwwt0,2*34';
+ *Message 8_1_22
+ *NMEAStrings='!AIVDM,1,1,0,B,803Ovrh0EPM0WB0h2l0MwJUi=6B4G9000aip8<2Bt2Hq2Qhp,0*01,d-084,S1582,t091042.00,T42.19038981,r003669945,1332321042';
+ *Message 8_200_10
+ *NMEAStrings='!SAVDM,1,1,5,B,85NLn@0j2d<8000000BhI?`50000,0*2A,d,S1241,t002333.00,T33.111314,D08MN-NO-BSABS1,1429316613';
+ *Message 8_366_56
+ *NMEAStrings='!BSVDM,1,1,,B,853>IhQKf6EQFDdajT?AbaAVhHEWebddhqHC5@?=KwisgP00DWjE,0*6D,b003669701,1429315201';
+ *Message 9
+ *NMEAStrings='!AIVDM,1,1,,B,9oVAuAI5;rRRv2OqTi?1uoP?=a@1,0*74';
+ *Message 10
+ *NMEAStrings='!AIVDM,1,1,,A,:5Ovc200B=5H,0*43';
+ *Message 11
+ *NMEAStrings='!AIVDM,1,1,,B,;028j>iuiq0DoO0ARF@EEmG008Pb,0*25,raishub,1342570856';
+ *Message 12 (two fragments put together using sprintf)
+ *NMEAStrings=sprintf('!AIVDM,2,1,1,A,<02PeAPpIkF06B?=PB?31P3?>DB?<rP@<51C5P3?>D13DPB?31P3?>DB,0*13\n!AIVDM,2,2,1,A,?<P?>PF86P381>>5<PoqP6?BP=1>41D?BIPB5@?BD@,4*66');
+ *Message 14
+ *NMEAStrings='!AIVDM,1,1,,A,>>M@rl1<59B1@E=@0000000,2*0D';
+ *Message 15
+ *NMEAStrings='!SAVDM,1,1,,B,?03OwnB0ACVlD00,2*59';
+ *Message 16
+ *NMEAStrings='!SAVDO,1,1,,B,@03OwnQ9RgLP3h0000000000,0*32,b003669978,1426173689';
+ *Message 17
+ *NMEAStrings='!AIVDM,1,1,,A,A6WWW6gP00a3PDlEKLrarOwUr8Mg,0*03';
+ *Message 18
+ *NMEAStrings='!SAVDM,1,1,4,B,B5NU=J000=l0BD6l590EkwuUoP06,0*61';
+ *Message 19 (two fragments put together using sprintf)
+ *NMEAStrings=sprintf('!AIVDM,2,1,7,B,C5NMbDQl0NNJC7VNuC<v`7NF4T28V@2g0J6F::00000,0*59\n!AIVDM,2,2,7,B,0J70<RRS0,0*30');
+ *Message 20
+ *NMEAStrings='!SAVDM,1,1,6,B,Dh3OwjhflnfpLIF9HM1F9HMaF9H,2*3E';
+ *Message 21 (two fragments put together using sprintf)
+ *NMEAStrings=sprintf('!AIVDM,2,1,9,A,ENk`sO70VQ97aRh1T0W72V@611@=FVj<;V5d@00003v,0*50\n!AIVDM,2,2,9,A,P0<M0,0*3E');
+ *Message 22
+ *NMEAStrings='!SAVDM,1,1,6,A,F030owj2N2P6Ubib@=4q35b10000,0*74';
+ *Message 23
+ *NMEAStrings='!AIVDM,1,1,,B,G02:KpP1R`sn@291njF00000900,2*1C';
+ *Message 24
+ *NMEAStrings='!AIVDM,1,1,,A,H44cj<0DdvlHhuB222222222220,2*46';
+ *Message 25
+ *NMEAStrings='!AIVDM,1,1,,B,I6S`3Tg@T0a3REBEsjJcT?wSi0fM,0*02';
+ *Message 26 (two fragments put together using sprintf)
+ *NMEAStrings=sprintf('!AIVDM,2,1,2,B,JfgwlGvNwts9?wUfQswQ<gv9Ow7wCl?nwv0wOi=mwd?,0*03\n!AIVDM,2,2,2,B,oW8uwNg3wNS3tV,5*71');
+ *Message 27
+ *NMEAStrings='!AIVDM,1,1,,B,K815>P8=5EikdUet,0*6B';
+ *
+ *REFERENCES:
+ *[1] "Technical characteristics for an automatic identification system
+ *    using time division multiple access in the VHF maritime mobile
+ *    frequency band," International Telecommunication Union,
+ *    Radiocommunication Sector Std. ITU-R M.1371-5, Feb. 2014. [Online].
+ *    Available: http://www.itu.int/rec/R-REC-M.1371/en
+ *[2] "Guidance on the use of AIS application-specific messages,"
+ *    International Maritime Organization, 2 Jun. 2013. [Online].
+ *    Available: http://www.iho.int/mtg_docs/com_wg/IHOTC/IHOTC_Misc/IMO%20SN_Circ289.pdf
+ *[3] "International standard for tracking and tracing on inland waterways
+ *    (VTT)," United Nations Economic and Social Council, Economic
+ *    Commission for Europe, Inland Transport Committee, New York and
+ *    Geneva, 2007. [Online].
+ *    Available: http://www.unece.org/fileadmin/DAM/trans/doc/finaldocs/sc3/ECE-TRANS-SC3-176e.pdf
+ *[4] "St. Lawrence Seaway AIS Data Messaging Formats and Specifications,"
+ *    U.S. Department of Transportation, Revision 4.0A, 9 May 2002.
+ *    [Online].
+ *    Available: http://www.greatlakes-seaway.com/en/pdf/aisdata.pdf
+ *[5] "Guidance on the application of AIS binary messages," International
+ *    Maritime Organization, 28 May 2004. [Online].
+ *    Available: http://www.imo.org/blast/blastDataHelper.asp?data id=10741&filename=236.pd
  *
  *November 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
 
-//This definition is necessary or else the aislib files will cause
-//assertions when bad messages are passed.
+//This definition is necessary or else the aislib files will do
+//undesirable things when bad messages are passed.
 #ifndef NDEBUG
 #define NDEBUG
 #endif
 
 /*This header is required by Matlab.*/
 #include "mex.h"
+
+//The AISLib headers
 #include "ais.h"
-#include "ais8_001_22.h"
-//For abs
-#include <cmath>
-//For strcpy
-#include <cstring>
-//For strtoul
-#include <cstdlib>
-//For strcmp
-#include <cstdio>
-//For max
-#include <algorithm>
+#include "vdm.h"
+
+//For fabs
+#include<cmath>
+
+//Functions for parsing some parts of the strings that is not handled by
+//AISLib.
+#include "AISFuncs.hpp"
+
 #include "MexValidation.h"
 
-const size_t numReportTypes=28;
+//This is for parsing the input into strings that can be provided to the
+//VdmStream class to reconstruct the messages.
+#include <iostream>
+#include <sstream>
+#include <string>
+
+static const size_t numReportTypes=28;
 
 //The names from Table 46 in ITU-R M.1371-5 
-const char *AISReportNames[numReportTypes] = {
+static const char *AISReportNames[numReportTypes] = {
     "",//There is no zero
     "Position Report",//1
     "Position Report",//2
@@ -215,9 +194,9 @@ const char *AISReportNames[numReportTypes] = {
     "Multiple Slot Binary Message with Communications State",//26
     "Position Report for Long-Range Applications"//27
 };
- 
+
 //The descriptions from Table 46 in ITU-R M.1371-5 
-const char *AISReportDescriptions[numReportTypes] = {
+static const char *AISReportDescriptions[numReportTypes] = {
     "",//There is no zero
     "Scheduled position report; (Class A shipborne mobile equipment)",//1
     "Assigned scheduled position report; (Class A shipborne mobile equipment)",//2
@@ -248,885 +227,529 @@ const char *AISReportDescriptions[numReportTypes] = {
     "Class A and Class B 'SO' shipborne mobile equipment outside base station coverage"//27
 };
 
-enum AIS_STATUS_EXTENDED {
-  AIS_BAD_CHECKSUM=AIS_STATUS_NUM_CODES,
-  AIS_BAD_FRAGMENTS,
-  AIS_STATUS_NUM_CODES_EXTENDED
-};
+//Prototypes for functions
+bool extractAISMessageData(std::unique_ptr<libais::AisMsg> &aisMsg,mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_1_2_3_ToMatlab(libais::Ais1_2_3 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_4_11_ToMatlab(libais::Ais4_11 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_5_ToMatlab(libais::Ais5 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_7_13_ToMatlab(libais::Ais7_13 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_9_ToMatlab(libais::Ais9 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_10_ToMatlab(libais::Ais10 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_12_ToMatlab(libais::Ais12 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_14_ToMatlab(libais::Ais14 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_15_ToMatlab(libais::Ais15 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_16_ToMatlab(libais::Ais16 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_17_ToMatlab(libais::Ais17 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_18_ToMatlab(libais::Ais18 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_19_ToMatlab(libais::Ais19 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_20_ToMatlab(libais::Ais20 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_21_ToMatlab(libais::Ais21 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_22_ToMatlab(libais::Ais22 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_23_ToMatlab(libais::Ais23 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_24_ToMatlab(libais::Ais24 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_25_ToMatlab(libais::Ais25 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_26_ToMatlab(libais::Ais26 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_27_ToMatlab(libais::Ais27 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_0_0_ToMatlab(libais::Ais6_0_0 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_0_ToMatlab(libais::Ais6_1_0 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_1_ToMatlab(libais::Ais6_1_1 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_2_ToMatlab(libais::Ais6_1_2 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_3_ToMatlab(libais::Ais6_1_3 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_4_ToMatlab(libais::Ais6_1_4 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_5_ToMatlab(libais::Ais6_1_5 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_12_ToMatlab(libais::Ais6_1_12 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_14_ToMatlab(libais::Ais6_1_14 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_18_ToMatlab(libais::Ais6_1_18 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_20_ToMatlab(libais::Ais6_1_20 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_25_ToMatlab(libais::Ais6_1_25 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_32_ToMatlab(libais::Ais6_1_32 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_6_1_40_ToMatlab(libais::Ais6_1_40 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_0_ToMatlab(libais::Ais8_1_0 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_11_ToMatlab(libais::Ais8_1_11 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_13_ToMatlab(libais::Ais8_1_13 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_15_ToMatlab(libais::Ais8_1_15 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_16_ToMatlab(libais::Ais8_1_16 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_17_ToMatlab(libais::Ais8_1_17 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_19_ToMatlab(libais::Ais8_1_19 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_21_ToMatlab(libais::Ais8_1_21 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_22_ToMatlab(libais::Ais8_1_22 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_24_ToMatlab(libais::Ais8_1_24 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_26_ToMatlab(libais::Ais8_1_26 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_27_ToMatlab(libais::Ais8_1_27 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_29_ToMatlab(libais::Ais8_1_29 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_1_31_ToMatlab(libais::Ais8_1_31 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_200_10_ToMatlab(libais::Ais8_200_10 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_200_23_ToMatlab(libais::Ais8_200_23 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_200_24_ToMatlab(libais::Ais8_200_24 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_200_40_ToMatlab(libais::Ais8_200_40 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_200_55_ToMatlab(libais::Ais8_200_55 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
+void AIS_8_366_56_ToMatlab(libais::Ais8_366_56 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions);
 
-//Prototypes of all of the functions in this file
-AIS_STATUS decodeCoreMessage2Matlab(mxArray **matlabStruct, mxArray **reportName, mxArray **reportDescription, mxArray **fieldDescriptions, const char *theMessage, const int numPadBits);
-bool NMEAChecksumValid(const char * const theMessage);
-int combineMultipleNMEAMessages(const size_t curFrag, size_t *numReviewed, int *numPadBits, char **theMessage, const mxArray *cellArray);
-AIS_STATUS AIS1_2_3ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS4_11ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS5ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS7_13ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS9ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS10ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS12ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS14ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-//AIS_STATUS AIS15ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS16ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS17ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS18ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS19ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS20ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS21ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS22ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS23ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS24ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS25ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS26ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS27ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_1_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_2_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_3_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_4_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-//AIS_STATUS AIS_FI_6_1_12_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_14_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_18_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_20_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_25_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-//AIS_STATUS AIS_FI_6_1_28_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-//AIS_STATUS AIS_FI_6_1_30_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_FI_6_1_32_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS6ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_11_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_13_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_15_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_16_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_17_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_19_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-//AIS_STATUS AIS_8_1_21_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_22_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_27_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_29_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_1_31_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-//AIS_STATUS AIS_8_1_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_200_10_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-//AIS_STATUS AIS_8_200_23_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_200_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_200_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS_8_200_55_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-AIS_STATUS AIS8ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad);
-
-using namespace std;
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) { 
-    mxArray *decodedStruct,*reportName,*reportDescription,*fieldDescriptions;
-    int retVal;//Hold enum returned value of type AIS_STATUS or AIS_STATUS_EXTENDED
-    char *theMessage;
-    int numPadBits=0;
-    size_t numFragsUsed=1;
-    bool isCellArray, decodeAll=false;
-    //If a cell array is passed and decodeAll=true, then these will hold
-    //the cell arrays for the return values.
-    mxArray *decodedMessageCell, *numFragsUsedCell, *errorDescCell, *reportNameCell, *reportDescriptionCell, *fieldDescriptionsCell;
+    mxArray *decodedStruct=NULL;
+    mxArray *reportName=NULL;
+    mxArray *reportDescription=NULL;
+    mxArray *fieldDescriptions=NULL;
     
-    if(nrhs!=1&&nrhs!=2) {
+    if(nrhs!=1) {
         mexErrMsgTxt("Wrong number of inputs.");
         return;
     }
     
-    isCellArray=mxIsCell(prhs[0]);
-    
-    if(nrhs>1&&!isCellArray) {
-        numPadBits=getIntFromMatlab(prhs[1]);
-    } else if(nrhs>1&&isCellArray) {
-        decodeAll=getBoolFromMatlab(prhs[1]);
-    }
-    
-    if(nlhs>6) {
+    if(nlhs>4) {
         mexErrMsgTxt("Wrong number of outputs.");
         return;
     }
     
-    if(mxGetNumberOfDimensions(prhs[0])>2||mxGetNumberOfDimensions(prhs[0])<1) {
+    if(mxGetN(prhs[0])!=1&&mxGetM(prhs[0])!=1) {
         mexErrMsgTxt("The input has an invalid dimensionality.");
         return;
     }
-
-    //This function must be called before any AIS messages can be
-    //decoded.
-    BuildNmeaLookup();
-
-    //The retVal is used as a flag here before calling the decoding routine
-    //to detect whether an error occurred during the initial message
-    //extraction step.
-
-    //If it is a cell array, then assume we have multiple strings as NMEA
-    //messages to paste together into a single data payload if their
-    //checksums are valid. If it is a character string, then assume we
-    //either have a payload or an NMEA message from which the payload
-    //should be extracted if the checksum is valid.
-    if(isCellArray){
-        size_t curFrag=0;//Needed when decoding multiple messages in a cell.
-        size_t numMsg=0;//Number of messages decoded
-        const size_t numberOfFragments=max(mxGetM(prhs[0]),mxGetN(prhs[0]));
-        mwSize cellArrayDims[2]={numberOfFragments,1};
-        //Allocate the cell arrays for the return variables if multiple
-        //messages are to be decoded. They will be allocated to the size of
-        //numberOfFragments. However the number of messages might be less
-        //than the number of fragments due to multifragment messages.
-        //The outputs are set at the same time here.
-        if(decodeAll) {
-            decodedMessageCell=mxCreateCellArray(2, cellArrayDims);
-            plhs[0]=decodedMessageCell;
-            if(nlhs>1) {
-                numFragsUsedCell=mxCreateCellArray(2, cellArrayDims);
-                plhs[1]=numFragsUsedCell;
-                if(nlhs>2) {
-                    errorDescCell=mxCreateCellArray(2, cellArrayDims);
-                    plhs[2]=errorDescCell;
-                    if(nlhs>3) {
-                        reportNameCell=mxCreateCellArray(2, cellArrayDims);
-                        plhs[3]=reportNameCell;
-                        if(nlhs>4){
-                            reportDescriptionCell=mxCreateCellArray(2, cellArrayDims);
-                            plhs[4]=reportDescriptionCell;
-                            if(nlhs>5) {
-                                fieldDescriptionsCell=mxCreateCellArray(2, cellArrayDims);
-                                plhs[5]=fieldDescriptionsCell;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        do {//Decode all or one of the messages 
-            retVal=combineMultipleNMEAMessages(curFrag,&numFragsUsed,&numPadBits, &theMessage, prhs[0]);
-
-            //Decode the message
-            if(retVal==AIS_OK) {
-                if(nlhs<2) {
-                    retVal=decodeCoreMessage2Matlab(&decodedStruct, NULL, NULL, NULL, theMessage,numPadBits);
-                } else if(nlhs<3) {
-                    retVal=decodeCoreMessage2Matlab(&decodedStruct, &reportName, NULL, NULL, theMessage,numPadBits);
-                } else if(nlhs<4) {
-                    retVal=decodeCoreMessage2Matlab(&decodedStruct, &reportName, &reportDescription, NULL, theMessage,numPadBits);
-                } else {
-                    retVal=decodeCoreMessage2Matlab(&decodedStruct, &reportName, &reportDescription, &fieldDescriptions, theMessage,numPadBits);
-                }
-                //Free the space allocated for the string.
-                mxFree(theMessage);//Free the buffer.
-            }
-            
-            if(decodeAll) {
-                //Set the outputs to return
-                if(retVal==AIS_OK) {
-                    mxSetCell(decodedMessageCell, numMsg, decodedStruct);
-                    if(nlhs>1) {
-                        mxSetCell(numFragsUsedCell, numMsg, unsignedSizeMat2Matlab(&numFragsUsed,1,1));
-                        if(nlhs>2) {
-                            mxSetCell(errorDescCell, numMsg, intMat2MatlabDoubles(&retVal,1,1));
-                            if(nlhs>3) {
-                                mxSetCell(reportNameCell, numMsg, reportName);
-                                if(nlhs>4) {
-                                    mxSetCell(reportDescriptionCell, numMsg, reportDescription);
-                                    if(nlhs>5) {
-                                        mxSetCell(fieldDescriptionsCell, numMsg, fieldDescriptions);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    mxSetCell(decodedMessageCell, numMsg, mxCreateDoubleMatrix(0,0,mxREAL));       
-                    if(nlhs>1) {
-                        mxSetCell(numFragsUsedCell, numMsg, unsignedSizeMat2Matlab(&numFragsUsed,1,1));
-                        if(nlhs>2) {
-                            mxSetCell(errorDescCell, numMsg, intMat2MatlabDoubles(&retVal,1,1));
-                            if(nlhs>3) {
-                                mxSetCell(reportNameCell, numMsg, mxCreateDoubleMatrix(0,0,mxREAL));
-                                if(nlhs>4) {
-                                    mxSetCell(reportDescriptionCell, numMsg, mxCreateDoubleMatrix(0,0,mxREAL));
-                                    if(nlhs>5) {
-                                        mxSetCell(fieldDescriptionsCell, numMsg, mxCreateDoubleMatrix(0,0,mxREAL));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                //Increment the number of messages decoded.
-                numMsg=numMsg+1;
-            } else {
-                break;
-            }
-            curFrag=curFrag+numFragsUsed;
-        } while(curFrag<numberOfFragments);
-        //If only 1 cell message is being decoded, then the same methods to
-        //set the outputs can be used as for the case where a single string
-        //is passed. For cells, the outputs were set when the cell arrays
-        //were created. However, due to multifragment messages, there might
-        //be more cells than decoded messages, so the outputs will be
-        //reshaped here prior to returning.
-        
-        if(decodeAll) {
-            cellArrayDims[0]=numMsg;
-
-            mxSetDimensions(decodedMessageCell, cellArrayDims,2); 
-            if(nlhs>1) {
-                mxSetDimensions(numFragsUsedCell, cellArrayDims,2);
-                if(nlhs>2) {
-                    mxSetDimensions(errorDescCell, cellArrayDims,2);
-                    if(nlhs>3) {
-                    mxSetDimensions(reportNameCell, cellArrayDims,2);
-                        if(nlhs>4) {
-                            mxSetDimensions(reportDescriptionCell, cellArrayDims,2);
-                            if(nlhs>5) {
-                                mxSetDimensions(fieldDescriptionsCell, cellArrayDims,2);
-                            }
-                        }
-                    }
-                }
-            }
-            return;   
-        }
-    } else if(mxIsChar(prhs[0])) {
-        retVal=AIS_OK;
-        numFragsUsed=1;
-    //The message must have at least enough characters for the header so
-    //that we do not read past the end of an array while trying to identify
-    //it.
-        if(mxGetM(prhs[0])<7&&mxGetN(prhs[0])<7) {
-            retVal=AIS_ERR_BAD_BIT_COUNT;
-        } else {
-            theMessage=mxArrayToString(prhs[0]);
-            
-            //If a full NMEA message was passed, validate the checksum,
-            //find the number of padding bits and return the data payload.
-            if(theMessage[0]=='!'||theMessage[0]=='$') {                
-                //If the number of padding bits or the checksum is invalid.
-
-                if(!NMEAChecksumValid(theMessage)){
-                    mxFree(theMessage);
-                    retVal=AIS_BAD_CHECKSUM;
-                } else  if(numPadBits<0) {
-                    mxFree(theMessage);
-                    retVal=AIS_ERR_BAD_MSG_CONTENT;
-                } else {
-                 //If the checksum is valid, then return the message
-                 //content.
-                    string dataSubString=GetBody(string(theMessage));
-                    mxFree(theMessage);
-                    
-                    //If the string returned is invalid
-                    if(dataSubString.empty()) {
-                        retVal=AIS_ERR_BAD_MSG_CONTENT;
-                    } else {
-                        //Copy the substring the theMessage. The string
-                        //class itself will be deleted when leaving the
-                        //scope where it is declared.
-                        theMessage=(char*)mxMalloc((dataSubString.length()+1)*sizeof(char)); 
-                        strcpy(theMessage, dataSubString.c_str());
-                    }
-                }
-            }
-        }
-        
-        if(retVal==AIS_OK) {
-            if(nlhs<2) {
-                retVal=decodeCoreMessage2Matlab(&decodedStruct, NULL, NULL, NULL, theMessage,numPadBits);
-            } else if(nlhs<3) {
-                retVal=decodeCoreMessage2Matlab(&decodedStruct, &reportName, NULL, NULL, theMessage,numPadBits);
-            } else if(nlhs<4) {
-                retVal=decodeCoreMessage2Matlab(&decodedStruct, &reportName, &reportDescription, NULL, theMessage,numPadBits);
-            } else {
-                retVal=decodeCoreMessage2Matlab(&decodedStruct, &reportName, &reportDescription, &fieldDescriptions, theMessage,numPadBits);
-            }
-            //Free the space allocated for the string.
-            mxFree(theMessage);
-        }
-    } else {
-        mexErrMsgTxt("The input must be a string of characters or a 1D cell array containing characters.");
-        return; 
-    }
     
-    if(retVal==AIS_OK) {
-        plhs[0]=decodedStruct;
-        if(nlhs>1) {
-            plhs[1]=unsignedSizeMat2Matlab(&numFragsUsed,1,1);
+    if(mxIsChar(prhs[0])) {
+        size_t maxNumMessages,numMessagesDecoded=0;
+        std::istringstream ss;
+        char *msgChars=mxArrayToString(prhs[0]);
+        std::string allMsg(msgChars);
+        //This will stitch together a set of messages.
+        libais::VdmStream decodedAISData;
+        mxArray *decodedMessageCell, *reportNameCell, *reportDescriptionCell, *fieldDescriptionsCell;
+        std::string curMsg;
+        
+        mxFree(msgChars);
+        
+        //The maximum possible number of messages to decode.
+        maxNumMessages=std::count(allMsg.begin(),allMsg.end(),'\n')+1;
+     
+        //Alocate space for the return variables.
+        decodedMessageCell=mxCreateCellMatrix(maxNumMessages,1);
+        plhs[0]=decodedMessageCell;
+        if(nlhs>1){
+            reportNameCell=mxCreateCellMatrix(maxNumMessages,1);
+            plhs[1]=reportNameCell;
             if(nlhs>2) {
-                plhs[2]=intMat2MatlabDoubles(&retVal,1,1);
-                if(nlhs>3) {
-                    plhs[3]=reportName;
-                    if(nlhs>4) {
-                        plhs[4]=reportDescription;
-                        if(nlhs>5) {
-                            plhs[5]=fieldDescriptions;
+                reportDescriptionCell=mxCreateCellMatrix(maxNumMessages,1);
+                plhs[2]=reportDescriptionCell;
+                if(nlhs>3){
+                    fieldDescriptionsCell=mxCreateCellMatrix(maxNumMessages,1);
+                    plhs[3]=fieldDescriptionsCell;
+                }
+            }
+        }
+        
+        ss=std::istringstream(allMsg);//To extract one string at a time.
+        //Go through all of the strings.
+        while(std::getline(ss, curMsg,'\n')) {
+            const size_t numBeforeAdd=decodedAISData.size();
+            std::string dataPayload, endPart;
+            bool pushSucceeded;
+            
+            //First, remove any additional information that the receiver
+            //might have added after the end of the message.
+            separateMessageAndTimestamp(curMsg,dataPayload,endPart);
+                        
+            //If the separation succeeded, then push the
+            pushSucceeded=decodedAISData.AddLine(dataPayload);
+
+            //If a complete message was successfully decoded, then decode
+            //the message.
+            if(pushSucceeded&&numBeforeAdd!=decodedAISData.size()) {
+                mxArray *decodedMessage, *fieldDescriptions;
+                std::unique_ptr<libais::AisMsg> curAisMsg=decodedAISData.PopOldestMessage();
+                bool decodeSuccessful;
+                
+                if(nlhs<4) {
+                    decodeSuccessful=extractAISMessageData(curAisMsg,&decodedMessage,NULL);
+                } else {
+                    decodeSuccessful=extractAISMessageData(curAisMsg,&decodedMessage,&fieldDescriptions);
+                }
+
+                if(decodeSuccessful) {
+                    mxSetCell(decodedMessageCell, numMessagesDecoded, decodedMessage);
+                    if(nlhs>1) {
+                        const char *charString=AISReportNames[curAisMsg->message_id];
+                        mxSetCell(reportNameCell, numMessagesDecoded, mxCreateCharMatrixFromStrings(1,&charString));
+                        if(nlhs>2) {
+                            const char *charString1=AISReportDescriptions[curAisMsg->message_id];
+                            mxSetCell(reportDescriptionCell, numMessagesDecoded, mxCreateCharMatrixFromStrings(1,&charString1));
+                            if(nlhs>3){
+                                mxSetCell(fieldDescriptionsCell, numMessagesDecoded, fieldDescriptions);
+                            }
                         }
                     }
+                    numMessagesDecoded++;
+                }
+            }
+        }
+
+        //Resize the return values to the actual number of messages
+        //decoded.
+        mxSetM(decodedMessageCell,numMessagesDecoded);
+        if(nlhs>1) {
+            mxSetM(reportNameCell,numMessagesDecoded);
+            if(nlhs>2) {
+                mxSetM(reportDescriptionCell,numMessagesDecoded);
+                if(nlhs>3) {
+                    mxSetM(fieldDescriptionsCell,numMessagesDecoded);
                 }
             }
         }
     } else {
-        plhs[0]=mxCreateDoubleMatrix(0,0,mxREAL);
-        
-        if(nlhs>1) {
-            plhs[1]=unsignedSizeMat2Matlab(&numFragsUsed,1,1);
-            if(nlhs>2) {
-                plhs[2]=intMat2MatlabDoubles(&retVal,1,1);
-                if(nlhs>3) {
-                    plhs[3]=mxCreateDoubleMatrix(0,0,mxREAL);
-                    if(nlhs>4) {
-                        plhs[4]=mxCreateDoubleMatrix(0,0,mxREAL);
-                        if(nlhs>5) {
-                            plhs[5]=mxCreateDoubleMatrix(0,0,mxREAL);
-                        }
-                    }
-                }
-            }
-        }
+        mexErrMsgTxt("Invalid data type passed."); 
     }
 }
 
-bool NMEAChecksumValid(const char * const theMessage) {
-//The checksum as well as the basic format have to both be valid for the
-//NMEA message. 
-    int checksum=0;
-    char hexString[3];//Space for two characters and a null termination.
-    size_t i;
-    
-    //Valid strings begins with ! or $.
-    if(theMessage[0]!='!'&&theMessage[0]!='$' ) {
-        return false;
-    }
-    
-    i=1;
-    //The string to checksum ends at the *
-    while(theMessage[i]!='\0'&&theMessage[i]!='*') {
-        checksum=checksum^theMessage[i];
-        i++;
-    }
-    
-    //If it got to the end of the string before reaching to '*' character
-    if(theMessage[i]!='*') {
-        return false;
-    }
+bool extractAISMessageData(std::unique_ptr<libais::AisMsg> &aisMsg,mxArray **decodedMessage,mxArray **fieldDescriptions){
+/*EXTRACTAISMESSAGEDATA This function takes an NMEA AIS message and returns
+ *                  the data in a structure in decodedMessage and if
+ *                  fieldDescriptions is not NULL, it also returns a set of
+ *                  descriptions of the fields in the structure. If
+ *                  decoding is successful, then this function returns
+ *                  true. If decoding is not successful, then this function
+ *                  returns false and   decodedMessage and
+ *                  fieldDescriptions remain unchanged.
+ * 
+ *This function is essentially just a bunch of switch statements that call
+ *the correct function for each message type.
+ *
+ *November 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
+/*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
 
-    //Convert the checksum into a two-digit hexadecimal string.
-    sprintf(hexString, "%02X", checksum);
-    
-    //Make sure that the message has two additional values so that the
-    //checksum can be verified and that anything after comes after a comma.
-    i++;
-    if(theMessage[i]=='\0'||theMessage[i+1]=='\0') {
-        return false;
-    }
-    if(theMessage[i+2]!='\0'&&theMessage[i+2]!=',') {
-        return false;
-    }
-    {//Verify checksum
-        const char checksumString[3]={theMessage[i],theMessage[i+1],'\0'};
-        if(strcmp(hexString,checksumString)==0) {
+    switch(aisMsg->message_id){
+        case 1://Position report, Class A, scheduled.
+        case 2://Position report, Class A, assigned.
+        case 3://Position report, Class A, interrogated.
+        {
+            libais::Ais1_2_3 *msg=reinterpret_cast<libais::Ais1_2_3*>(aisMsg.get());
+            
+            AIS_1_2_3_ToMatlab(msg,decodedMessage,fieldDescriptions);
             return true;
-        } else {
-            return false;
-        } 
-    }
-}
-
-int combineMultipleNMEAMessages(const size_t curFrag, size_t *numReviewed, int *numPadBits, char **theMessage, const mxArray *cellArray) {
-//numPadBits will hold the number of padding bits on the last message that
-//gets concatenated and theMessage will point to the concatenated message,
-//if AIS_OK is the return value. numReviewed is the number of fragments
-//that have either been put together to form a message, if
-//AIS_STATUS==AIS_OK, or the number of fragments that have been considered
-//and been found invalid.
-//The curFrag parameter lets the decoding start/ continue from an arbitrary
-//place in the cell array.
-    const size_t numRows=mxGetM(cellArray);
-    const size_t numCols=mxGetN(cellArray);
-    const size_t numberOfMessages=max(numRows,numCols);
-    ptrdiff_t totalNumFragments;
-    size_t i;
-    int sequentialMessageID;
-    string combinedString;
-    mxArray *curCell;
-    char *curChars;
-
-    //If a 2D cell array is passed, then it is unclear which order the
-    //messages come in, so we will just return an error.
-    if(mxIsEmpty(cellArray)||(numRows!=1&&numRows!=1)) {
-        mexErrMsgTxt("A cell array that is passed must be 1-dimensional.");
-    }
-    
-    //The number of cells reviewed.;
-    *numReviewed=0;
-    
-    totalNumFragments=-1;
-    for(i=curFrag;(i<numberOfMessages)&&(*numReviewed!=totalNumFragments);i++) {
-        string theCellString;
-        string tempString;
-        
-        *numReviewed=*numReviewed+1;
-        
-        //Get the ith cell entry
-        curCell=mxGetCell(cellArray, i);
-        if(!mxIsChar(curCell)||mxIsEmpty(curCell)) {
-            mexErrMsgTxt("The cell array can only contain character strings.");
         }
-        
-        curChars=mxArrayToString(curCell);
-        theCellString=string(curChars);
-        
-        //Getting the number of padding bits verifies that it has the
-        //proper format up to the checksum and that the number given for
-        //padding is not outside of the valid range. The padding number
-        //should not be nonzero for any of the fragments before the last
-        //one.
-        *numPadBits=GetPad(theCellString);
-        if(!NMEAChecksumValid(curChars)){
-            mxFree(curChars);
-            return AIS_BAD_CHECKSUM;   
-        } else  if(*numPadBits<0) {
-            mxFree(curChars);
-            return AIS_ERR_BAD_MSG_CONTENT;
-        }
-        
-        //Check that it has the proper sequence numbering.
+        case 4://Base station report.
+        case 11://UTC/ date response.
         {
-            size_t firstNum, secondNum;
-            tempString=GetNthField(theCellString,1,string(","));
-            //If an error occurred extracting the first message number 
-            if(tempString.empty()) {
-                return AIS_ERR_BAD_MSG_CONTENT;
-            }
+            libais::Ais4_11 *msg=reinterpret_cast<libais::Ais4_11*>(aisMsg.get());
             
-            firstNum=strtoul(tempString.c_str(),NULL,10);
-            //0 is not a valid value and is returned if strtoul fails.
-            if(firstNum==0) {
-                return AIS_ERR_BAD_MSG_CONTENT;
-            }
-                    
-            tempString=GetNthField(theCellString,2,string(","));
-            //If an error occurred extracting the second message number 
-            if(tempString.empty()) {
-                return AIS_ERR_BAD_MSG_CONTENT;
-            }
-            
-            secondNum=strtoul(tempString.c_str(),NULL,10);
-            //0 is not a valid value and is returned if strtoul fails.
-            if(secondNum==0) {
-                return AIS_ERR_BAD_MSG_CONTENT;
-            }
-
-            //Verify the sequencing numbers. If this is the first fragment
-            //taken, record the total number of fragments.
-            if(*numReviewed==1) {
-                totalNumFragments=firstNum;
-                //There are not enough fragments to decode the message.
-                if(totalNumFragments>(ptrdiff_t)(numberOfMessages-curFrag)) {
-                    return AIS_BAD_FRAGMENTS;
-                }
-            }
-            
-            if(firstNum!=totalNumFragments||secondNum!=*numReviewed) {
-            //If this is the case, then message i is a different fragment
-            //than the one before and unto itself might be a valid message,
-            //so we cannot mark it as having been reviewed to be valid.
-                *numReviewed=*numReviewed-1;
-                return AIS_BAD_FRAGMENTS;
-            }
-            
-            //The sequential message ID has to be the same for all of the
-            //messages that come from the same sequence. It varies from 0
-            //to 9.
-            tempString=GetNthField(theCellString,1,string(","));
-            if(*numReviewed==1) {
-                //By setting it to -1, we are choosing a value that will
-                //not come up again.
-                if(tempString.empty()) {
-                    sequentialMessageID=-1;
-                } else if(tempString.length()==1) {
-                    int diff=(tempString[0]-'0');
-                    
-                    if((diff<0)||(diff>9)) {
-                        return AIS_ERR_BAD_MSG_CONTENT;
-                    }
-                    sequentialMessageID=diff;
-                } else {
-                    return AIS_ERR_BAD_MSG_CONTENT;
-                }
-            } else {
-                int diff=tempString[0]-'0';
-                if(tempString[0]!='\0'&&((diff<0)||(diff>9))) {
-                    return AIS_ERR_BAD_MSG_CONTENT;
-                } else if(diff!=sequentialMessageID){
-                //The current message belongs to a different sequence and
-                //should not be marked as having been reviewed to be
-                //invalid.
-                    *numReviewed=*numReviewed-1;
-                    return AIS_BAD_FRAGMENTS;
-                }
-            }
+            AIS_4_11_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
         }
-               
-        tempString=GetBody(theCellString);
-        mxFree(curChars);
-        
-        //If an error occurred extracting the characters
-        if(tempString.empty()) {
-            return AIS_ERR_BAD_MSG_CONTENT;
-        }
-
-        //Otherwise, append it to the combined string.
-        combinedString.append(tempString);
-    }
-    
-    //Set the string to return.
-    *theMessage=(char*)mxMalloc((combinedString.length()+1)*sizeof(char)); 
-    strcpy(*theMessage, combinedString.c_str());
-    return AIS_OK;
-}
-
-
-AIS_STATUS decodeCoreMessage2Matlab(mxArray **matlabStruct, mxArray **reportName, mxArray **reportDescription, mxArray **fieldDescriptions, const char *theMessage, const int numPadBits) {
-//The BuildNmeaLookup function must be called before this function can be
-//used.
-    //This is space for the message header after being turned into a bunch
-    //of bits. It is 7 characters at 6 bits each.
-    bitset<42> bs;
-    int message_id,repeat_indicator,mmsi;//For the message header terms
-    const size_t msgLength=strlen(theMessage);
-    if(msgLength<7) {//There are not enough characters in the message for the header.
-        return AIS_ERR_BAD_BIT_COUNT;
-    }
-    const string messageHeader(theMessage, 7);
-    AIS_STATUS r; 
-    AIS_STATUS retVal;
-    const size_t numBits = msgLength*6-numPadBits;
-    if (numBits < 38) {//Make sure that enough bits for the header are present.
-        return AIS_ERR_BAD_BIT_COUNT;
-    }
-    
-    r=aivdm_to_bits(bs, messageHeader.c_str());
-    if(r!=AIS_OK) {
-        return r;
-    }
-  
-    message_id = ubits(bs, 0, 6);
-    repeat_indicator = ubits(bs, 6, 2);
-    mmsi = ubits(bs, 8, 30);
-    switch(message_id) {
-        case 1:
-        case 2:
-        case 3:
-            retVal=AIS1_2_3ToMatlab(matlabStruct,fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 4:
-        case 11:
-            retVal=AIS4_11ToMatlab(matlabStruct,fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 5:
-            retVal=AIS5ToMatlab(matlabStruct,fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 6:
-        {//The type of the submessage must be identified.
-            Ais6 msg(theMessage, numPadBits);
-            if (msg.had_error()&&msg.get_error()!=AIS_UNINITIALIZED) {
-                retVal=msg.get_error();
-                break;
-            }
-            switch(msg.dac) {
-                case AIS_DAC_1_INTERNATIONAL://IMO
-                    switch(msg.fi) {
-                        case AIS_FI_6_1_0_TEXT:
-                            retVal=AIS_FI_6_1_0_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_1_ACK:
-                            retVal=AIS_FI_6_1_1_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_2_FI_INTERROGATE:
-                            retVal=AIS_FI_6_1_2_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_3_CAPABILITY_INTERROGATE:
-                            retVal=AIS_FI_6_1_3_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_4_CAPABILITY_REPLY:
-                            retVal=AIS_FI_6_1_4_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-//                         case AIS_FI_6_1_12_DANGEROUS_CARGO:
-//                             retVal=AIS_FI_6_1_12_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-//                             break;
-                        case AIS_FI_6_1_14_TIDAL_WINDOW:
-                            retVal=AIS_FI_6_1_14_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_18_ENTRY_TIME:
-                            retVal=AIS_FI_6_1_18_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_20_BERTHING:
-                            retVal=AIS_FI_6_1_20_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_25_DANGEROUS_CARGO:
-                            retVal=AIS_FI_6_1_25_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-//                         case AIS_FI_6_1_28_ROUTE:
-//                             retVal=AIS_FI_6_1_28_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-//                             break;
-//                         case AIS_FI_6_1_30_TEXT:
-//                             retVal=AIS_FI_6_1_30_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-//                             break;
-                        case AIS_FI_6_1_32_TIDAL_WINDOW:
-                            retVal=AIS_FI_6_1_32_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_6_1_40_PERSONS_ON_BOARD:
-                            retVal=AIS_FI_6_1_40_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        default:
-                        //If it is not a known type, return the parts that are
-                        //known common to all AIS6 messages.
-                            retVal=AIS6ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                    }
-                    break;
-                default:
-                    //If it is not a known type, return the parts that are
-                    //known common to all AIS6 messages.
-                    retVal=AIS6ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                    break;
-            }
-            break;
-        }
-        case 7:
-        case 13:
-            retVal=AIS7_13ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 8:
+        case 5://Static and voyage related data.
         {
-            Ais8 msg(theMessage, numPadBits);
+            libais::Ais5 *msg=reinterpret_cast<libais::Ais5*>(aisMsg.get());
             
-            if (msg.had_error()&&msg.get_error()!=AIS_UNINITIALIZED) {
-                retVal=msg.get_error();
-                break;
-            }
-            
-            switch(msg.dac) {
-                case AIS_DAC_1_INTERNATIONAL://IMO
-                    switch (msg.fi){
-                        case AIS_FI_8_1_0_TEXT:
-                            retVal=AIS_8_1_0_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_11_MET_HYDRO:
-                            retVal=AIS_8_1_11_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_13_FAIRWAY_CLOSED:
-                            retVal=AIS_8_1_13_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_15_SHIP_AND_VOYAGE:
-                            retVal=AIS_8_1_15_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_16_PERSONS_ON_BOARD:
-                            retVal=AIS_8_1_16_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_17_VTS_TARGET:
-                            retVal=AIS_8_1_17_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_19_TRAFFIC_SIGNAL:
-                            retVal=AIS_8_1_19_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-//                         case AIS_FI_8_1_21_WEATHER_OBS:
-//                             retVal=AIS_8_1_21_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-//                             break;
-                        case AIS_FI_8_1_22_AREA_NOTICE:
-                            retVal=AIS_8_1_22_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_24_SHIP_AND_VOYAGE:
-                            retVal=AIS_8_1_24_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_26_SENSOR:
-                            retVal=AIS_8_1_26_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_27_ROUTE:
-                            retVal=AIS_8_1_27_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_29_TEXT:
-                            retVal=AIS_8_1_29_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_1_31_MET_HYDRO:
-                            retVal=AIS_8_1_31_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-//                         case AIS_FI_8_1_40_PERSONS_ON_BOARD:
-//                             retVal=AIS_8_1_40_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-//                             break;
-                        default:
-                            //If it is not a known type, return the parts that are
-                            //known common to all AIS8 messages.
-                            retVal=AIS8ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                    }
-                    break;
-                case AIS_DAC_200_RIS:
-                    switch(msg.fi) {
-                        case AIS_FI_8_200_10_RIS_SHIP_AND_VOYAGE:
-                            retVal=AIS_8_200_10_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-//                         case AIS_FI_8_200_23_RIS_EMMA_WARNING:
-//                             retVal=AIS_8_200_23_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-//                             break;
-                        case AIS_FI_8_200_24_RIS_WATERLEVEL:
-                            retVal=AIS_8_200_24_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_200_40_RIS_ATON_SIGNAL_STATUS:
-                            retVal=AIS_8_200_40_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        case AIS_FI_8_200_55_RIS_PERSONS_ON_BOARD:
-                            retVal=AIS_8_200_55_ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                        default:
-                            //If it is not a known type, return the parts that are
-                            //known common to all AIS8 messages.
-                            retVal=AIS8ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                            break;
-                    }
-                    break;
-                default:
-                    //If it is not a known type, return the parts that are
-                    //known common to all AIS8 messages.
-                    retVal=AIS8ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-                    break;
-            }
-            break;
+            AIS_5_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
         }
-        break;
+        case 6://Binary addressed message
+        {
+            libais::Ais6 *msg=reinterpret_cast<libais::Ais6*>(aisMsg.get());
+
+            switch(msg->dac) {
+                case libais::AIS_DAC_0_TEST:
+                    if(msg->fi==0) {//Zeni Lite Buoy Co., Ltd buoy status.
+                        AIS_6_0_0_ToMatlab(reinterpret_cast<libais::Ais6_0_0*>(msg),decodedMessage,fieldDescriptions);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case libais::AIS_DAC_1_INTERNATIONAL:
+                    switch(msg->fi) {
+                        case 0:// Text message.  ITU 1371-1
+                            AIS_6_1_0_ToMatlab(reinterpret_cast<libais::Ais6_1_0*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 1:// Application ack.  ITU 1371-1
+                            AIS_6_1_1_ToMatlab(reinterpret_cast<libais::Ais6_1_1*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 2:// Interrogation for a DAC/FI.  ITU 1371-1
+                            AIS_6_1_2_ToMatlab(reinterpret_cast<libais::Ais6_1_2*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 3:// Capability interogation.  ITU 1371-1
+                            AIS_6_1_3_ToMatlab(reinterpret_cast<libais::Ais6_1_3*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 4:// Capability interogation reply.  ITU 1371-1
+                            AIS_6_1_4_ToMatlab(reinterpret_cast<libais::Ais6_1_4*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 5:// International function message 5: Application ack to addr binary message.
+                            AIS_6_1_5_ToMatlab(reinterpret_cast<libais::Ais6_1_5*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 12:// IMO Circ 236 Dangerous cargo indication
+                            AIS_6_1_12_ToMatlab(reinterpret_cast<libais::Ais6_1_12*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 14:// IMO Circ 236 Tidal window
+                            AIS_6_1_14_ToMatlab(reinterpret_cast<libais::Ais6_1_14*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 18:// IMO Circ 289 Clearance time to enter port
+                            AIS_6_1_18_ToMatlab(reinterpret_cast<libais::Ais6_1_18*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 20:// IMO Circ 289 Berthing data
+                            AIS_6_1_20_ToMatlab(reinterpret_cast<libais::Ais6_1_20*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 25:// IMO Circ 289 Dangerous cargo indication 2
+                            AIS_6_1_25_ToMatlab(reinterpret_cast<libais::Ais6_1_25*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 32:// IMO Circ 289 Tidal window
+                            AIS_6_1_32_ToMatlab(reinterpret_cast<libais::Ais6_1_32*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 40:// Number of persons on board.  ITU 1371-1
+                            AIS_6_1_40_ToMatlab(reinterpret_cast<libais::Ais6_1_40*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        default:
+                            return false;
+                    }
+                default:
+                    return false;
+            }
+        }
+        case 7://Binary acknowledgement
+        case 13://Message 13: Safety related acknowledge
+        {
+            libais::Ais7_13 *msg=reinterpret_cast<libais::Ais7_13*>(aisMsg.get());
+            
+            AIS_7_13_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 8://Binary broadcast message
+        {
+            libais::Ais8 *msg=reinterpret_cast<libais::Ais8*>(aisMsg.get());
+            
+            switch(msg->dac) {
+                case libais::AIS_DAC_1_INTERNATIONAL:
+                    switch(msg->fi) {
+                        case 0:// Text telegram ITU 1371-1
+                            AIS_8_1_0_ToMatlab(reinterpret_cast<libais::Ais8_1_0*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 11:// IMO Circ 289 met hydro
+                            AIS_8_1_11_ToMatlab(reinterpret_cast<libais::Ais8_1_11*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 13:// IMO Circ 236 Fairway closed
+                            AIS_8_1_13_ToMatlab(reinterpret_cast<libais::Ais8_1_13*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 15:// IMO Circ 236 Extended ship static and
+                                //voyage data
+                            AIS_8_1_15_ToMatlab(reinterpret_cast<libais::Ais8_1_15*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 16:// IMO Circ 236 Number of persons on board
+                            AIS_8_1_16_ToMatlab(reinterpret_cast<libais::Ais8_1_16*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 17:// IMO Circ 236 VTS Generated/synthetic
+                                //targets
+                            AIS_8_1_17_ToMatlab(reinterpret_cast<libais::Ais8_1_17*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 19:// IMO Circ 289 Marine traffic signal
+                            AIS_8_1_19_ToMatlab(reinterpret_cast<libais::Ais8_1_19*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 21:// IMO Circ 289 Weather observation report
+                                //from ship
+                            AIS_8_1_21_ToMatlab(reinterpret_cast<libais::Ais8_1_21*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 22:// Area notice
+                            AIS_8_1_22_ToMatlab(reinterpret_cast<libais::Ais8_1_22*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 24:// IMO Circ 289 Extended ship static and
+                                //voyage-related
+                            AIS_8_1_24_ToMatlab(reinterpret_cast<libais::Ais8_1_24*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 26:// IMO Circ 289 Environmental
+                            AIS_8_1_26_ToMatlab(reinterpret_cast<libais::Ais8_1_26*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 27:// IMO Circ 289 Route information
+                            AIS_8_1_27_ToMatlab(reinterpret_cast<libais::Ais8_1_27*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 29:// IMO Circ 289 Text description
+                            AIS_8_1_29_ToMatlab(reinterpret_cast<libais::Ais8_1_29*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 31:// IMO Circ 289 Meteorological and
+                                //Hydrographic data
+                            AIS_8_1_31_ToMatlab(reinterpret_cast<libais::Ais8_1_31*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        default:
+                            return false;
+                    }
+                case libais::AIS_DAC_200_RIS:
+                    switch(msg->fi) {
+                        case 10:// ECE-TRANS-SC3-2006-10e-RIS.pdf
+                                //River Information System, inland ship
+                                //static and voyage related data
+                            AIS_8_200_10_ToMatlab(reinterpret_cast<libais::Ais8_200_10*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 23://ECE-TRANS-SC3-2006-10e-RIS.pdf 
+                                //River Information System
+                            AIS_8_200_23_ToMatlab(reinterpret_cast<libais::Ais8_200_23*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 24://ECE-TRANS-SC3-2006-10e-RIS.pdf River
+                                //Information System: Water Level
+                            AIS_8_200_24_ToMatlab(reinterpret_cast<libais::Ais8_200_24*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 40://ECE-TRANS-SC3-2006-10e-RIS.pdf 
+                                //River Information System
+                            AIS_8_200_40_ToMatlab(reinterpret_cast<libais::Ais8_200_40*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        case 55://ECE-TRANS-SC3-2006-10e-RIS.pdf 
+                                //River Information System
+                            AIS_8_200_55_ToMatlab(reinterpret_cast<libais::Ais8_200_55*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        default:
+                            return false;
+                    }
+                case libais::AIS_DAC_366_UNITED_STATES_OF_AMERICA:
+                    switch(msg->fi){
+                        case 56:// USCG Blue Force encrypted message.
+                            AIS_8_366_56_ToMatlab(reinterpret_cast<libais::Ais8_366_56*>(msg),decodedMessage,fieldDescriptions);
+                            return true;
+                        default:
+                            return false;
+                    }
+                default:
+                    return false;
+            }
+        }
         case 9:
-            retVal=AIS9ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 10:
-            retVal=AIS10ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        //Case 11 is taken care of with case 4
-        case 12:
-            retVal=AIS12ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        //Case 13 is taken care of with case 7
-        case 14:
-            retVal=AIS14ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-//         case 15:
-//             retVal=AIS15ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-//             break;
-        case 16:
-            retVal=AIS16ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 17:
-            retVal=AIS17ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 18:
-            retVal=AIS18ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 19:
-            retVal=AIS19ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 20:
-            retVal=AIS20ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 21:
-            retVal=AIS21ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 22:
-            retVal=AIS22ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 23:
-            retVal=AIS23ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 24:
-            retVal=AIS24ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 25:
-            retVal=AIS25ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 26:
-            retVal=AIS26ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        case 27:
-            retVal=AIS27ToMatlab(matlabStruct, fieldDescriptions, theMessage, numPadBits);
-            break;
-        default://Unknown AIS Message. Just return the components common to
-        //all AIS messages
         {
-            const size_t numberOfFields=3;
-            const mwSize dims[2] = {1, 1};
-            const char *fieldNames[numberOfFields] = {"message_id",
-            "repeat_indicator","mmsi"};
+            libais::Ais9 *msg=reinterpret_cast<libais::Ais9*>(aisMsg.get());
             
-            //Create the Matlab structure array.
-            *matlabStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    
-            //Fill all of the elements of the structure
-            mxSetFieldByNumber(*matlabStruct,0,0,intMat2MatlabDoubles(&message_id,1,1));
-            mxSetFieldByNumber(*matlabStruct,0,1,intMat2MatlabDoubles(&repeat_indicator,1,1));
-            mxSetFieldByNumber(*matlabStruct,0,2,intMat2MatlabDoubles(&mmsi,1,1));
-
-            retVal=AIS_ERR_UNKNOWN_MSG_TYPE;
+            AIS_9_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
         }
-    }
-    
-    if(retVal==AIS_OK||retVal==AIS_ERR_UNKNOWN_MSG_TYPE) {
-        if(reportName!=NULL) {
-            if(retVal!=AIS_ERR_UNKNOWN_MSG_TYPE) {
-                const char *charString=AISReportNames[message_id];
-                *reportName=mxCreateCharMatrixFromStrings(1,&charString);
-            } else {
-                const char *charString="Unknown Report Type";
-                *reportName=mxCreateCharMatrixFromStrings(1,&charString);
-            }
+        case 10:
+        {
+            libais::Ais10 *msg=reinterpret_cast<libais::Ais10*>(aisMsg.get());
+            
+            AIS_10_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
         }
-        if(reportDescription!=NULL) {
-            if(retVal!=AIS_ERR_UNKNOWN_MSG_TYPE) {
-                const char *charString=AISReportDescriptions[message_id];
-                *reportDescription=mxCreateCharMatrixFromStrings(1,&charString);
-            } else {
-                const char *charString="Unknown Report Type";
-                *reportDescription=mxCreateCharMatrixFromStrings(1,&charString);
-            }
+        case 12:
+        {
+            libais::Ais12 *msg=reinterpret_cast<libais::Ais12*>(aisMsg.get());
+            
+            AIS_12_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
         }
+        case 14:
+        {
+            libais::Ais14 *msg=reinterpret_cast<libais::Ais14*>(aisMsg.get());
+            
+            AIS_14_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 15:
+        {
+            libais::Ais15 *msg=reinterpret_cast<libais::Ais15*>(aisMsg.get());
+            
+            AIS_15_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 16:
+        {
+            libais::Ais16 *msg=reinterpret_cast<libais::Ais16*>(aisMsg.get());
+            
+            AIS_16_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 17:
+        {
+            libais::Ais17 *msg=reinterpret_cast<libais::Ais17*>(aisMsg.get());
+            
+            AIS_17_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 18:
+        {
+            libais::Ais18 *msg=reinterpret_cast<libais::Ais18*>(aisMsg.get());
+            
+            AIS_18_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 19:
+        {
+            libais::Ais19 *msg=reinterpret_cast<libais::Ais19*>(aisMsg.get());
+            
+            AIS_19_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 20:
+        {
+            libais::Ais20 *msg=reinterpret_cast<libais::Ais20*>(aisMsg.get());
+            
+            AIS_20_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 21:
+        {
+            libais::Ais21 *msg=reinterpret_cast<libais::Ais21*>(aisMsg.get());
+            
+            AIS_21_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 22:
+        {
+            libais::Ais22 *msg=reinterpret_cast<libais::Ais22*>(aisMsg.get());
+            
+            AIS_22_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 23:
+        {
+            libais::Ais23 *msg=reinterpret_cast<libais::Ais23*>(aisMsg.get());
+            
+            AIS_23_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 24:
+        {
+            libais::Ais24 *msg=reinterpret_cast<libais::Ais24*>(aisMsg.get());
+            
+            AIS_24_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 25:
+        {
+            libais::Ais25 *msg=reinterpret_cast<libais::Ais25*>(aisMsg.get());
+            
+            AIS_25_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 26:
+        {
+            libais::Ais26 *msg=reinterpret_cast<libais::Ais26*>(aisMsg.get());
+            
+            AIS_26_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        case 27:
+        {
+            libais::Ais27 *msg=reinterpret_cast<libais::Ais27*>(aisMsg.get());
+            
+            AIS_27_ToMatlab(msg,decodedMessage,fieldDescriptions);
+            return true;
+        }
+        default:
+            return false;
     }
-    
-    //It is okay in that it decoded the enough fields to determine the
-    //message ID.
-    if(retVal==AIS_ERR_UNKNOWN_MSG_TYPE) {
-        retVal=AIS_OK;
-    }
-    
-    return retVal;
 }
 
-AIS_STATUS AIS1_2_3ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_1_2_3_ToMatlab(libais::Ais1_2_3 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=26;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "nav_status","rot", "sog",
-    "position_accuracy", "x", "y", "cog", "true_heading", "timestamp",
+    "position_accuracy", "lon", "lat", "cog", "true_heading", "timestamp",
     "special_manoeuvre", "spare", "raim", "sync_state", "slot_timeout",
     "received_stations", "slot_number", "utc_hour", "utc_min", "utc_spare",
     "slot_offset", "slot_increment", "slots_to_allocate", "keep_flag"};
     mxArray *theStruct;
     
-    Ais1_2_3 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
         const char *descriptionStrings[numberOfFields] = {
-        "Message identifier.",//0
-        "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
-        "Unique identifier such as a Maritime mobile service identity (MMSI) number",//2
-        "0=under way using engine\n1=at anchor,\n2=not under command\n3=restricted maneuverability\n4=constrained by her draught\n5=moored\n6=aground\n7=engaged in fishing\n8=under way sailing\n9=reserved for future amendment of navigational status for ships carrying DG, HS, or MP, or IMO hazard or pollutant category C, high speed craft (HSC)\n10=reserved for future amendment of navigational status for ships carrying dangerous goods (DG), harmful substances (HS) or marine pollutants (MP), or IMO hazard or pollutant category A, wing in ground (WIG)\n11=power-driven vessel towing astern (regional use)\n12=power-driven vessel pushing ahead or towing alongside (regional use)\n13 = reserved for future use\n14=AIS-SART (active), MOB-AIS, EPIRB-AIS\n15=undefined = default (also used by AIS-SART, MOB-AIS and EPIRB- AIS under test)",//3
+         "Message identifier.",//0
+         "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
+         "Unique identifier such as a Maritime mobile service identity (MMSI) number",//2
+         "0=under way using engine\n1=at anchor,\n2=not under command\n3=restricted maneuverability\n4=constrained by her draught\n5=moored\n6=aground\n7=engaged in fishing\n8=under way sailing\n9=reserved for future amendment of navigational status for ships carrying DG, HS, or MP, or IMO hazard or pollutant category C, high speed craft (HSC)\n10=reserved for future amendment of navigational status for ships carrying dangerous goods (DG), harmful substances (HS) or marine pollutants (MP), or IMO hazard or pollutant category A, wing in ground (WIG)\n11=power-driven vessel towing astern (regional use)\n12=power-driven vessel pushing ahead or towing alongside (regional use)\n13 = reserved for future use\n14=AIS-SART (active), MOB-AIS, EPIRB-AIS\n15=undefined = default (also used by AIS-SART, MOB-AIS and EPIRB- AIS under test)",//3
          "Rate of turn in degrees per minute clockwise",//4
-         "Speed over ground in knots. 10.2. means 102.2 knots or higher",//5
+         "Speed over ground in knots. 102.3 means 102.2 knots or higher",//5
          "Position accuracy. 1=high (<=10m), 0=low (>10m), 0=default",//6
          "Longitude East in degrees (WGS-84)",//7
          "Latitude North in degrees (WGS-84)",//8
@@ -1148,164 +771,146 @@ AIS_STATUS AIS1_2_3ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,
          "(For Message ID 3) Number of consecutive slots to allocate.\n0 = 1 slot,\n1 = 2 slots,\n2 = 3 slots,\n3 = 4 slots,\n4 = 5 slots,\n5 = 1 slot; offset = slot increment + 8 192,\n6 = 2 slots; offset = slot increment + 8 192,\n7 = 3 slots; offset = slot increment + 8 192.\nUse of 5 to 7 removes the need for RATDMA broadcast for scheduled transmissions up to 6 min intervals",//24
           "(For Message ID 3) Set to TRUE = 1 if the slot remains allocated for one additional frame"//25
         };
-        int i;
+        unsigned int i;
         
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
         
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.nav_status,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->nav_status,1,1));
     
-    if(!msg.rot_over_range) {
-       mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg.rot,1,1));
+    if(!msg->rot_over_range) {
+       mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg->rot,1,1));
     } else {//If the rotation rate is invalid.
        mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.sog<=102.2) {
-        mxSetFieldByNumber(theStruct,0,5,floatMat2MatlabDoubles(&msg.sog,1,1));
+    if(msg->sog!=1023) {
+        mxSetFieldByNumber(theStruct,0,5,floatMat2MatlabDoubles(&msg->sog,1,1));
     } else {//Speed over ground is not available.
         mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.x,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//If longitude is not available
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,8,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.cog<360) {
-        mxSetFieldByNumber(theStruct,0,9,floatMat2MatlabDoubles(&msg.cog,1,1));
+    if(msg->cog<360) {
+        mxSetFieldByNumber(theStruct,0,9,floatMat2MatlabDoubles(&msg->cog,1,1));
     } else {//Course over ground is not available
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.true_heading<360) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.true_heading,1,1));
+    if(msg->true_heading<360) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->true_heading,1,1));
     } else {//True Heading is not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.timestamp!=60) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.timestamp,1,1));  
+    if(msg->timestamp!=60) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->timestamp,1,1));  
     } else {//If no time stamp is available.
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.special_manoeuvre!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.special_manoeuvre,1,1)); 
+    if(msg->special_manoeuvre!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->special_manoeuvre,1,1)); 
     } else {//Special maneuver information is not available
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.spare,1,1)); 
-    mxSetFieldByNumber(theStruct,0,14,boolMat2Matlab(&msg.raim,1,1));
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->spare,1,1)); 
+    mxSetFieldByNumber(theStruct,0,14,boolMat2Matlab(&msg->raim,1,1));
 
     //COMM States
-    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.sync_state,1,1)); 
+    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->sync_state,1,1)); 
     //SODATA
-    if(msg.message_id==1||msg.message_id==2) {
-        if(msg.slot_timeout_valid) {
-            mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.slot_timeout,1,1));
-        } else {
-            mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
-        }
-        
-        if(msg.received_stations_valid) {
-            mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.received_stations,1,1));
-        } else {
-            mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
-        }
-        
-        if(msg.slot_number_valid) {
-            mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.slot_number,1,1));
-        } else {
-            mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
-        }
-        
-        if(msg.utc_valid) {
-            mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.utc_hour,1,1));
-            mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.utc_min,1,1));
-            mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.utc_spare,1,1));
-        } else {
-            mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
-            mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
-            mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
-        }
-        
-        if(msg.slot_offset_valid) {
-            mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.slot_offset,1,1));
-        } else {
-            mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
-        }
+    if(msg->slot_timeout_valid) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->slot_timeout,1,1));
     } else {
-        //For a type 3 message, these fields are not present, so they will
-        //be empty matrices.
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
+    }
+
+    if(msg->received_stations_valid) {
+        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->received_stations,1,1));
+    } else {
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
+    }
+
+    if(msg->slot_number_valid) {
+        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->slot_number,1,1));
+    } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
+    }
+
+    if(msg->utc_valid) {
+        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->utc_hour,1,1));
+        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->utc_min,1,1));
+        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->utc_spare,1,1));
+    } else {
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
+    }
+
+    if(msg->slot_offset_valid) {
+        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->slot_offset,1,1));
+    } else {
         mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    
+
     //ITDMA
-    if(msg.slot_increment_valid) {
-        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg.slot_increment,1,1));
+    if(msg->slot_increment_valid) {
+        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg->slot_increment,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slots_to_allocate_valid) {
-        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.slots_to_allocate,1,1));
+    if(msg->slots_to_allocate_valid) {
+        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->slots_to_allocate,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.keep_flag_valid) {
-        mxSetFieldByNumber(theStruct,0,25,boolMat2Matlab(&msg.keep_flag,1,1));
+    if(msg->keep_flag_valid) {
+        mxSetFieldByNumber(theStruct,0,25,boolMat2Matlab(&msg->keep_flag,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,25,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS4_11ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_4_11_ToMatlab(libais::Ais4_11 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=24;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "year", "month", "day", "hour", "minute", "second",
-    "position_accuracy", "x", "y", "fix_type", "transmission_ctl", "spare",
+    "position_accuracy", "lon", "lat", "fix_type", "transmission_ctl", "spare",
     "raim", "sync_state", "slot_timeout", "received_stations",
     "slot_number", "utc_hour", "utc_min","utc_spare", "slot_offset"};
     mxArray *theStruct;
     
-    Ais4_11 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     //If text descrptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -1335,119 +940,117 @@ AIS_STATUS AIS4_11ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,c
             "Two extra (unused) bits that are associated with the time message",//22
             "If the slot time-out value is 0 (zero) then the slot offset should indicate the offset to the slot in which transmission will occur during the next frame. If the slot offset is zero, the slot should be de-allocated after transmission.",//23
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    if(msg.year!=0) {
-        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.year,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    if(msg->year!=0) {
+        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->year,1,1));
     } else {//UTC year not available
         mxSetFieldByNumber(theStruct,0,3,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.month!=0) {
-        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.month,1,1));
+    if(msg->month!=0) {
+        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->month,1,1));
     } else {//UTC month not available
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.day!=0) {
-        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.day,1,1));
+    if(msg->day!=0) {
+        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->day,1,1));
     } else {//UTC day not available
         mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.hour<24) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.hour,1,1));
+    if(msg->hour<24) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->hour,1,1));
     } else {//UTC hour invalid or not available
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.minute<60) {
-        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.minute,1,1));
+    if(msg->minute<60) {
+        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->minute,1,1));
     } else {//UTC minute invalid or not available
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.second<60) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.second,1,1));
+    if(msg->second<60) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->second,1,1));
     } else {//UTC second invalid or not available
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
     
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,10,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,10,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//If longitude is not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,11,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,11,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//Latitude is not available
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.fix_type!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.fix_type,1,1));
+    if(msg->fix_type!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->fix_type,1,1));
     } else {//Fix type is unavailable
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.transmission_ctl,1,1));
-    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,15,boolMat2Matlab(&msg.raim,1,1));
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->transmission_ctl,1,1));
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,15,boolMat2Matlab(&msg->raim,1,1));
     
     //SOTDMA
-    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.sync_state,1,1));
-    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.slot_timeout,1,1));
+    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->sync_state,1,1));
+    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->slot_timeout,1,1));
 
-    if(msg.received_stations_valid) {
-        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.received_stations,1,1));
+    if(msg->received_stations_valid) {
+        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->received_stations,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_number_valid) {
-        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.slot_number,1,1));
+    if(msg->slot_number_valid) {
+        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->slot_number,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_valid) {
-        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.utc_hour,1,1));
-        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.utc_min,1,1));
-        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.utc_spare,1,1));
+    if(msg->utc_valid) {
+        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->utc_hour,1,1));
+        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->utc_min,1,1));
+        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->utc_spare,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL)); 
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.slot_offset_valid) {
-        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.slot_offset,1,1));
+    if(msg->slot_offset_valid) {
+        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->slot_offset,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS5ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_5_ToMatlab(libais::Ais5 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=21;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -1457,11 +1060,6 @@ AIS_STATUS AIS5ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, con
     "dim_a", "dim_b", "dim_c", "dim_d", "fix_type", "eta_month", "eta_day",
     "eta_hour", "eta_minute", "draught", "destination", "dte", "spare"};
     mxArray *theStruct;
-    
-    Ais5 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -1489,111 +1087,110 @@ AIS_STATUS AIS5ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, con
             "Data terminal equipment (DTE) ready (0 = available, 1 = not available = default)",//19
             "Spare. Not used. Should be set to zero. Reserved for future use"//20
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.ais_version,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->ais_version,1,1));
     
-    if(msg.imo_num!=0) {
-        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.imo_num,1,1));
+    if(msg->imo_num!=0) {
+        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->imo_num,1,1));
     } else {//IMO number not available
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.callsign.compare("@@@@@@@")!=0) {
-        const char *charString=msg.callsign.c_str();
+    if(msg->callsign.compare("@@@@@@@")!=0) {
+        const char *charString=msg->callsign.c_str();
         mxSetFieldByNumber(theStruct,0,5,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//If the call sign is not available
         mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.name.c_str();
+    if(msg->name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->name.c_str();
         mxSetFieldByNumber(theStruct,0,6,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//If the name is not available
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.type_and_cargo!=0) {
-        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.type_and_cargo,1,1));
+    if(msg->type_and_cargo!=0) {
+        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->type_and_cargo,1,1));
     } else {//No type and cargo information
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.dim_a==0&&msg.dim_b==0&&msg.dim_c==0&&msg.dim_d==0) {
+    if(msg->dim_a==0&&msg->dim_b==0&&msg->dim_c==0&&msg->dim_d==0) {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     } else {//If ship dimensions from reference point are available.
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.dim_a,1,1));
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.dim_b,1,1));
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.dim_c,1,1));
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.dim_d,1,1));
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->dim_a,1,1));
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->dim_b,1,1));
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->dim_c,1,1));
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->dim_d,1,1));
     }
     
-    if(msg.fix_type!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.fix_type,1,1));
+    if(msg->fix_type!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->fix_type,1,1));
     } else {//If the fix type is not available
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.eta_month!=0) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.eta_month,1,1));
+    if(msg->eta_month!=0) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->eta_month,1,1));
     } else {//No eta month
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.eta_day!=0) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.eta_day,1,1));
+    if(msg->eta_day!=0) {
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->eta_day,1,1));
     } else {//No eta day
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.eta_hour<24) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.eta_hour,1,1));
+    if(msg->eta_hour<24) {
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->eta_hour,1,1));
     } else {//No eta hour
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.eta_minute<60) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.eta_minute,1,1));
+    if(msg->eta_minute<60) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->eta_minute,1,1));
     } else {//No eta minute
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.draught!=0) {
-        mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg.draught,1,1));
+    if(msg->draught!=0) {
+        mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg->draught,1,1));
     } else {//No draught available
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.destination.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.destination.c_str();
+    if(msg->destination.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->destination.c_str();
         mxSetFieldByNumber(theStruct,0,18,mxCreateCharMatrixFromStrings(1,&charString));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.dte,1,1));
-    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.spare,1,1));
-    
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->dte,1,1));
+    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->spare,1,1));
 }
 
-AIS_STATUS AIS7_13ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+
+void AIS_7_13_ToMatlab(libais::Ais7_13 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=6;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -1601,11 +1198,6 @@ AIS_STATUS AIS7_13ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, 
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "dest_mmsi", "seq_num", "spare"};
     mxArray *theStruct;
-    
-    Ais7_13 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -1618,52 +1210,45 @@ AIS_STATUS AIS7_13ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, 
             "An array of the sequence numbers of the messages to be acknowledged for each destination (0-3)",//4
             "Spare bits. Not used. Should be set to zero. Reserved for future use"//5
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
     {
         int *theData;
-        theData=msg.dest_mmsi.data();
-        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(theData,msg.dest_mmsi.size(),1));
-        theData=msg.seq_num.data();
-        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(theData,msg.seq_num.size(),1));
+        theData=msg->dest_mmsi.data();
+        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(theData,msg->dest_mmsi.size(),1));
+        theData=msg->seq_num.data();
+        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(theData,msg->seq_num.size(),1));
     }
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.spare,1,1)); 
-    
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->spare,1,1)); 
 }
 
-AIS_STATUS AIS9ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_9_ToMatlab(libais::Ais9 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=28;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "alt", "sog", "position_accuracy", "x", "y", "cog",
+    "mmsi", "alt", "sog", "position_accuracy", "lon", "lat", "cog",
     "timestamp", "alt_sensor", "spare", "dte", "spare2", "assigned_mode",
     "raim", "commstate_flag", "sync_state", "slot_timeout",
     "received_stations", "slot_number", "utc_hour", "utc_min", "utc_spare",
     "slot_offset", "slot_increment", "slots_to_allocate", "keep_flag"};
     mxArray *theStruct;
-    
-    Ais9 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -1673,7 +1258,7 @@ AIS_STATUS AIS9ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, con
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number",//2
             "Altitude (derived from GNSS or barometric (see altitude sensor parameter below)) (m) (0-4 094 m) 4094 = 4094 m or higher",//3
-            "Speed over ground in knots",//4
+            "Speed over ground in 1/10 knots. 1023 means 102.2 knots or higher",//4
             "Position accuracy. 1=high (<=10m), 0=low (>10m), 0=default",//5
             "Longitude East in degrees (WGS-84)",//6
             "Latitude North in degrees (WGS-84)",//7
@@ -1698,127 +1283,125 @@ AIS_STATUS AIS9ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, con
             "(For ITDMA) Number of consecutive slots to allocate.\n0 = 1 slot,\n1 = 2 slots,\n2 = 3 slots,\n3 = 4 slots,\n4 = 5 slots,\n5 = 1 slot; offset = slot increment + 8 192,\n6 = 2 slots; offset = slot increment + 8 192,\n7 = 3 slots; offset = slot increment + 8 192.\nUse of 5 to 7 removes the need for RATDMA broadcast for scheduled transmissions up to 6 min intervals",//26
             "(For ITDMA) Set to TRUE = 1 if the slot remains allocated for one additional frame"//27
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
     
-    if(msg.alt!=4095) {
-        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.alt,1,1)); 
+    if(msg->alt!=4095) {
+        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->alt,1,1)); 
     } else {//No altitude information available.
         mxSetFieldByNumber(theStruct,0,3,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.sog!=1023) {
-        mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg.sog,1,1));
+    if(msg->sog!=1023) {
+        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->sog,1,1));
     } else {//No speed over ground information available
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
     
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//If the longitude is invalid
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {// If the latitude is invalid
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.cog<360) {
-        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.cog,1,1));
+    if(msg->cog<360) {
+        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg->cog,1,1));
     } else {//If course over ground is invalid
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.timestamp!=60) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.timestamp,1,1)); 
+    if(msg->timestamp!=60) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->timestamp,1,1)); 
     } else {//If the timestamp is invalid
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.alt_sensor,1,1)); 
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.spare,1,1)); 
-    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.dte,1,1)); 
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.spare2,1,1)); 
-    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.assigned_mode,1,1)); 
-    mxSetFieldByNumber(theStruct,0,15,boolMat2Matlab(&msg.raim,1,1));
-    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.commstate_flag,1,1));    
-    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.sync_state,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->alt_sensor,1,1)); 
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->spare,1,1)); 
+    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->dte,1,1)); 
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->spare2,1,1)); 
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->assigned_mode,1,1)); 
+    mxSetFieldByNumber(theStruct,0,15,boolMat2Matlab(&msg->raim,1,1));
+    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->commstate_flag,1,1));    
+    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->sync_state,1,1));
     
-    if(msg.slot_timeout_valid) {
-        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.slot_timeout,1,1));
+    if(msg->slot_timeout_valid) {
+        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->slot_timeout,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.received_stations_valid) {
-        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.received_stations,1,1));
+    if(msg->received_stations_valid) {
+        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->received_stations,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_number_valid) {
-        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.slot_number,1,1));
+    if(msg->slot_number_valid) {
+        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->slot_number,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_valid) {
-        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.utc_hour,1,1));
-        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.utc_min,1,1));
-        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg.utc_spare,1,1));
+    if(msg->utc_valid) {
+        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->utc_hour,1,1));
+        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->utc_min,1,1));
+        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg->utc_spare,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.slot_offset_valid) {
-        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.slot_offset,1,1));
+    if(msg->slot_offset_valid) {
+        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->slot_offset,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_increment_valid) {
-        mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg.slot_increment,1,1));
+    if(msg->slot_increment_valid) {
+        mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg->slot_increment,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,25,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slots_to_allocate_valid) {
-        mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg.slots_to_allocate,1,1));
+    if(msg->slots_to_allocate_valid) {
+        mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg->slots_to_allocate,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,26,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.keep_flag_valid) {
-        mxSetFieldByNumber(theStruct,0,27,boolMat2Matlab(&msg.keep_flag,1,1));
+    if(msg->keep_flag_valid) {
+        mxSetFieldByNumber(theStruct,0,27,boolMat2Matlab(&msg->keep_flag,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,27,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS10ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_10_ToMatlab(libais::Ais10 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=6;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -1826,11 +1409,6 @@ AIS_STATUS AIS10ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,con
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "spare", "dest_mmsi", "spare2"};
     mxArray *theStruct;
-    
-    Ais10 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
 
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -1843,44 +1421,36 @@ AIS_STATUS AIS10ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,con
             "MMSI number of station which is inquired",//4
             "Not used. Should be set to zero. Reserved for future use"//5
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
-        
-    
+
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dest_mmsi,1,1)); 
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.spare2,1,1)); 
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dest_mmsi,1,1)); 
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->spare2,1,1)); 
 }
 
-AIS_STATUS AIS12ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
-    const size_t numberOfFields=8;
+void AIS_12_ToMatlab(libais::Ais12 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
+    const size_t numberOfFields=9;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "seq_num", "dest_mmsi", "retransmitted", "spare", "text"};
+    "mmsi", "seq_num", "dest_mmsi", "retransmitted", "spare", "text","spare2"};
     mxArray *theStruct;
-    
-    Ais12 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -1893,51 +1463,46 @@ AIS_STATUS AIS12ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "MMSI number of station which is the destination of the message",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
-            "Safety related text."//7
+            "Safety related text.",//7
+            "Extra bits for alignment; not used.",//8
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
-    
+    *decodedMessage=theStruct;
+
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq_num,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dest_mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmitted,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq_num,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dest_mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmitted,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
     {
-        const char *charString=msg.text.c_str();
+        const char *charString=msg->text.c_str();
         mxSetFieldByNumber(theStruct,0,7,mxCreateCharMatrixFromStrings(1,&charString));
     }
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS14ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
-    const size_t numberOfFields=5;
+void AIS_14_ToMatlab(libais::Ais14 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
+    const size_t numberOfFields=6;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "text"};
+    "mmsi", "spare", "text","spare2"};
     mxArray *theStruct;
-    
-    Ais14 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -1946,36 +1511,35 @@ AIS_STATUS AIS14ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station of message.",//2
             "Not used. Should be set to zero. Reserved for future use",//3
-            "Safety related text."//4
+            "Safety related text.",//4
+            "Extra bits for alignment; not used.",//5
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
     {
-        const char *charString=msg.text.c_str();
+        const char *charString=msg->text.c_str();
         mxSetFieldByNumber(theStruct,0,4,mxCreateCharMatrixFromStrings(1,&charString));
     }
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-/*
-AIS_STATUS AIS15ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_15_ToMatlab(libais::Ais15 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=15;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -1985,11 +1549,6 @@ AIS_STATUS AIS15ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
     "dest_msg_1_2","slot_offset_1_2","spare3","mmsi_2","msg_2",
     "slot_offset_2","spare4"};
     mxArray *theStruct;
-    
-    Ais15 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2011,42 +1570,39 @@ AIS_STATUS AIS15ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Response slot offset for requested message from second interrogated station",//13
             "Not used. Should be set to zero. Reserved for future use"//14
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
 
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
     
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_1,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.msg_1_1,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.slot_offset_1_1,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.spare2,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.dest_msg_1_2,1,1));
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.slot_offset_1_2,1,1));
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.spare3,1,1));
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.mmsi_2,1,1));
-    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.msg_2,1,1));
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.slot_offset_2,1,1));
-    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.spare4,1,1));
-    
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_1,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->msg_1_1,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->slot_offset_1_1,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->spare2,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->dest_msg_1_2,1,1));
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->slot_offset_1_2,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->spare3,1,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->mmsi_2,1,1));
+    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->msg_2,1,1));
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->slot_offset_2,1,1));
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->spare4,1,1));
 }
-*/
 
-AIS_STATUS AIS16ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_16_ToMatlab(libais::Ais16 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=11;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -2055,11 +1611,6 @@ AIS_STATUS AIS16ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
     "mmsi", "spare", "dest_mmsi_a", "offset_a", "inc_a", "dest_mmsi_b",
     "offset_b", "inc_b", "spare2"};
     mxArray *theStruct;
-    
-    Ais16 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2077,58 +1628,51 @@ AIS_STATUS AIS16ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Increment to next assigned slot. Should be omitted, if there is assignment to station A, only",//9
             "Spare. Not used. Should be set to zero. The number of spare bits, which should be 0 or 4, should be adjusted in order to observe byte boundaries. Reserved for future use"//10
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
     
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dest_mmsi_a,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.offset_a,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.inc_a,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dest_mmsi_a,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->offset_a,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->inc_a,1,1));
     
-    if(msg.dest_mmsi_b!=-1) {
-        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dest_mmsi_b,1,1));
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.offset_b,1,1));
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.inc_b,1,1));
+    if(msg->dest_mmsi_b!=-1) {
+        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dest_mmsi_b,1,1));
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->offset_b,1,1));
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->inc_b,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.spare2,1,1));
-        
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS17ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_17_ToMatlab(libais::Ais17 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=12;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "x", "y", "spare2", "gnss_type", "station", "z_cnt", "seq",
+    "mmsi", "spare", "lon", "lat", "spare2", "gnss_type", "station", "z_cnt", "seq",
     "health"};
     mxArray *theStruct;
-    
-    Ais17 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
         
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2147,66 +1691,59 @@ AIS_STATUS AIS17ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Message sequence number (cyclic 0-7)",//10
             "Reference station health (specified in Recommendation ITU-R M.823)"//11
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
 
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
     
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,4,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//No longitude is available
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,5,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,5,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//No latitude is available
         mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare2,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.gnss_type,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.station,1,1));
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.z_cnt,1,1));
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.health,1,1));
-    
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare2,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->gnss_type,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->station,1,1));
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->z_cnt,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->health,1,1));
 }
 
-AIS_STATUS AIS18ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
-    const size_t numberOfFields=31;
+void AIS_18_ToMatlab(libais::Ais18 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
+    const size_t numberOfFields=32;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "sog", "position_accuracy", "x", "y", "cog",
+    "mmsi", "spare", "sog", "position_accuracy", "lon", "lat", "cog",
     "true_heading", "timestamp", "spare2", "unit_flag", "display_flag",
     "dsc_flag", "band_flag", "m22_flag", "mode_flag", "raim",
     "commstate_flag", "sync_state", "slot_timeout", "received_stations",
     "slot_number", "utc_hour", "utc_min", "utc_spare", "slot_offset",
-    "slot_increment", "slots_to_allocate", "keep_flag"};
+    "slot_increment", "slots_to_allocate", "keep_flag","commstate_cs_fill"};
     mxArray *theStruct;
-    
-    Ais18 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2242,148 +1779,148 @@ AIS_STATUS AIS18ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "(For SOTDMA) If the slot time-out value is 0 (zero) then the slot offset should indicate the offset to the slot in which transmission will occur during the next frame. If the slot offset is zero, the slot should be de-allocated after transmission.",//27
             "(For ITDMA) Offset to next slot to be used, or zero (0) if no more transmissions",//28
             "(For ITDMA) Number of consecutive slots to allocate.\n0 = 1 slot,\n1 = 2 slots,\n2 = 3 slots,\n3 = 4 slots,\n4 = 5 slots,\n5 = 1 slot; offset = slot increment + 8 192,\n6 = 2 slots; offset = slot increment + 8 192,\n7 = 3 slots; offset = slot increment + 8 192.\nUse of 5 to 7 removes the need for RATDMA broadcast for scheduled transmissions up to 6 min intervals",//29
-            "(For ITDMA) Set to TRUE = 1 if the slot remains allocated for one additional frame"//30
+            "(For ITDMA) Set to TRUE = 1 if the slot remains allocated for one additional frame",//30
+            "The value of the commstate region if commstate is set to 1 for carrier sense. This is supposed to be filled with the binary value 1100000000000000110"//31
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
 
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
     
-    if(msg.sog<=102.2) {
-        mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg.sog,1,1));
+    if(msg->sog<=102.2) {
+        mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg->sog,1,1));
     } else {//If the speed over ground is unavailable or invalid
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
     
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//Longitude is not available
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//Latitude is not available
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.cog<360) {
-        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.cog,1,1));
+    if(msg->cog<360) {
+        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg->cog,1,1));
     } else {//Course over ground is not available
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.true_heading<360) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.true_heading,1,1));
+    if(msg->true_heading<360) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->true_heading,1,1));
     } else {//True heading is not available
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.timestamp!=60) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.timestamp,1,1));
+    if(msg->timestamp!=60) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->timestamp,1,1));
     } else {//Timestamp is not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.spare2,1,1));
-    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.unit_flag,1,1));
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.display_flag,1,1));
-    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.dsc_flag,1,1));
-    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.band_flag,1,1));
-    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.m22_flag,1,1));
-    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.mode_flag,1,1));
-    mxSetFieldByNumber(theStruct,0,18,boolMat2Matlab(&msg.raim,1,1));
-    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.commstate_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->spare2,1,1));
+    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->unit_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->display_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->dsc_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->band_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->m22_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->mode_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,18,boolMat2Matlab(&msg->raim,1,1));
+    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->commstate_flag,1,1));
 
-    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.sync_state,1,1));
-    if(msg.commstate_flag==0) {
-        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.slot_timeout,1,1));
+    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->sync_state,1,1));
+    if(msg->commstate_flag==0) {
+        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->slot_timeout,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.received_stations_valid) {
-        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.received_stations,1,1));
+    if(msg->received_stations_valid) {
+        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->received_stations,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_number_valid) {
-        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg.slot_number,1,1));
+    if(msg->slot_number_valid) {
+        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg->slot_number,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_valid) {        
-        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.utc_hour,1,1));
-        mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg.utc_min,1,1));
-        mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg.utc_spare,1,1));
+    if(msg->utc_valid) {        
+        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->utc_hour,1,1));
+        mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg->utc_min,1,1));
+        mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg->utc_spare,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,25,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,26,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_offset_valid) {
-        mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg.slot_offset,1,1));
+    if(msg->slot_offset_valid) {
+        mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg->slot_offset,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,27,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_increment_valid) {
-        mxSetFieldByNumber(theStruct,0,28,intMat2MatlabDoubles(&msg.slot_increment,1,1));
+    if(msg->slot_increment_valid) {
+        mxSetFieldByNumber(theStruct,0,28,intMat2MatlabDoubles(&msg->slot_increment,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,28,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slots_to_allocate_valid) {
-        mxSetFieldByNumber(theStruct,0,29,intMat2MatlabDoubles(&msg.slots_to_allocate,1,1));
+    if(msg->slots_to_allocate_valid) {
+        mxSetFieldByNumber(theStruct,0,29,intMat2MatlabDoubles(&msg->slots_to_allocate,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,29,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.keep_flag_valid) {
-        mxSetFieldByNumber(theStruct,0,30,boolMat2Matlab(&msg.keep_flag,1,1));
+    if(msg->keep_flag_valid) {
+        mxSetFieldByNumber(theStruct,0,30,boolMat2Matlab(&msg->keep_flag,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,30,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    return AIS_OK;
+    if(msg->commstate_cs_fill_valid) {
+        mxSetFieldByNumber(theStruct,0,31,intMat2MatlabDoubles(&msg->commstate_cs_fill,1,1));
+    } else {
+        mxSetFieldByNumber(theStruct,0,31,mxCreateDoubleMatrix(0,0,mxREAL));
+    }
 }
 
-AIS_STATUS AIS19ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_19_ToMatlab(libais::Ais19 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=23;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "sog", "position_accuracy", "x", "y", "cog",
+    "mmsi", "spare", "sog", "position_accuracy", "lon", "lat", "cog",
     "true_heading", "timestamp", "spare2", "name", "type_and_cargo",
     "dim_a", "dim_b", "dim_c", "dim_d", "fix_type", "raim", "dte",
     "assigned_mode", "spare3"};
     mxArray *theStruct;
-    
-    Ais19 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
         
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2413,105 +1950,103 @@ AIS_STATUS AIS19ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "0 = Station operating in autonomous and continuous mode = default 1 = Station operating in assigned mode",//21
             "Not used. Should be set to zero. Reserved for future use"//22
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
 
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
     
-     if(msg.sog<=102.2) {
-        mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg.sog,1,1));
+     if(msg->sog<=102.2) {
+        mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg->sog,1,1));
     } else {//If the speed over ground is unavailable or invalid
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
     
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//Longitude is not available
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//Latitude is not available
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.cog<360) {
-        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.cog,1,1));
+    if(msg->cog<360) {
+        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg->cog,1,1));
     } else {//Course over ground is not available
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.true_heading<360) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.true_heading,1,1));
+    if(msg->true_heading<360) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->true_heading,1,1));
     } else {//True heading is not available
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.timestamp!=60) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.timestamp,1,1));
+    if(msg->timestamp!=60) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->timestamp,1,1));
     } else {//Timestamp is not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.spare2,1,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->spare2,1,1));
 
-    if(msg.name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.name.c_str();
+    if(msg->name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->name.c_str();
         mxSetFieldByNumber(theStruct,0,12,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//If the name is not available
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.type_and_cargo!=0) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.type_and_cargo,1,1));
+    if(msg->type_and_cargo!=0) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->type_and_cargo,1,1));
     } else {//No type and cargo information
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.dim_a==0&&msg.dim_b==0&&msg.dim_c==0&&msg.dim_d==0) {
+    if(msg->dim_a==0&&msg->dim_b==0&&msg->dim_c==0&&msg->dim_d==0) {
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     } else {//If ship dimensions from reference point are available.
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.dim_a,1,1));
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.dim_b,1,1));
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.dim_c,1,1));
-        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.dim_d,1,1));
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->dim_a,1,1));
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->dim_b,1,1));
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->dim_c,1,1));
+        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->dim_d,1,1));
     }
     
-    if(msg.fix_type!=0) {
-        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.fix_type,1,1));
+    if(msg->fix_type!=0) {
+        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->fix_type,1,1));
     } else {//If the fix type is not available
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,19,boolMat2Matlab(&msg.raim,1,1));
-    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.dte,1,1));
-    mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.assigned_mode,1,1));
-    mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.spare3,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,19,boolMat2Matlab(&msg->raim,1,1));
+    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->dte,1,1));
+    mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->assigned_mode,1,1));
+    mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->spare3,1,1));
 }
 
-AIS_STATUS AIS20ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_20_ToMatlab(libais::Ais20 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=21;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -2522,11 +2057,6 @@ AIS_STATUS AIS20ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
     "num_slots_3", "timeout_3", "incr_3", "offset_4", "num_slots_4",
     "timeout_4", "incr_4", "spare2"};
     mxArray *theStruct;
-    
-    Ais20 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
       
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2554,65 +2084,65 @@ AIS_STATUS AIS20ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Increment to repeat reservation block 4 (optional)",//19
             "Not used. Should be set to zero. The number of spare bits which may be 0, 2, 4 or 6 should be adjusted in order to observe byte boundaries. Reserved for future use"//20
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
 
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
 
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    if(msg.offset_1!=0) {
-        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.offset_1,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    if(msg->offset_1!=0) {
+        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->offset_1,1,1));
     } else {//If the offset number is not available
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.num_slots_1) {
-        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.num_slots_1,1,1));
+    if(msg->num_slots_1!=0) {
+        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->num_slots_1,1,1));
     } else {//If the number of slots is not available
         mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.timeout_1!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.timeout_1,1,1));
+    if(msg->timeout_1!=0) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->timeout_1,1,1));
     } else {//If the timeout number is not available
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.incr_1,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->incr_1,1,1));
 
-    if(msg.group_valid_2) {
-        if(msg.offset_2!=0) {
-            mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.offset_2,1,1));
+    if(msg->group_valid_2) {
+        if(msg->offset_2!=0) {
+            mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->offset_2,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.num_slots_2!=0) {
-            mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.num_slots_2,1,1));
+        if(msg->num_slots_2!=0) {
+            mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->num_slots_2,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.timeout_2!=0) {
-            mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.timeout_2,1,1));
+        if(msg->timeout_2!=0) {
+            mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->timeout_2,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.incr_2,1,1));
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->incr_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
@@ -2620,26 +2150,26 @@ AIS_STATUS AIS20ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.group_valid_3) {
-        if(msg.offset_3!=0) {
-            mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.offset_3,1,1));
+    if(msg->group_valid_3) {
+        if(msg->offset_3!=0) {
+            mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->offset_3,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.num_slots_3!=0) {
-            mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.num_slots_3,1,1));
+        if(msg->num_slots_3!=0) {
+            mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->num_slots_3,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.timeout_3!=0) {
-            mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.timeout_3,1,1));
+        if(msg->timeout_3!=0) {
+            mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->timeout_3,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
         }
 
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.incr_3,1,1));
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->incr_3,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
@@ -2647,26 +2177,26 @@ AIS_STATUS AIS20ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
     
-    if(msg.group_valid_4) {
-        if(msg.offset_4!=0) {
-            mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.offset_4,1,1));
+    if(msg->group_valid_4) {
+        if(msg->offset_4!=0) {
+            mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->offset_4,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.num_slots_4!=0) {
-            mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.num_slots_4,1,1));
+        if(msg->num_slots_4!=0) {
+            mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->num_slots_4,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.timeout_4!=0) {
-            mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.timeout_4,1,1));
+        if(msg->timeout_4!=0) {
+            mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->timeout_4,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.incr_4,1,1));
+        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->incr_4,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
@@ -2674,27 +2204,20 @@ AIS_STATUS AIS20ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS21ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_21_ToMatlab(libais::Ais21 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=21;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "aton_type", "name", "position_accuracy", "x", "y", "dim_a",
+    "mmsi", "aton_type", "name", "position_accuracy", "lon", "lat", "dim_a",
     "dim_b", "dim_c", "dim_d", "fix_type", "timestamp", "off_pos",
     "aton_status", "raim", "virtual_aton", "assigned_mode", "spare",
     "spare2"};
     mxArray *theStruct;
-    
-    Ais21 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
          
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2722,106 +2245,99 @@ AIS_STATUS AIS21ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Spare. Not used. Should be set to zero. Reserved for future use",//19
             "Spare. Should be set to zero. The number of spare bits should be adjusted in order to observe byte boundaries"//20
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
     
-    if(msg.aton_type!=0) {
-        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.aton_type,1,1));
+    if(msg->aton_type!=0) {
+        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->aton_type,1,1));
     } else {//Aid to navigation type unavailable
         mxSetFieldByNumber(theStruct,0,3,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.name.c_str();
+    if(msg->name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->name.c_str();
         mxSetFieldByNumber(theStruct,0,4,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//If the name is not available
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
     
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//Longitude not available
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//Latitude not available
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.dim_a==0&&msg.dim_b==0&&msg.dim_c==0&&msg.dim_d==0) {
+    if(msg->dim_a==0&&msg->dim_b==0&&msg->dim_c==0&&msg->dim_d==0) {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     } else {//If dimensions are available
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.dim_a,1,1));
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.dim_b,1,1));
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.dim_c,1,1));
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.dim_d,1,1));
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->dim_a,1,1));
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->dim_b,1,1));
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->dim_c,1,1));
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->dim_d,1,1));
     }
     
-    if(msg.fix_type!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.fix_type,1,1));
+    if(msg->fix_type!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->fix_type,1,1));
     } else {//If the fix type is not available
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.timestamp!=60) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.timestamp,1,1));
+    if(msg->timestamp!=60) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->timestamp,1,1));
     } else {//timestamp not available
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.timestamp<=59) {
-        mxSetFieldByNumber(theStruct,0,14,boolMat2Matlab(&msg.off_pos,1,1));
+    if(msg->timestamp<=59) {
+        mxSetFieldByNumber(theStruct,0,14,boolMat2Matlab(&msg->off_pos,1,1));
     } else {//Off-position indicator is invalid
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.aton_status,1,1));
-    mxSetFieldByNumber(theStruct,0,16,boolMat2Matlab(&msg.raim,1,1));
-    mxSetFieldByNumber(theStruct,0,17,boolMat2Matlab(&msg.virtual_aton,1,1));
-    mxSetFieldByNumber(theStruct,0,18,boolMat2Matlab(&msg.assigned_mode,1,1));
-    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->aton_status,1,1));
+    mxSetFieldByNumber(theStruct,0,16,boolMat2Matlab(&msg->raim,1,1));
+    mxSetFieldByNumber(theStruct,0,17,boolMat2Matlab(&msg->virtual_aton,1,1));
+    mxSetFieldByNumber(theStruct,0,18,boolMat2Matlab(&msg->assigned_mode,1,1));
+    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS22ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_22_ToMatlab(libais::Ais22 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=18;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "chan_a", "chan_b", "txrx_mode", "power_low", "x1",
-    "y1", "x2", "y2", "dest_mmsi_1", "dest_mmsi_2", "chan_a_bandwidth",
+    "mmsi", "spare", "chan_a", "chan_b", "txrx_mode", "power_low", "lon1",
+    "lat1", "lon2", "lat2", "dest_mmsi_1", "dest_mmsi_2", "chan_a_bandwidth",
     "chan_b_bandwidth", "zone_size", "spare2"};
     mxArray *theStruct;
-    
-    Ais22 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
          
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -2846,51 +2362,51 @@ AIS_STATUS AIS22ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "The transitional zone size in nautical miles should be calculated by adding 1 to this parameter value.",//16
             "Not used. Should be set to zero. Reserved for future use"//17
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
 
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.chan_a,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.chan_b,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.txrx_mode,1,1));
-    mxSetFieldByNumber(theStruct,0,7,boolMat2Matlab(&msg.power_low,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->chan_a,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->chan_b,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->txrx_mode,1,1));
+    mxSetFieldByNumber(theStruct,0,7,boolMat2Matlab(&msg->power_low,1,1));
 
-    if(msg.pos_valid) {
-        if(fabs(msg.x1)<=180) {
-            mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.x1,1,1));
+    if(msg->pos_valid) {
+        if(fabs(msg->position1.lng_deg)<=180) {
+            mxSetFieldByNumber(theStruct,0,8,doubleMat2Matlab(&msg->position1.lng_deg,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(fabs(msg.y1)<=90) {
-            mxSetFieldByNumber(theStruct,0,9,floatMat2MatlabDoubles(&msg.y1,1,1));
+        if(fabs(msg->position1.lat_deg)<=90) {
+            mxSetFieldByNumber(theStruct,0,9,doubleMat2Matlab(&msg->position1.lat_deg,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(fabs(msg.x2)<=180) {
-            mxSetFieldByNumber(theStruct,0,10,floatMat2MatlabDoubles(&msg.x2,1,1));
+        if(fabs(msg->position2.lng_deg)<=180) {
+            mxSetFieldByNumber(theStruct,0,10,doubleMat2Matlab(&msg->position2.lng_deg,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(fabs(msg.y2)<=90) {
-            mxSetFieldByNumber(theStruct,0,11,floatMat2MatlabDoubles(&msg.y2,1,1));
+        if(fabs(msg->position2.lat_deg)<=90) {
+            mxSetFieldByNumber(theStruct,0,11,doubleMat2Matlab(&msg->position2.lat_deg,1,1));
         } else {
             mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
         }
@@ -2901,38 +2417,31 @@ AIS_STATUS AIS22ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.dest_valid) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.dest_mmsi_1,1,1));
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.dest_mmsi_2,1,1));
+    if(msg->dest_valid) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->dest_mmsi_1,1,1));
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->dest_mmsi_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.chan_a_bandwidth,1,1));
-    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.chan_b_bandwidth,1,1));
-    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.zone_size,1,1));
-    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->chan_a_bandwidth,1,1));
+    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->chan_b_bandwidth,1,1));
+    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->zone_size,1,1));
+    mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS23ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_23_ToMatlab(libais::Ais23 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=15;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "x1", "y1", "x2", "y2", "station_type",
+    "mmsi", "spare", "lon1", "lat1", "lon2", "lat2", "station_type",
     "type_and_cargo", "spare2", "txrx_mode", "interval_raw", "quiet",
     "spare3"};
     mxArray *theStruct;
-    
-    Ais23 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-             
+ 
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -2953,47 +2462,46 @@ AIS_STATUS AIS23ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
              "0 = default = no quiet time commanded; 1-15 = quiet time of 1 to 15 min",//3
              "Not used. Should be set to zero. Reserved for future use"//14
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
     
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,floatMat2MatlabDoubles(&msg.x1,1,1));
-    mxSetFieldByNumber(theStruct,0,5,floatMat2MatlabDoubles(&msg.y1,1,1));
-    mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x2,1,1));
-    mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y2,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.station_type,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,doubleMat2Matlab(&msg->position1.lng_deg,1,1));
+    mxSetFieldByNumber(theStruct,0,5,doubleMat2Matlab(&msg->position1.lat_deg,1,1));
+    mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position2.lng_deg,1,1));
+    mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position2.lat_deg,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->station_type,1,1));
     
-    if(msg.type_and_cargo!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.type_and_cargo,1,1));
+    if(msg->type_and_cargo!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->type_and_cargo,1,1));
     } else {//No type and cargo information
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }    
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.spare2,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->spare2,1,1));
 
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.txrx_mode,1,1));
-    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.interval_raw,1,1));
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.quiet,1,1));
-    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.spare3,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->txrx_mode,1,1));
+    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->interval_raw,1,1));
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->quiet,1,1));
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->spare3,1,1));
 }
 
-AIS_STATUS AIS24ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+
+void AIS_24_ToMatlab(libais::Ais24 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=13;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -3002,12 +2510,6 @@ AIS_STATUS AIS24ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
     "mmsi", "part_num", "name", "type_and_cargo", "vendor_id", "callsign",
     "dim_a", "dim_b", "dim_c", "dim_d", "spare"};
     mxArray *theStruct;
-
-    Ais24 msg(nmea_payload, pad);
-    
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
                  
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -3027,29 +2529,29 @@ AIS_STATUS AIS24ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Distance from reference point to starboard side of ship (meters) 511m means 511m or longer.",//11
             "Spare. Should be set to zero",//12     
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
 
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
 
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.part_num,1,1));
-    if(msg.part_num==0) {
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->part_num,1,1));
+    if(msg->part_num==0) {
         //Only a Name
-        if(msg.name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-            const char *charString=msg.name.c_str();
+        if(msg->name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+            const char *charString=msg->name.c_str();
             mxSetFieldByNumber(theStruct,0,4,mxCreateCharMatrixFromStrings(1,&charString));
         } else {//If the name has actually been set
             mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
@@ -3063,43 +2565,43 @@ AIS_STATUS AIS24ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
-    } else if(msg.part_num==1) {
+    } else if(msg->part_num==1) {
         //No Name 
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));//No name
         
-        if(msg.type_and_cargo!=0) {
-            mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.type_and_cargo,1,1));
+        if(msg->type_and_cargo!=0) {
+            mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->type_and_cargo,1,1));
         } else {//If the cargo type is not available
             mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.vendor_id.compare("@@@@@@@")!=0) {
-            const char *charString=msg.vendor_id.c_str();
+        if(msg->vendor_id.compare("@@@@@@@")!=0) {
+            const char *charString=msg->vendor_id.c_str();
             mxSetFieldByNumber(theStruct,0,6,mxCreateCharMatrixFromStrings(1,&charString));
         } else {//If no vendor ID is set
             mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.callsign.compare("@@@@@@@")!=0) {
-            const char *charString=msg.callsign.c_str();
+        if(msg->callsign.compare("@@@@@@@")!=0) {
+            const char *charString=msg->callsign.c_str();
             mxSetFieldByNumber(theStruct,0,7,mxCreateCharMatrixFromStrings(1,&charString));
         } else {//If no callsign is set
             mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.dim_a==0&&msg.dim_b==0&&msg.dim_c==0&&msg.dim_d==0) {
+        if(msg->dim_a==0&&msg->dim_b==0&&msg->dim_c==0&&msg->dim_d==0) {
             mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
             mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
             mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
             mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
         } else {//If the dimensions are actually given
-            mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.dim_a,1,1));
-            mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.dim_b,1,1));
-            mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.dim_c,1,1));
-            mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.dim_d,1,1));
+            mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->dim_a,1,1));
+            mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->dim_b,1,1));
+            mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->dim_c,1,1));
+            mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->dim_d,1,1));
         }
         
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.spare,1,1));
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->spare,1,1));
     } else {
         //Undefined part_num value.
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
@@ -3112,11 +2614,9 @@ AIS_STATUS AIS24ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS25ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_25_ToMatlab(libais::Ais25 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=6;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -3124,11 +2624,6 @@ AIS_STATUS AIS25ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "dest_mmsi", "dac", "fi"};
     mxArray *theStruct;
-    
-    Ais25 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
              
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -3141,42 +2636,40 @@ AIS_STATUS AIS25ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Designated area code",//4
             "Function identifier"//5
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
 
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
 
-    if(msg.dest_mmsi_valid) {
-        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.dest_mmsi,1,1));
+    if(msg->dest_mmsi_valid) {
+        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->dest_mmsi,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,3,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.use_app_id) {
-        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    if(msg->use_app_id) {
+        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-
-    return AIS_OK;
 }
 
-AIS_STATUS AIS26ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_26_ToMatlab(libais::Ais26 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=18;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
@@ -3188,11 +2681,6 @@ AIS_STATUS AIS26ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
     "slots_to_allocate", "keep_flag"};
     mxArray *theStruct;
     
-    Ais26 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-             
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -3216,110 +2704,103 @@ AIS_STATUS AIS26ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "(For ITDMA) Number of consecutive slots to allocate.\n0 = 1 slot,\n1 = 2 slots,\n2 = 3 slots,\n3 = 4 slots,\n4 = 5 slots,\n5 = 1 slot; offset = slot increment + 8 192,\n6 = 2 slots; offset = slot increment + 8 192,\n7 = 3 slots; offset = slot increment + 8 192.\nUse of 5 to 7 removes the need for RATDMA broadcast for scheduled transmissions up to 6 min intervals",//16
             "(For ITDMA) Set to TRUE = 1 if the slot remains allocated for one additional frame"//17
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
     
-    if(msg.dest_mmsi_valid) {
-        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.dest_mmsi,1,1));
+    if(msg->dest_mmsi_valid) {
+        mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->dest_mmsi,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,3,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.use_app_id) {
-        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    if(msg->use_app_id) {
+        mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+        mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,4,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.commstate_flag,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.sync_state,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->commstate_flag,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->sync_state,1,1));
 
-    if(msg.slot_timeout_valid) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.slot_timeout,1,1));
+    if(msg->slot_timeout_valid) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->slot_timeout,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.received_stations_valid) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.received_stations,1,1));
+    if(msg->received_stations_valid) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->received_stations,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_number_valid) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.slot_number,1,1));
+    if(msg->slot_number_valid) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->slot_number,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_valid) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_hour,1,1));
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_min,1,1));
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.utc_spare,1,1));
+    if(msg->utc_valid) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_hour,1,1));
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_min,1,1));
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->utc_spare,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_offset_valid) { 
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.slot_offset,1,1));
+    if(msg->slot_offset_valid) { 
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->slot_offset,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slot_increment_valid) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.slot_increment,1,1));
+    if(msg->slot_increment_valid) {
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->slot_increment,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.slots_to_allocate_valid) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.slots_to_allocate,1,1));
+    if(msg->slots_to_allocate_valid) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->slots_to_allocate,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.keep_flag_valid) {
-        mxSetFieldByNumber(theStruct,0,17,boolMat2Matlab(&msg.keep_flag,1,1));
+    if(msg->keep_flag_valid) {
+        mxSetFieldByNumber(theStruct,0,17,boolMat2Matlab(&msg->keep_flag,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS27ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_27_ToMatlab(libais::Ais27 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
     const size_t numberOfFields=12;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "position_accuracy", "raim", "nav_status", "x", "y", "sog",
+    "mmsi", "position_accuracy", "raim", "nav_status", "lon", "lat", "sog",
     "cog", "gnss", "spare"};
     mxArray *theStruct;
-    
-    Ais27 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
                
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -3328,60 +2809,132 @@ AIS_STATUS AIS27ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, co
             "Identifier for Message 27; always 27.",//0
             "Repeat indicator. Always 3",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Position accuracy. 1=high (<=10m), 0=low (>10m), 0=default",//6
-            "Receiver autonomous integrity monitoring (RAIM) flag of electronic position fixing device; 0 = RAIM not in use = default; 1 = RAIM in use.",//14
-            "0=under way using engine\n1=at anchor,\n2=not under command\n3=restricted maneuverability\n4=constrained by her draught\n5=moored\n6=aground\n7=engaged in fishing\n8=under way sailing\n9=reserved for future amendment of navigational status for ships carrying DG, HS, or MP, or IMO hazard or pollutant category C, high speed craft (HSC)\n10=reserved for future amendment of navigational status for ships carrying dangerous goods (DG), harmful substances (HS) or marine pollutants (MP), or IMO hazard or pollutant category A, wing in ground (WIG)\n11=power-driven vessel towing astern (regional use)\n12=power-driven vessel pushing ahead or towing alongside (regional use)\n13 = reserved for future use\n14=AIS-SART (active), MOB-AIS, EPIRB-AIS\n15=undefined = default (also used by AIS-SART, MOB-AIS and EPIRB- AIS under test)",//3
-            "Longitude East in degrees (WGS-84)",//7
-            "Latitude North in degrees (WGS-84)",//8
-            "Speed over ground in knots",//5
+            "Position accuracy. 1=high (<=10m), 0=low (>10m), 0=default",//3
+            "Receiver autonomous integrity monitoring (RAIM) flag of electronic position fixing device; 0 = RAIM not in use = default; 1 = RAIM in use.",//4
+            "0=under way using engine\n1=at anchor,\n2=not under command\n3=restricted maneuverability\n4=constrained by her draught\n5=moored\n6=aground\n7=engaged in fishing\n8=under way sailing\n9=reserved for future amendment of navigational status for ships carrying DG, HS, or MP, or IMO hazard or pollutant category C, high speed craft (HSC)\n10=reserved for future amendment of navigational status for ships carrying dangerous goods (DG), harmful substances (HS) or marine pollutants (MP), or IMO hazard or pollutant category A, wing in ground (WIG)\n11=power-driven vessel towing astern (regional use)\n12=power-driven vessel pushing ahead or towing alongside (regional use)\n13 = reserved for future use\n14=AIS-SART (active), MOB-AIS, EPIRB-AIS\n15=undefined = default (also used by AIS-SART, MOB-AIS and EPIRB- AIS under test)",//5
+            "Longitude East in degrees (WGS-84)",//6
+            "Latitude North in degrees (WGS-84)",//7
+            "Speed over ground in knots",//8
             "Course over ground in degrees East of North",//9
             "1=Reported position latency is less than 5 seconds, 0=Reported position latency is greater than five seconds",//10
             "Set to zero, to preserve byte boundaries"//11
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
 
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
-    mxSetFieldByNumber(theStruct,0,4,boolMat2Matlab(&msg.raim,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.nav_status,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
+    mxSetFieldByNumber(theStruct,0,4,boolMat2Matlab(&msg->raim,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->nav_status,1,1));
     
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//If longitude not available
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.y<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(msg->position.lat_deg<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//If latitude not available
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.sog,1,1));
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.cog,1,1));
-    mxSetFieldByNumber(theStruct,0,10,boolMat2Matlab(&msg.gnss,1,1));
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.spare,1,1));
-   
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->sog,1,1));
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->cog,1,1));
+    mxSetFieldByNumber(theStruct,0,10,boolMat2Matlab(&msg->gnss,1,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->spare,1,1));
 }
 
-//These are all of the functions for AIS6
-AIS_STATUS AIS_FI_6_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+////////////////////////////////////////
+///All of the functions for Message 6///
+////////////////////////////////////////
+void AIS_6_0_0_ToMatlab(libais::Ais6_0_0 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
+// This message format is described at
+//http://www.e-navigation.nl/content/monitoring-aids-navigation
+    const size_t numberOfFields=17;
+    const mwSize dims[2] = {1, 1};
+    //These are the names of all of the fields that will be added to the
+    //Matlab structre array.
+    const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
+    "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
+    "sub_id", "voltage", "current", "dc_power_supply", "light_on",
+    "battery_low","off_position", "spare2"};
+    mxArray *theStruct;
+               
+    //If text descriptions of the fields are desired, then put them into a
+    //structure.
+    if(fieldDescriptions!=NULL) {
+        const char *descriptionStrings[numberOfFields] = {
+            "Identifier for Message 6; always 6.",//0
+            "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
+            "Maritime mobile service identity (MMSI) number of source station",//2
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
+            "MMSI number of destination station",//4
+            "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
+            "Not used. Should be zero. Reserved for future use",//6
+            "Designated area code (DAC)",//7
+            "Function identifier (FI)",//8
+            "Sub-application ID",//9
+            "Voltage Data. Lantern supply voltage data. Max 409.6V",//10
+            "Current Data. Lantern drain current data. Max 102.3A",//11
+            "Power Supply Type. 0=AC; 1=DC",//12
+            "Light Status: 0=Light off; 1=Light on",//13
+            "Battery Status: 0=Good; 1=Low Voltage",//14
+            "Off Position Status: 0=On position; 1=Off position",//15
+            "Set to zero; for future use"//16
+        };
+        unsigned int i;
+
+        *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
+
+        for(i=0;i<numberOfFields;i++) {
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+        }
+    }
+    
+    //Create the Matlab structure array.
+    theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
+    *decodedMessage=theStruct;
+    
+    //Fill all of the elements of the structure
+    //This first set is common to all AIS6 messages.
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
+    
+    //Fields specific to the Ais6_0_0 type.
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->sub_id,1,1));
+    mxSetFieldByNumber(theStruct,0,10,floatMat2MatlabDoubles(&msg->voltage,1,1));
+    mxSetFieldByNumber(theStruct,0,11,floatMat2MatlabDoubles(&msg->current,1,1));
+    mxSetFieldByNumber(theStruct,0,12,boolMat2Matlab(&msg->dc_power_supply,1,1));
+    mxSetFieldByNumber(theStruct,0,13,boolMat2Matlab(&msg->light_on,1,1));
+    mxSetFieldByNumber(theStruct,0,14,boolMat2Matlab(&msg->battery_low,1,1));
+    mxSetFieldByNumber(theStruct,0,15,boolMat2Matlab(&msg->off_position,1,1));
+    
+    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->spare2,1,1));
+}
+
+void AIS_6_1_0_ToMatlab(libais::Ais6_1_0 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in Annex 5 of ITU-R M.1371-5.
     const size_t numberOfFields=13;
     const mwSize dims[2] = {1, 1};
@@ -3391,12 +2944,7 @@ AIS_STATUS AIS_FI_6_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
     "ack_required", "msg_seq", "text", "spare2"};
     mxArray *theStruct;
-    
-    Ais6_1_0 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -3404,7 +2952,7 @@ AIS_STATUS AIS_FI_6_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -3415,44 +2963,42 @@ AIS_STATUS AIS_FI_6_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
              "Text string",//11
              "Not used for data and should be set to zero. The number of bits should be either 0, 2, 4, or 6 to maintain byte boundaries."//12
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
 
     //Fields specific to the Ais6_1_0 type.
-    mxSetFieldByNumber(theStruct,0,9,boolMat2Matlab(&msg.ack_required,1,1));
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.msg_seq,1,1));
+    mxSetFieldByNumber(theStruct,0,9,boolMat2Matlab(&msg->ack_required,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->msg_seq,1,1));
     {
-        const char *charString=msg.text.c_str();
+        const char *charString=msg->text.c_str();
         mxSetFieldByNumber(theStruct,0,11,mxCreateCharMatrixFromStrings(1,&charString));
     }
-    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_FI_6_1_1_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+void AIS_6_1_1_ToMatlab(libais::Ais6_1_1 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in Annex 5 of ITU-R M.1371-1. It is not
 //present in ITU-R M.1371-5
     const size_t numberOfFields=12;
@@ -3463,12 +3009,7 @@ AIS_STATUS AIS_FI_6_1_1_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
     "ack_dac", "msg_seq", "spare2"};
     mxArray *theStruct;
-    
-    Ais6_1_1 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -3476,7 +3017,7 @@ AIS_STATUS AIS_FI_6_1_1_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -3486,41 +3027,38 @@ AIS_STATUS AIS_FI_6_1_1_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Sequence number of the message being acknowledged",//10
             "Not used. Should be zero."//11
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
 
     //Fields specific to the Ais6_1_1 type.
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.ack_dac,1,1));
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.msg_seq,1,1));
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->ack_dac,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->msg_seq,1,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-
-AIS_STATUS AIS_FI_6_1_2_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+void AIS_6_1_2_ToMatlab(libais::Ais6_1_2 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in Annex 5 of ITU-R M.1371-5.
     const size_t numberOfFields=11;
     const mwSize dims[2] = {1, 1};
@@ -3530,11 +3068,6 @@ AIS_STATUS AIS_FI_6_1_2_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
     "req_dac", "req_fi"};
     mxArray *theStruct;
-    
-    Ais6_1_2 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
         
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -3543,7 +3076,7 @@ AIS_STATUS AIS_FI_6_1_2_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -3552,39 +3085,37 @@ AIS_STATUS AIS_FI_6_1_2_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Requested DAC: International application identifier (IAI), regional application identifier (RAI) or test",//9
             "Requested FI",//10
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_2 type.
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.req_dac,1,1));
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.req_fi,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->req_dac,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->req_fi,1,1));
 }
 
-AIS_STATUS AIS_FI_6_1_3_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+void AIS_6_1_3_ToMatlab(libais::Ais6_1_3 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in Annex 5 of ITU-R M.1371-5.
     const size_t numberOfFields=11;
     const mwSize dims[2] = {1, 1};
@@ -3594,11 +3125,6 @@ AIS_STATUS AIS_FI_6_1_3_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
     "req_dac", "spare2"};
     mxArray *theStruct;
-    
-    Ais6_1_3 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
         
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -3607,7 +3133,7 @@ AIS_STATUS AIS_FI_6_1_3_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -3616,39 +3142,37 @@ AIS_STATUS AIS_FI_6_1_3_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Requested DAC: International application identifier (IAI), regional application identifier (RAI) or test",//9
             "Not used, should be set to zero, reserved for future use"//10
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_3 type.
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.req_dac,1,1));
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->req_dac,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_FI_6_1_4_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+void AIS_6_1_4_ToMatlab(libais::Ais6_1_4 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in Annex 5 of ITU-R M.1371-5.
     const size_t numberOfFields=13;
     const mwSize dims[2] = {1, 1};
@@ -3658,12 +3182,7 @@ AIS_STATUS AIS_FI_6_1_4_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
     "ack_dac", "capabilities", "cap_reserved", "spare2"};
     mxArray *theStruct;
-    
-    Ais6_1_4 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-            
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -3682,57 +3201,50 @@ AIS_STATUS AIS_FI_6_1_4_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "A 64X1 array of values reserved for future use.",//11
             "Not used, should be set to zero, reserved for future use"//12
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_4 type.
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.ack_dac,1,1));
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(msg.capabilities,64,1));
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(msg.cap_reserved,64,1));
-    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->ack_dac,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(msg->capabilities.data(),64,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(msg->cap_reserved.data(),64,1));
+    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_FI_6_1_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
-//This message format is described in Annex 5 of ITU-R M.1371-1. It is not
-//present in ITU-R M.1371-5.
-    const size_t numberOfFields=11;
+void AIS_6_1_5_ToMatlab(libais::Ais6_1_5 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
+//This message format is described in Annex 5 of ITU-R M.1371-5.
+    const size_t numberOfFields=15;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
-    "persons", "spare2"};
+    "ack_dac", "ack_fi", "seq_num", "ai_available", "ai_response", "spare"
+    };
     mxArray *theStruct;
 
-    Ais6_1_40 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -3740,52 +3252,54 @@ AIS_STATUS AIS_FI_6_1_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
             "Designated area code (DAC)",//7
             "Function identifier (FI)",//8
-            "Current number of persons on board, including crew members",//9
-            "Not used. Should be set to zero"//10
+            "DAC code of received functional messsage",//9
+            "FI code of received functional message",//10
+            "Text sequence number: Sequence number in the message being acknowledged as properly received; 0=default",//11
+            "AI available: 0=received but AI not available; 1 = AI available",//12
+            "AI response: 0=unable to respond\n1 = reception acknowledged\n2 = response to follow\n3 = able to respond but currently inhibited\n4-7 = spare for future use",//13
+            "Not used, should be set to zero, reserved for future use"//14
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
- 
+
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
-    //Fields specific to the Ais6_1_40 type.
-    if(msg.persons!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.persons,1,1));
-    } else {//The number of persons is not available
-        mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    //Fields specific to the Ais6_1_5 type.
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->ack_dac,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->ack_fi,1,1));
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->seq_num,1,1));
+    mxSetFieldByNumber(theStruct,0,12,boolMat2Matlab(&msg->ai_available,1,1));
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->ai_response,1,1));
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->spare,1,1));
 }
-/*
-AIS_STATUS AIS_FI_6_1_12_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+
+void AIS_6_1_12_ToMatlab(libais::Ais6_1_12 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in IMO circular 236, which was revoked
 //in IMO circular 289 in 2013.
     const size_t numberOfFields=25;
@@ -3800,11 +3314,6 @@ AIS_STATUS AIS_FI_6_1_12_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
     "value", "value_unit", "spare2"};
     mxArray *theStruct;
     
-    Ais6_1_12 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -3812,7 +3321,7 @@ AIS_STATUS AIS_FI_6_1_12_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -3835,131 +3344,129 @@ AIS_STATUS AIS_FI_6_1_12_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Units of quantity of main dangerous good\n1 = in kg\n2 = in tons (10e3 kg)\n3 = in 1000 tons (10e6 kg)",//23
             "Not used. Should be set to zero"//24
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_12 type.
-    if(msg.last_port.compare("@@@@@")!=0) {
-        const char *charString=msg.last_port.c_str();
+    if(msg->last_port.compare("@@@@@")!=0) {
+        const char *charString=msg->last_port.c_str();
         mxSetFieldByNumber(theStruct,0,9,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//If the last part of call is not available.
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.utc_month_dep!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_month_dep,1,1));
+    if(msg->utc_month_dep!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_month_dep,1,1));
     } else {//Month of departure not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_day_dep!=0) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_day_dep,1,1));
+    if(msg->utc_day_dep!=0) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_day_dep,1,1));
     } else {//Day of departure not available
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_hour_dep<24) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_hour_dep,1,1));
+    if(msg->utc_hour_dep<24) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_hour_dep,1,1));
     } else {//Hour of departure not available
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_min_dep<60) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.utc_min_dep,1,1));
+    if(msg->utc_min_dep<60) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->utc_min_dep,1,1));
     } else {//Minute of departure not available
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.next_port.compare("@@@@@")!=0) {
-        const char *charString=msg.next_port.c_str();
+    if(msg->next_port.compare("@@@@@")!=0) {
+        const char *charString=msg->next_port.c_str();
         mxSetFieldByNumber(theStruct,0,14,mxCreateCharMatrixFromStrings(1,&charString)); 
     } else {//Next port of call is not available
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_month_next!=0) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.utc_month_next,1,1));
+    if(msg->utc_month_next!=0) {
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->utc_month_next,1,1));
     } else {//Month of departure not available
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_day_next!=0) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.utc_day_next,1,1));
+    if(msg->utc_day_next!=0) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->utc_day_next,1,1));
     } else {//Day of departure not available
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_hour_next<24) {
-        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.utc_hour_next,1,1));
+    if(msg->utc_hour_next<24) {
+        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->utc_hour_next,1,1));
     } else {//Hour of departure not available
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_min_next<60) {
-        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.utc_min_next,1,1));
+    if(msg->utc_min_next<60) {
+        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->utc_min_next,1,1));
     } else {//Minute of departure not available
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.main_danger.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.main_danger.c_str();
+    if(msg->main_danger.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->main_danger.c_str();
         mxSetFieldByNumber(theStruct,0,19,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//Main dangerous good name not available
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.imo_cat.compare("@@@@@")!=0) {
-        const char *charString=msg.imo_cat.c_str();
+    if(msg->imo_cat.compare("@@@@@")!=0) {
+        const char *charString=msg->imo_cat.c_str();
         mxSetFieldByNumber(theStruct,0,20,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//IMD Category of main dangerous good not available
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.un!=0) {
-        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.un,1,1));
+    if(msg->un!=0) {
+        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->un,1,1));
     } else {//UN Number of main dangeroud good not available
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.value!=0) {
-        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.value,1,1));
+    if(msg->value!=0) {
+        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->value,1,1));
     } else {//Quantity of main dangerous good not available
         mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.value_unit!=0) {
-        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg.value_unit,1,1));
+    if(msg->value_unit!=0) {
+        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg->value_unit,1,1));
     } else {//Units of quantity of main dangeroud good not available
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.spare2,1,1));
+    mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->spare2,1,1));
+}
 
-    return AIS_OK;
-}*/
-
-AIS_STATUS AIS_FI_6_1_14_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+void AIS_6_1_14_ToMatlab(libais::Ais6_1_14 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in IMO circular 236, which was revoked
 //in IMO circular 289 in 2013.
     const size_t numberOfFields=12;
@@ -3971,16 +3478,11 @@ AIS_STATUS AIS_FI_6_1_14_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
     "utc_month", "utc_day", "windows"};
     const size_t numberOfWindowFields=8;
     mwSize windowDims[2];
-    const char *windowFieldNames[numberOfWindowFields] = {"x", "y", "utc_hour_from",
+    const char *windowFieldNames[numberOfWindowFields] = {"lon", "lat", "utc_hour_from",
     "utc_min_from", "utc_hour_to", "utc_min_to", "cur_dir", "cur_speed"};
     mxArray *theStruct, *windowArray;
     size_t curWindow;
-    
-    Ais6_1_14 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-        
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -3988,7 +3490,7 @@ AIS_STATUS AIS_FI_6_1_14_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -3998,96 +3500,94 @@ AIS_STATUS AIS_FI_6_1_14_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "UTC Day (1-31)",//10
             "An array of tidal windows at different times consisting of components:\nLongitude East in degrees (WGS-84)\nLatitude North in degrees (WGS-84)\nUTC hours from (0-23)\nUTC minutes from (0-59)\nUTC hours to (0-23)\nUTC minutes to (0-59)\nDirection of the current in degrees East of North\nSpeed of the current in knots (0-12.6)"//11
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_14 type.
-    if(msg.utc_month!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.utc_month,1,1));
+    if(msg->utc_month!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->utc_month,1,1));
     } else {//If UTC month is not available
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_day!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_day,1,1));
+    if(msg->utc_day!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_day,1,1));
     } else {//If UTC day is not available.
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    windowDims[0]=msg.windows.size();
+    windowDims[0]=msg->windows.size();
     windowDims[1]=1;
     windowArray=mxCreateStructArray(2, dims, numberOfWindowFields, windowFieldNames);
     mxSetFieldByNumber(theStruct,0,11,windowArray);
 
-    for (curWindow = 0; curWindow < msg.windows.size(); curWindow++) {
-        if(fabs(msg.windows[curWindow].x)<=180) {
-            mxSetFieldByNumber(windowArray,curWindow,0,floatMat2MatlabDoubles(&msg.windows[curWindow].x,1,1));
+    for (curWindow = 0; curWindow < msg->windows.size(); curWindow++) {
+        if(fabs(msg->windows[curWindow].position.lng_deg)<=180) {
+            mxSetFieldByNumber(windowArray,curWindow,0,doubleMat2Matlab(&msg->windows[curWindow].position.lng_deg,1,1));
         } else {//Longitude is not available
             mxSetFieldByNumber(windowArray,curWindow,0,mxCreateDoubleMatrix(0,0,mxREAL));
         }
-        if(fabs(msg.windows[curWindow].y)<=90) {
-            mxSetFieldByNumber(windowArray,curWindow,1,floatMat2MatlabDoubles(&msg.windows[curWindow].y,1,1));
+        if(fabs(msg->windows[curWindow].position.lat_deg)<=90) {
+            mxSetFieldByNumber(windowArray,curWindow,1,doubleMat2Matlab(&msg->windows[curWindow].position.lat_deg,1,1));
         } else {//Latitude is not available
             mxSetFieldByNumber(windowArray,curWindow,1,mxCreateDoubleMatrix(0,0,mxREAL));
         }
-        if(msg.windows[curWindow].utc_hour_from<24) {
-            mxSetFieldByNumber(windowArray,curWindow,2,intMat2MatlabDoubles(&msg.windows[curWindow].utc_hour_from,1,1));
+        if(msg->windows[curWindow].utc_hour_from<24) {
+            mxSetFieldByNumber(windowArray,curWindow,2,intMat2MatlabDoubles(&msg->windows[curWindow].utc_hour_from,1,1));
         } else {// Hour from is not available
             mxSetFieldByNumber(windowArray,curWindow,2,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.windows[curWindow].utc_min_from<60) {
-            mxSetFieldByNumber(windowArray,curWindow,3,intMat2MatlabDoubles(&msg.windows[curWindow].utc_min_from,1,1));
+        if(msg->windows[curWindow].utc_min_from<60) {
+            mxSetFieldByNumber(windowArray,curWindow,3,intMat2MatlabDoubles(&msg->windows[curWindow].utc_min_from,1,1));
         } else {//Minute from is not avaiable
             mxSetFieldByNumber(windowArray,curWindow,3,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.windows[curWindow].utc_hour_to<24) {
-            mxSetFieldByNumber(windowArray,curWindow,4,intMat2MatlabDoubles(&msg.windows[curWindow].utc_hour_to,1,1));
+        if(msg->windows[curWindow].utc_hour_to<24) {
+            mxSetFieldByNumber(windowArray,curWindow,4,intMat2MatlabDoubles(&msg->windows[curWindow].utc_hour_to,1,1));
         } else {// Hour from is not available
             mxSetFieldByNumber(windowArray,curWindow,4,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.windows[curWindow].utc_min_to<60) {
-            mxSetFieldByNumber(windowArray,curWindow,5,intMat2MatlabDoubles(&msg.windows[curWindow].utc_min_to,1,1));
+        if(msg->windows[curWindow].utc_min_to<60) {
+            mxSetFieldByNumber(windowArray,curWindow,5,intMat2MatlabDoubles(&msg->windows[curWindow].utc_min_to,1,1));
         } else {//Minute from is not avaiable
             mxSetFieldByNumber(windowArray,curWindow,5,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.windows[curWindow].cur_dir<360) {
-            mxSetFieldByNumber(windowArray,curWindow,6,intMat2MatlabDoubles(&msg.windows[curWindow].cur_dir,1,1));
+        if(msg->windows[curWindow].cur_dir<360) {
+            mxSetFieldByNumber(windowArray,curWindow,6,intMat2MatlabDoubles(&msg->windows[curWindow].cur_dir,1,1));
         } else {//Direction of the current not available
             mxSetFieldByNumber(windowArray,curWindow,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.windows[curWindow].cur_speed!=12.7) {
-            mxSetFieldByNumber(windowArray,curWindow,7,floatMat2MatlabDoubles(&msg.windows[curWindow].cur_speed,1,1));
+        if(msg->windows[curWindow].cur_speed!=12.7) {
+            mxSetFieldByNumber(windowArray,curWindow,7,floatMat2MatlabDoubles(&msg->windows[curWindow].cur_speed,1,1));
         } else {//Speed of the current not available
             mxSetFieldByNumber(windowArray,curWindow,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS_FI_6_1_18_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad){
+void AIS_6_1_18_ToMatlab(libais::Ais6_1_18 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in IMO circular 289
     const size_t numberOfFields=19;
     const mwSize dims[2] = {1, 1};
@@ -4096,13 +3596,8 @@ AIS_STATUS AIS_FI_6_1_18_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
     "link_id", "utc_month", "utc_day", "utc_hour", "utc_min", "port_berth",
-    "dest", "x", "y", "spare2"};
+    "dest", "lon", "lat", "spare2"};
     mxArray *theStruct;
-    
-    Ais6_1_18 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -4111,7 +3606,7 @@ AIS_STATUS AIS_FI_6_1_18_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -4127,92 +3622,90 @@ AIS_STATUS AIS_FI_6_1_18_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Longitude East in degrees (WGS-84)",//17
             "Latitude North in degrees (WGS-84)",//18
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_18 type.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.link_id,1,1));
+    if(msg->link_id!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->link_id,1,1));
     } else {//No link ID
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_month!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_month,1,1));
+    if(msg->utc_month!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_month,1,1));
     } else {//If UTC month is not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_day!=0) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_day,1,1));
+    if(msg->utc_day!=0) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_day,1,1));
     } else {//If UTC day is not available.
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_hour<24) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_hour,1,1));
+    if(msg->utc_hour<24) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_hour,1,1));
     } else {//If UTC hour not available
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_min<60) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.utc_min,1,1));
+    if(msg->utc_min<60) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->utc_min,1,1));
     } else {//If UTC minute not available
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.port_berth.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.port_berth.c_str();
+    if(msg->port_berth.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->port_berth.c_str();
         mxSetFieldByNumber(theStruct,0,14,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//if name of port and berth is not available
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.dest.compare("@@@@@")!=0) {
-        const char *charString=msg.dest.c_str();
+    if(msg->dest.compare("@@@@@")!=0) {
+        const char *charString=msg->dest.c_str();
         mxSetFieldByNumber(theStruct,0,15,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//No UN destination locode avaiable
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,16,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,16,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//No longitude avaiable
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,17,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//No latitude available
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.spare2[1],2,1));
-    
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->spare2[1],2,1));
 }
 
-AIS_STATUS AIS_FI_6_1_20_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad){
+void AIS_6_1_20_ToMatlab(libais::Ais6_1_20 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in IMO circular 289
     const size_t numberOfFields=21;
     const mwSize dims[2] = {1, 1};
@@ -4220,15 +3713,10 @@ AIS_STATUS AIS_FI_6_1_20_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
-    "link_id", "length", "depth", "position", "utc_month", "utc_day",
-    "utc_hour", "utc_min", "services", "name", "x", "y"};
+    "link_id", "length", "depth", "mooring_position", "utc_month", "utc_day",
+    "utc_hour", "utc_min", "services", "name", "lon", "lat"};
     mxArray *theStruct;
-    
-    Ais6_1_20 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-      
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -4236,7 +3724,7 @@ AIS_STATUS AIS_FI_6_1_20_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -4255,108 +3743,106 @@ AIS_STATUS AIS_FI_6_1_20_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Central longitude East of the berth in degrees (WGS-84)",//19
             "Central latitude North of the berth in degrees (WGS-84)",//20        
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_20 type.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.link_id,1,1));
+    if(msg->link_id!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->link_id,1,1));
     } else {//No link ID
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.length!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.length,1,1));
+    if(msg->length!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->length,1,1));
     } else {//No berth length
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.depth!=0) {
-        mxSetFieldByNumber(theStruct,0,11,floatMat2MatlabDoubles(&msg.depth,1,1));
+    if(msg->depth!=0) {
+        mxSetFieldByNumber(theStruct,0,11,floatMat2MatlabDoubles(&msg->depth,1,1));
     } else {//No berth depth
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.position!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.position,1,1));
+    if(msg->mooring_position!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->mooring_position,1,1));
     } else {//No mooring position specified
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_month!=0) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.utc_month,1,1));
+    if(msg->utc_month!=0) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->utc_month,1,1));
     } else {//If UTC month is not available
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_day!=0) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.utc_day,1,1));
+    if(msg->utc_day!=0) {
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->utc_day,1,1));
     } else {//If UTC day is not available.
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_hour<24) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.utc_hour,1,1));
+    if(msg->utc_hour<24) {
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->utc_hour,1,1));
     } else {//If UTC hour not available
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.utc_min<60) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.utc_min,1,1));
+    if(msg->utc_min<60) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->utc_min,1,1));
     } else {//If UTC minute not available
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    if(msg.services_known) {
-        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(msg.services,26,1));
+    if(msg->services_known) {
+        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(msg->services.data(),26,1));
     } else {
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.name.c_str();
+    if(msg->name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->name.c_str();
         mxSetFieldByNumber(theStruct,0,18,mxCreateCharMatrixFromStrings(1,&charString));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,19,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,19,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//No longitude available
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(fabs(msg.y)<=90){
-        mxSetFieldByNumber(theStruct,0,20,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90){
+        mxSetFieldByNumber(theStruct,0,20,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//No latitude available
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-
-   return AIS_OK;
 }
 
-AIS_STATUS AIS_FI_6_1_25_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad){
+void AIS_6_1_25_ToMatlab(libais::Ais6_1_25 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in IMO circular 289
     const size_t numberOfFields=12;
     const mwSize dims[2] = {1, 1};
@@ -4371,11 +3857,6 @@ AIS_STATUS AIS_FI_6_1_25_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
     "imdg", "spare", "un", "bc", "marpol_oil", "marpol_cat"};
     mxArray *theStruct, *cargoArray;
     size_t curCargo;
-    
-    Ais6_1_25 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
          
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -4384,7 +3865,7 @@ AIS_STATUS AIS_FI_6_1_25_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
@@ -4403,16 +3884,16 @@ AIS_STATUS AIS_FI_6_1_25_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "Marpol Oil Type:\n1 = asphalt solutions\n2 = oils\n3 = distillates\n4 = gas oil\n5 = gasoline blending stocks\n6 = gasoline\n7 = jet fuels\n8 = naphtha\n9 - 15 (reserved for future use)",//5
             "Marpol category:\n1 = Category X\n2 = Category Y\n3 = Category Z\n4 = other substances\n5 - 7 (reserved for future use)"//6
         };
-        int i;
+        unsigned int i;
         mxArray *cargoDescripStruct;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
         for(i=0;i<(numberOfFields-1);i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
         cargoDescripStruct=mxCreateStructArray(2, dims, numberOfCargoFields, cargoFieldNames);
         for(i=0;i<(numberOfCargoFields-1);i++) {
-            mxSetFieldByNumber(cargoDescripStruct,0,i,mxCreateCharMatrixFromStrings(1,&cargoDescriptionStrings[i]));
+            mxSetFieldByNumber(cargoDescripStruct,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&cargoDescriptionStrings[i]));
         }
         //Set the descriptions for the cargo fields
         mxSetFieldByNumber(*fieldDescriptions,0,(numberOfFields-1),cargoDescripStruct);
@@ -4420,292 +3901,83 @@ AIS_STATUS AIS_FI_6_1_25_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_25 type.
-    if(msg.amount_unit!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.amount_unit,1,1));
+    if(msg->amount_unit!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->amount_unit,1,1));
     } else {//Dangerous cargo units not available
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.amount!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.amount,1,1));
+    if(msg->amount!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->amount,1,1));
     } else {//Dangerous cargo amount not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    cargoDims[0]=msg.cargos.size();
+    cargoDims[0]=msg->cargos.size();
     cargoDims[1]=1;
     cargoArray=mxCreateStructArray(2, dims, numberOfCargoFields, cargoFieldNames);
     mxSetFieldByNumber(theStruct,0,11,cargoArray);
     
-    for (curCargo= 0; curCargo < msg.cargos.size(); curCargo++) {
-        if(msg.cargos[curCargo].code_type!=0) {
-            mxSetFieldByNumber(cargoArray,curCargo,0,intMat2MatlabDoubles(&msg.cargos[curCargo].code_type,1,1));
+    for (curCargo= 0; curCargo < msg->cargos.size(); curCargo++) {
+        if(msg->cargos[curCargo].code_type!=0) {
+            mxSetFieldByNumber(cargoArray,curCargo,0,intMat2MatlabDoubles(&msg->cargos[curCargo].code_type,1,1));
         } else {//Code type not available
             mxSetFieldByNumber(cargoArray,curCargo,0,mxCreateDoubleMatrix(0,0,mxREAL));
         }
 
-        if(msg.cargos[curCargo].imdg_valid&&msg.cargos[curCargo].imdg!=0) {
-            mxSetFieldByNumber(cargoArray,curCargo,1,intMat2MatlabDoubles(&msg.cargos[curCargo].imdg,1,1));
+        if(msg->cargos[curCargo].imdg_valid&&msg->cargos[curCargo].imdg!=0) {
+            mxSetFieldByNumber(cargoArray,curCargo,1,intMat2MatlabDoubles(&msg->cargos[curCargo].imdg,1,1));
         } else {
             mxSetFieldByNumber(cargoArray,curCargo,1,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.cargos[curCargo].spare_valid) {
-            mxSetFieldByNumber(cargoArray,curCargo,2,intMat2MatlabDoubles(&msg.cargos[curCargo].spare,1,1));
+        if(msg->cargos[curCargo].spare_valid) {
+            mxSetFieldByNumber(cargoArray,curCargo,2,intMat2MatlabDoubles(&msg->cargos[curCargo].spare,1,1));
         } else {
             mxSetFieldByNumber(cargoArray,curCargo,2,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.cargos[curCargo].un_valid&&msg.cargos[curCargo].un!=0) {
-            mxSetFieldByNumber(cargoArray,curCargo,3,intMat2MatlabDoubles(&msg.cargos[curCargo].un,1,1));
+        if(msg->cargos[curCargo].un_valid&&msg->cargos[curCargo].un!=0) {
+            mxSetFieldByNumber(cargoArray,curCargo,3,intMat2MatlabDoubles(&msg->cargos[curCargo].un,1,1));
         } else {
             mxSetFieldByNumber(cargoArray,curCargo,3,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.cargos[curCargo].bc_valid&&msg.cargos[curCargo].bc!=0) {
-            mxSetFieldByNumber(cargoArray,curCargo,4,intMat2MatlabDoubles(&msg.cargos[curCargo].bc,1,1));
+        if(msg->cargos[curCargo].bc_valid&&msg->cargos[curCargo].bc!=0) {
+            mxSetFieldByNumber(cargoArray,curCargo,4,intMat2MatlabDoubles(&msg->cargos[curCargo].bc,1,1));
         } else {
             mxSetFieldByNumber(cargoArray,curCargo,4,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.cargos[curCargo].marpol_oil_valid&&msg.cargos[curCargo].marpol_oil!=0) {
-            mxSetFieldByNumber(cargoArray,curCargo,5,intMat2MatlabDoubles(&msg.cargos[curCargo].marpol_oil,1,1));
+        if(msg->cargos[curCargo].marpol_oil_valid&&msg->cargos[curCargo].marpol_oil!=0) {
+            mxSetFieldByNumber(cargoArray,curCargo,5,intMat2MatlabDoubles(&msg->cargos[curCargo].marpol_oil,1,1));
         } else {
             mxSetFieldByNumber(cargoArray,curCargo,5,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.cargos[curCargo].marpol_cat_valid&&msg.cargos[curCargo].marpol_cat!=0) {
-            mxSetFieldByNumber(cargoArray,curCargo,6,intMat2MatlabDoubles(&msg.cargos[curCargo].marpol_cat,1,1));
+        if(msg->cargos[curCargo].marpol_cat_valid&&msg->cargos[curCargo].marpol_cat!=0) {
+            mxSetFieldByNumber(cargoArray,curCargo,6,intMat2MatlabDoubles(&msg->cargos[curCargo].marpol_cat,1,1));
         } else {
             mxSetFieldByNumber(cargoArray,curCargo,6,mxCreateDoubleMatrix(0,0,mxREAL));
         }
     }
-
-    return AIS_OK;
 }
-/*
-AIS_STATUS AIS_FI_6_1_28_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad){
-    //This message format is described in IMO circular 289
-    const size_t numberOfFields=18;
-    const mwSize dims[2] = {1, 1};
-    //These are the names of all of the fields that will be added to the
-    //Matlab structre array.
-    const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
-    "link_id", "sender_type", "route_type", "utc_month_start",
-    "utc_day_start", "utc_hour_start", "utc_min_start", "duration",
-    "waypoints"};
-    const size_t numberOfWaypointFields=2;
-    mwSize waypointDims[2];
-    const char *waypointFieldNames[numberOfWaypointFields] = {"x", "y"};
-    mxArray *theStruct, *waypointArray;
-    size_t curWaypoint;
-    
-    Ais6_1_28 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-  
-    //If text descriptions of the fields are desired, then put them into a
-    //structure.
-    if(fieldDescriptions!=NULL) {
-        const char *descriptionStrings[numberOfFields] = {
-            "Identifier for Message 6; always 6.",//0
-            "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
-            "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
-            "MMSI number of destination station",//4
-            "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
-            "Not used. Should be zero. Reserved for future use",//6
-            "Designated area code (DAC)",//7
-            "Function identifier (FI)",//8
-            "A source specific running number (1-1023), unique across all binary messages equipped with Message Linkage ID. Used to link additional information to the message by a Text Description message. The Message Linkage ID and the first six digits of the source MMSI uniquely identify the sent message.",//9
-            "0 = ship = default, 1 = authority, 2 - 7 (reserved for future use)",//10
-            "Route type\n1 = mandatory route\n2 = recommended route\n3 = alternative route\n4 = recommended route through ice\n5 = ship route plan\n6 - 30 (reserved for future use)\n31 = cancellation (cancel route as identified by Message Linkage ID)",//11
-            "UTC start month (1-12)",//12
-            "UTC start day (1-31)",//13
-            "UTC start hour (0-23)",//14
-            "UTC start minute (0-59)",//15
-            "Minutes until end of validity of the route from start date and time. 0= cancel route",//16
-            "An array containing WGS-84 longitude East and latitude North coordinates in degrees of the waypoints"//17
-        };
-        int i;
 
-        *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-
-        for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
-        }
-    }
-
-    //Create the Matlab structure array.
-    theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
-    
-    //Fill all of the elements of the structure
-    //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
-
-    //Fields specific to the Ais6_1_28 type.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.link_id,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.sender_type,1,1));
-    if(msg.route_type!=0) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.route_type,1,1));
-    } else {//No route type available
-        mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    
-    if(msg.utc_month_start!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_month_start,1,1));
-    } else {//Month of departure not available
-        mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    
-    if(msg.utc_day_start!=0) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.utc_day_start,1,1));
-    } else {//Day of departure not available
-        mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    
-    if(msg.utc_hour_start<24) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.utc_hour_start,1,1));
-    } else {//Hour of departure not available
-        mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    
-    if(msg.utc_min_start<60) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.utc_min_start,1,1));
-    } else {//Minute of departure not available
-        mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    
-    if(msg.duration!=262143) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.duration,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-
-    waypointDims[0]=msg.waypoints.size();
-    waypointDims[1]=1;
-    waypointArray=mxCreateStructArray(2, waypointDims, numberOfWaypointFields, waypointFieldNames);
-    mxSetFieldByNumber(theStruct,0,17,waypointArray);
-
-    for(curWaypoint= 0; curWaypoint < msg.waypoints.size(); curWaypoint++) {
-        if(fabs(msg.waypoints[curWaypoint].x)<=180) {
-            mxSetFieldByNumber(waypointArray,curWaypoint,0,floatMat2MatlabDoubles(&msg.waypoints[curWaypoint].x,1,1));
-        } else {//Longitude coordinate not available
-            mxSetFieldByNumber(waypointArray,curWaypoint,0,mxCreateDoubleMatrix(0,0,mxREAL));
-        }
-        if(fabs(msg.waypoints[curWaypoint].y)<=90){
-            mxSetFieldByNumber(waypointArray,curWaypoint,1,floatMat2MatlabDoubles(&msg.waypoints[curWaypoint].y,1,1));
-        } else {//Latitude coordinate not available
-            mxSetFieldByNumber(waypointArray,curWaypoint,1,mxCreateDoubleMatrix(0,0,mxREAL));
-        }
-    }
-
-    return AIS_OK;
-}
-*/
-/*
-AIS_STATUS AIS_FI_6_1_30_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
-//This message format is described in IMO circular 289
-    const size_t numberOfFields=11;
-    const mwSize dims[2] = {1, 1};
-    //These are the names of all of the fields that will be added to the
-    //Matlab structre array.
-    const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
-    "link_id", "text"};
-    mxArray *theStruct;
-    
-    Ais6_1_30 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-      
-    //If text descriptions of the fields are desired, then put them into a
-    //structure.
-    if(fieldDescriptions!=NULL) {
-        const char *descriptionStrings[numberOfFields] = {
-            "Identifier for Message 6; always 6.",//0
-            "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
-            "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
-            "MMSI number of destination station",//4
-            "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
-            "Not used. Should be zero. Reserved for future use",//6
-            "Designated area code (DAC)",//7
-            "Function identifier (FI)",//8
-            "Message link ID used to link the text description message with a main message. The connection ID and source MMSI MID uniquely identifies the main message. (1-1023)",
-            "Test string, often from IMO Standard Marine Communication Phrases (SMCP)"//10
-        };
-        int i;
-
-        *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-
-        for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
-        }
-    }
-    
-    //Create the Matlab structure array.
-    theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
-    
-    //Fill all of the elements of the structure
-    //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
-    
-    //Fields specific to the Ais6_1_30 type.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.link_id,1,1));
-    } else {//If there is no link ID
-        mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
-    }
-    {
-        const char *charString=msg.text.c_str();
-        mxSetFieldByNumber(theStruct,0,10,mxCreateCharMatrixFromStrings(1,&charString));
-    }
-
-    return AIS_OK;
-}
-*/
-
-AIS_STATUS AIS_FI_6_1_32_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad){
+void AIS_6_1_32_ToMatlab(libais::Ais6_1_32 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
 //This message format is described in IMO circular 289
     const size_t numberOfFields=12;
     const mwSize dims[2] = {1, 1};
@@ -4716,15 +3988,10 @@ AIS_STATUS AIS_FI_6_1_32_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
     "utc_month", "utc_day", "windows"};
     const size_t numberOfWindowFields=8;
     mwSize windowDims[2];
-    const char *windowFieldNames[numberOfWindowFields] = {"x", "y", "from_utc_hour",
+    const char *windowFieldNames[numberOfWindowFields] = {"lon", "lat", "from_utc_hour",
     "from_utc_min", "to_utc_hour", "to_utc_min", "cur_dir", "cur_speed"};
     mxArray *theStruct, *windowArray;
     size_t curWindow;
-    
-    Ais6_1_32 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
               
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -4743,117 +4010,111 @@ AIS_STATUS AIS_FI_6_1_32_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescrip
             "UTC Day (1-31)",//10
             "An array of tidal windows at different times consisting of components:\nLongitude East in degrees (WGS-84)\nLatitude North in degrees (WGS-84)\nUTC hours from (0-23)\nUTC minutes from (0-59)\nUTC hours to (0-23)\nUTC minutes to (0-59)\nDirection of the current in degrees East of North\nSpeed of the current in knots, 25.1 means 25.1 knots or greater"//11
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure
     //This first set is common to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais6_1_32 type.
-    if(msg.utc_month!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.utc_month,1,1));
+    if(msg->utc_month!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->utc_month,1,1));
     } else {//No UTC month given
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.utc_day!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_day,1,1));
+    if(msg->utc_day!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_day,1,1));
     } else {//No UTC day given
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
 
-    windowDims[0]=msg.windows.size();
+    windowDims[0]=msg->windows.size();
     windowDims[1]=1;
     windowArray=mxCreateStructArray(2, dims, numberOfWindowFields, windowFieldNames);
     mxSetFieldByNumber(theStruct,0,11,windowArray);
 
-    for (curWindow = 0; curWindow < msg.windows.size(); curWindow++) {
-        if(fabs(msg.windows[curWindow].x)<=180) {
-            mxSetFieldByNumber(windowArray,curWindow,0,floatMat2MatlabDoubles(&msg.windows[curWindow].x,1,1));
+    for (curWindow = 0; curWindow < msg->windows.size(); curWindow++) {
+        if(fabs(msg->windows[curWindow].position.lng_deg)<=180) {
+            mxSetFieldByNumber(windowArray,curWindow,0,doubleMat2Matlab(&msg->windows[curWindow].position.lng_deg,1,1));
         } else {//No longitude available
             mxSetFieldByNumber(windowArray,curWindow,0,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(fabs(msg.windows[curWindow].y)<=90) {
-            mxSetFieldByNumber(windowArray,curWindow,1,floatMat2MatlabDoubles(&msg.windows[curWindow].y,1,1));
+        if(fabs(msg->windows[curWindow].position.lat_deg)<=90) {
+            mxSetFieldByNumber(windowArray,curWindow,1,doubleMat2Matlab(&msg->windows[curWindow].position.lat_deg,1,1));
         } else {//No latitude available
             mxSetFieldByNumber(windowArray,curWindow,1,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.windows[curWindow].from_utc_hour<24) {
-            mxSetFieldByNumber(windowArray,curWindow,2,intMat2MatlabDoubles(&msg.windows[curWindow].from_utc_hour,1,1));
+        if(msg->windows[curWindow].from_utc_hour<24) {
+            mxSetFieldByNumber(windowArray,curWindow,2,intMat2MatlabDoubles(&msg->windows[curWindow].from_utc_hour,1,1));
         } else {//No UTC hour from available
             mxSetFieldByNumber(windowArray,curWindow,2,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.windows[curWindow].from_utc_min<60) {
-            mxSetFieldByNumber(windowArray,curWindow,3,intMat2MatlabDoubles(&msg.windows[curWindow].from_utc_min,1,1));
+        if(msg->windows[curWindow].from_utc_min<60) {
+            mxSetFieldByNumber(windowArray,curWindow,3,intMat2MatlabDoubles(&msg->windows[curWindow].from_utc_min,1,1));
         } else {//No UTC minutes from available
             mxSetFieldByNumber(windowArray,curWindow,3,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.windows[curWindow].to_utc_hour<24) {
-            mxSetFieldByNumber(windowArray,curWindow,4,intMat2MatlabDoubles(&msg.windows[curWindow].to_utc_hour,1,1));
+        if(msg->windows[curWindow].to_utc_hour<24) {
+            mxSetFieldByNumber(windowArray,curWindow,4,intMat2MatlabDoubles(&msg->windows[curWindow].to_utc_hour,1,1));
         } else {//No UTC hour to available
             mxSetFieldByNumber(windowArray,curWindow,4,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.windows[curWindow].to_utc_min<60) {
-            mxSetFieldByNumber(windowArray,curWindow,5,intMat2MatlabDoubles(&msg.windows[curWindow].to_utc_min,1,1));
+        if(msg->windows[curWindow].to_utc_min<60) {
+            mxSetFieldByNumber(windowArray,curWindow,5,intMat2MatlabDoubles(&msg->windows[curWindow].to_utc_min,1,1));
         } else {//No UTC minutes to avaiable
             mxSetFieldByNumber(windowArray,curWindow,5,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.windows[curWindow].cur_dir<360) {
-            mxSetFieldByNumber(windowArray,curWindow,6,intMat2MatlabDoubles(&msg.windows[curWindow].cur_dir,1,1));
+        if(msg->windows[curWindow].cur_dir<360) {
+            mxSetFieldByNumber(windowArray,curWindow,6,intMat2MatlabDoubles(&msg->windows[curWindow].cur_dir,1,1));
         } else {//No direction of the current avaiable
             mxSetFieldByNumber(windowArray,curWindow,6,mxCreateDoubleMatrix(0,0,mxREAL));
         }
         
-        if(msg.windows[curWindow].cur_speed!=255) {
-            mxSetFieldByNumber(windowArray,curWindow,7,floatMat2MatlabDoubles(&msg.windows[curWindow].cur_speed,1,1));
+        if(msg->windows[curWindow].cur_speed!=255) {
+            mxSetFieldByNumber(windowArray,curWindow,7,floatMat2MatlabDoubles(&msg->windows[curWindow].cur_speed,1,1));
         } else {//No current speed available
             mxSetFieldByNumber(windowArray,curWindow,7,mxCreateDoubleMatrix(0,0,mxREAL));
         }
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS6ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad){
-//This is if the specific subtype could not be identified. The fields are
-//those common to all AIS 6 messages as described in ITU-R M.1371-5.
-    const size_t numberOfFields=9;
+void AIS_6_1_40_ToMatlab(libais::Ais6_1_40 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions){
+//This message format is described in Annex 5 of ITU-R M.1371-1. It is not
+//present in ITU-R M.1371-5.
+    const size_t numberOfFields=11;
     const mwSize dims[2] = {1, 1};
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi"};
+    "mmsi", "seq", "mmsi_dest", "retransmit", "spare", "dac", "fi",
+    "persons", "spare2"};
     mxArray *theStruct;
-    
-    Ais6 msg(nmea_payload, pad);
-    if (msg.had_error()&&msg.get_error()!=AIS_UNINITIALIZED) {
-        return msg.get_error();
-    }
-                
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -4861,42 +4122,53 @@ AIS_STATUS AIS6ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,cons
             "Identifier for Message 6; always 6.",//0
             "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
             "Maritime mobile service identity (MMSI) number of source station",//2
-            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",
+            "Sequence number (0-3); refer to Section 5.3.1 of Annex 2 of ITU-R M.1371-5",//3
             "MMSI number of destination station",//4
             "Retransmit flag should be set upon retransmission: 0 = no retransmission = default; 1 = retransmitted",//5
             "Not used. Should be zero. Reserved for future use",//6
             "Designated area code (DAC)",//7
             "Function identifier (FI)",//8
+            "Current number of persons on board, including crew members",//9
+            "Not used. Should be set to zero"//10
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-
+ 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
-    //Fill all of the elements of the structure with the set that is common
-    //to all AIS6 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.seq,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.mmsi_dest,1,1));
-    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg.retransmit,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.fi,1,1));
+    //Fill all of the elements of the structure
+    //This first set is common to all AIS6 messages.
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->seq,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->mmsi_dest,1,1));
+    mxSetFieldByNumber(theStruct,0,5,boolMat2Matlab(&msg->retransmit,1,1));
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->fi,1,1));
     
-    return AIS_OK;
+    //Fields specific to the Ais6_1_40 type.
+    if(msg->persons!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->persons,1,1));
+    } else {//The number of persons is not available
+        mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
+    }
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_8_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+////////////////////////////////////////
+///All of the functions for Message 8///
+////////////////////////////////////////
+void AIS_8_1_0_ToMatlab(libais::Ais8_1_0 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message is described in Annex 5 of ITU-R M.1371-5.
     const size_t numberOfFields=10;
     const mwSize dims[2] = {1, 1};
@@ -4906,11 +4178,6 @@ AIS_STATUS AIS_8_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescription
     "mmsi", "spare", "dac", "fi", "ack_required", "msg_seq", "text",
     "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_0 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
 
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -4927,41 +4194,39 @@ AIS_STATUS AIS_8_1_0_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescription
             "Text String",//8
             "Not used for data and should be set to zero. The number of bits should be either 0, 2, 4, or 6 to maintain byte boundaries."//9
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
 
     //Fields specific to the Ais8_1_0 type.
-    mxSetFieldByNumber(theStruct,0,6,boolMat2Matlab(&msg.ack_required,1,1));
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.msg_seq,1,1));
+    mxSetFieldByNumber(theStruct,0,6,boolMat2Matlab(&msg->ack_required,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->msg_seq,1,1));
     {
-        const char *charString=msg.text.c_str();
+        const char *charString=msg->text.c_str();
         mxSetFieldByNumber(theStruct,0,8,mxCreateCharMatrixFromStrings(1,&charString));
     }
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_8_1_11_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_8_1_11_ToMatlab(libais::Ais8_1_11 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 236, which was revoked
 //in IMO circular 289 in 2013. The note says that if information is not
 //available, then a field will be set to the max value. Thus, validity
@@ -4972,7 +4237,7 @@ AIS_STATUS AIS_8_1_11_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "dac", "fi", "x", "y", "day", "hour", "minute",
+    "mmsi", "spare", "dac", "fi", "lon", "lat", "day", "hour", "minute",
     "wind_ave", "wind_gust", "wind_dir", "wind_gust_dir", "air_temp",
     "rel_humid", "dew_point", "air_pres", "air_pres_trend", "horz_vis",
     "water_level", "water_level_trend", "surf_cur_speed", "surf_cur_dir",
@@ -4981,11 +4246,6 @@ AIS_STATUS AIS_8_1_11_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     "swell_height", "swell_period", "swell_dir", "sea_state", "water_temp",
     "precip_type", "salinity", "ice", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_11 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -5035,215 +4295,213 @@ AIS_STATUS AIS_8_1_11_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "A boolean value indicating the presence of ice",//41
             "Not used. Should be zero."//42
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
 
     //Fields specific to the Ais8_1_11 type.
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//No longitude
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//No latitude
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.day!=0&&msg.day<=31) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.day,1,1));
+    if(msg->day!=0&&msg->day<=31) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->day,1,1));
     } else {//No day
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.hour<24) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.hour,1,1));
+    if(msg->hour<24) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->hour,1,1));
     } else {//No hour
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.minute<60) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.minute,1,1));
+    if(msg->minute<60) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->minute,1,1));
     } else {//No minute
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_ave<=120) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.wind_ave,1,1));
+    if(msg->wind_ave<=120) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->wind_ave,1,1));
     } else {//No wind average
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_gust<=120) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.wind_gust,1,1));
+    if(msg->wind_gust<=120) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->wind_gust,1,1));
     } else {//No wind gust speed
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.wind_dir,1,1));
+    if(msg->wind_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->wind_dir,1,1));
     } else {//No wind direction
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_gust_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.wind_gust_dir,1,1));
+    if(msg->wind_gust_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->wind_gust_dir,1,1));
     } else {//No wind gust direction
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.air_temp<=60&&msg.air_temp>=-60) {
-        mxSetFieldByNumber(theStruct,0,15,floatMat2MatlabDoubles(&msg.air_temp,1,1));
+    if(msg->air_temp<=60&&msg->air_temp>=-60) {
+        mxSetFieldByNumber(theStruct,0,15,floatMat2MatlabDoubles(&msg->air_temp,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.rel_humid<=100) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.rel_humid,1,1));
+    if(msg->rel_humid<=100) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->rel_humid,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.dew_point<=50&&msg.dew_point>=-20) {
-        mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg.dew_point,1,1));
+    if(msg->dew_point<=50&&msg->dew_point>=-20) {
+        mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg->dew_point,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.air_pres<=1200) {
-        mxSetFieldByNumber(theStruct,0,18,floatMat2MatlabDoubles(&msg.air_pres,1,1));
+    if(msg->air_pres<=1200) {
+        mxSetFieldByNumber(theStruct,0,18,floatMat2MatlabDoubles(&msg->air_pres,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.air_pres_trend<=2){
-        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.air_pres_trend,1,1));
+    if(msg->air_pres_trend<=2){
+        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->air_pres_trend,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.horz_vis<=25) {
-        mxSetFieldByNumber(theStruct,0,20,floatMat2MatlabDoubles(&msg.horz_vis,1,1));
+    if(msg->horz_vis<=25) {
+        mxSetFieldByNumber(theStruct,0,20,floatMat2MatlabDoubles(&msg->horz_vis,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.water_level<=30&&msg.water_level>=-10) {
-        mxSetFieldByNumber(theStruct,0,21,floatMat2MatlabDoubles(&msg.water_level,1,1));
+    if(msg->water_level<=30&&msg->water_level>=-10) {
+        mxSetFieldByNumber(theStruct,0,21,floatMat2MatlabDoubles(&msg->water_level,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.water_level_trend<=2) {
-        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.water_level_trend,1,1));
+    if(msg->water_level_trend<=2) {
+        mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->water_level_trend,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.surf_cur_speed<=25) {
-        mxSetFieldByNumber(theStruct,0,23,floatMat2MatlabDoubles(&msg.surf_cur_speed,1,1));
+    if(msg->surf_cur_speed<=25) {
+        mxSetFieldByNumber(theStruct,0,23,floatMat2MatlabDoubles(&msg->surf_cur_speed,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.surf_cur_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.surf_cur_dir,1,1));
+    if(msg->surf_cur_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->surf_cur_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_speed_2<=25) {
-        mxSetFieldByNumber(theStruct,0,25,floatMat2MatlabDoubles(&msg.cur_speed_2,1,1));
+    if(msg->cur_speed_2<=25) {
+        mxSetFieldByNumber(theStruct,0,25,floatMat2MatlabDoubles(&msg->cur_speed_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,25,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_dir_2<=359) {
-        mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg.cur_dir_2,1,1));
+    if(msg->cur_dir_2<=359) {
+        mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg->cur_dir_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,26,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_depth_2<=30) {
-        mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg.cur_depth_2,1,1));
+    if(msg->cur_depth_2<=30) {
+        mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg->cur_depth_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,27,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_speed_3<=25) {
-        mxSetFieldByNumber(theStruct,0,28,floatMat2MatlabDoubles(&msg.cur_speed_3,1,1));
+    if(msg->cur_speed_3<=25) {
+        mxSetFieldByNumber(theStruct,0,28,floatMat2MatlabDoubles(&msg->cur_speed_3,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,28,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_dir_3<=359) {
-        mxSetFieldByNumber(theStruct,0,29,intMat2MatlabDoubles(&msg.cur_dir_3,1,1));
+    if(msg->cur_dir_3<=359) {
+        mxSetFieldByNumber(theStruct,0,29,intMat2MatlabDoubles(&msg->cur_dir_3,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,29,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_depth_3<=30) {
-        mxSetFieldByNumber(theStruct,0,30,intMat2MatlabDoubles(&msg.cur_depth_3,1,1));
+    if(msg->cur_depth_3<=30) {
+        mxSetFieldByNumber(theStruct,0,30,intMat2MatlabDoubles(&msg->cur_depth_3,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,30,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wave_height<=25) {
-        mxSetFieldByNumber(theStruct,0,31,floatMat2MatlabDoubles(&msg.wave_height,1,1));
+    if(msg->wave_height<=25) {
+        mxSetFieldByNumber(theStruct,0,31,floatMat2MatlabDoubles(&msg->wave_height,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,31,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.wave_period<=60) {
-        mxSetFieldByNumber(theStruct,0,32,intMat2MatlabDoubles(&msg.wave_period,1,1));
+    if(msg->wave_period<=60) {
+        mxSetFieldByNumber(theStruct,0,32,intMat2MatlabDoubles(&msg->wave_period,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,32,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.wave_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,33,intMat2MatlabDoubles(&msg.wave_dir,1,1));
+    if(msg->wave_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,33,intMat2MatlabDoubles(&msg->wave_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,33,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.swell_height<=25) {
-        mxSetFieldByNumber(theStruct,0,34,floatMat2MatlabDoubles(&msg.swell_height,1,1));
+    if(msg->swell_height<=25) {
+        mxSetFieldByNumber(theStruct,0,34,floatMat2MatlabDoubles(&msg->swell_height,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,34,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.swell_period<=60) {
-        mxSetFieldByNumber(theStruct,0,35,intMat2MatlabDoubles(&msg.swell_period,1,1));
+    if(msg->swell_period<=60) {
+        mxSetFieldByNumber(theStruct,0,35,intMat2MatlabDoubles(&msg->swell_period,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,35,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.swell_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,36,intMat2MatlabDoubles(&msg.swell_dir,1,1));
+    if(msg->swell_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,36,intMat2MatlabDoubles(&msg->swell_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,36,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.sea_state<=12) {
-        mxSetFieldByNumber(theStruct,0,37,intMat2MatlabDoubles(&msg.sea_state,1,1));
+    if(msg->sea_state<=12) {
+        mxSetFieldByNumber(theStruct,0,37,intMat2MatlabDoubles(&msg->sea_state,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,37,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.water_temp<=50&&msg.water_temp>=-10) {
-        mxSetFieldByNumber(theStruct,0,38,floatMat2MatlabDoubles(&msg.water_temp,1,1));
+    if(msg->water_temp<=50&&msg->water_temp>=-10) {
+        mxSetFieldByNumber(theStruct,0,38,floatMat2MatlabDoubles(&msg->water_temp,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,38,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.precip_type<7) {
-        mxSetFieldByNumber(theStruct,0,39,intMat2MatlabDoubles(&msg.precip_type,1,1));
+    if(msg->precip_type<7) {
+        mxSetFieldByNumber(theStruct,0,39,intMat2MatlabDoubles(&msg->precip_type,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,39,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.salinity<511) {
-        mxSetFieldByNumber(theStruct,0,40,floatMat2MatlabDoubles(&msg.salinity,1,1));
+    if(msg->salinity<511) {
+        mxSetFieldByNumber(theStruct,0,40,floatMat2MatlabDoubles(&msg->salinity,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,40,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.ice==0||msg.ice==1) {
-        mxSetFieldByNumber(theStruct,0,41,intMat2MatlabDoubles(&msg.ice,1,1));
+    if(msg->ice==0||msg->ice==1) {
+        mxSetFieldByNumber(theStruct,0,41,intMat2MatlabDoubles(&msg->ice,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,41,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
 
-    mxSetFieldByNumber(theStruct,0,42,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,42,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_8_1_13_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_1_13_ToMatlab(libais::Ais8_1_13 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 236, which was revoked
 //in IMO circular 289 in 2013. Message "FAIRWAY CLOSED".
     const size_t numberOfFields=20;
@@ -5255,11 +4513,6 @@ AIS_STATUS AIS_8_1_13_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     "radius", "units", "day_from", "month_from", "hour_from",
     "minute_from", "day_to", "month_to", "hour_to", "minute_to", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_13 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
       
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -5286,99 +4539,97 @@ AIS_STATUS AIS_8_1_13_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "To LT minute (0-59) (approx)",//18
             "Not used. Should be zero"//19
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
 
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
 
     //Fields specific to the Ais8_1_13 type.
-    if(msg.reason.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.reason.c_str();
+    if(msg->reason.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->reason.c_str();
         mxSetFieldByNumber(theStruct,0,6,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//The reason is unavailable
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.location_from.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.location_from.c_str();
+    if(msg->location_from.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->location_from.c_str();
         mxSetFieldByNumber(theStruct,0,7,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//The location of closing from is unavailable
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.location_to.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.location_to.c_str();
+    if(msg->location_to.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->location_to.c_str();
         mxSetFieldByNumber(theStruct,0,8,mxCreateCharMatrixFromStrings(1,&charString));
     } else {//The location of closing to is unavailable
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.radius<=1000) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.radius,1,1));
+    if(msg->radius<=1000) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->radius,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.units,1,1));
-    if(msg.day_from!=0) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.day_from,1,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->units,1,1));
+    if(msg->day_from!=0) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->day_from,1,1));
     } else {//Day unavialable
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.month_from!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.month_from,1,1));
+    if(msg->month_from!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->month_from,1,1));
     } else {//Month unavailable
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.hour_from<=23) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.hour_from,1,1));
+    if(msg->hour_from<=23) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->hour_from,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.minute_from<=59) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.minute_from,1,1));
+    if(msg->minute_from<=59) {
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->minute_from,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.day_to!=0) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.day_to,1,1));
+    if(msg->day_to!=0) {
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->day_to,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.month_to!=0) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.month_to,1,1));
+    if(msg->month_to!=0) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->month_to,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.hour_to<=23) {
-        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.hour_to,1,1));
+    if(msg->hour_to<=23) {
+        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->hour_to,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.minute_to<=59) {
-        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.minute_to,1,1));
+    if(msg->minute_to<=59) {
+        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->minute_to,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_8_1_15_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_8_1_15_ToMatlab(libais::Ais8_1_15 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 236, which was revoked
 //in IMO circular 289 in 2013. Message "EXTENDED SHIP STATIC AND VOYAGE
 //RELATED DATA"
@@ -5389,11 +4640,6 @@ AIS_STATUS AIS_8_1_15_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "spare", "dac", "fi","air_draught", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_15 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -5408,40 +4654,38 @@ AIS_STATUS AIS_8_1_15_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "Air draught, heigh over keel, in meters (0.1-204.7), 204.7 mean 204.7 meters or higher)",//6
             "Not used. Should be set to zero."//7
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
 
     //Fields specific to the Ais8_1_15 type.
-    if(msg.air_draught!=0) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.air_draught,1,1));
+    if(msg->air_draught!=0) {
+        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg->air_draught,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_8_1_16_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_8_1_16_ToMatlab(libais::Ais8_1_16 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circulars 236 and 289.
 //Message "Number of persons on board"
     const size_t numberOfFields=8;
@@ -5451,12 +4695,7 @@ AIS_STATUS AIS_8_1_16_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
     "mmsi", "spare", "dac", "fi","persons", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_16 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -5470,41 +4709,38 @@ AIS_STATUS AIS_8_1_16_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "Number of persons currently on board including crew members (1-8190), 8190 means 8190 or greater",//6
             "Not used. Set to zero."//7
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais8_1_16 type.
-    if(msg.persons!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.persons,1,1));
+    if(msg->persons!=0) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->persons,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-
-AIS_STATUS AIS_8_1_17_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_1_17_ToMatlab(libais::Ais8_1_17 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circulars 236 and 289.
 //Message "VTS-generated/Synthetic targets"
     const size_t numberOfFields=7;
@@ -5516,14 +4752,9 @@ AIS_STATUS AIS_8_1_17_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     const size_t numberOfTargetFields=8;
     mwSize targetDims[2];
     const char *targetFieldNames[numberOfTargetFields] = {"type", "id",
-    "spare", "x", "y", "cog", "timestamp" "sog"};
+    "spare", "lon", "lat", "cog", "timestamp" "sog"};
     mxArray *theStruct, *targetArray;
     size_t curTarget;
-    
-    Ais8_1_17 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -5547,80 +4778,78 @@ AIS_STATUS AIS_8_1_17_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
            "UTC second when the report was generated (0-59)",//6
            "Speed over ground in knots (0-254)"//7
         };
-        int i;
+        unsigned int i;
         mxArray *targetFields;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
         for(i=0;i<(numberOfFields-1);i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
         
         targetFields=mxCreateStructArray(2, dims, numberOfTargetFields, targetFieldNames);
         mxSetFieldByNumber(*fieldDescriptions,0,numberOfFields-1,targetFields);
 
         for(i=0;i<numberOfTargetFields;i++) {
-            mxSetFieldByNumber(targetFields,0,i,mxCreateCharMatrixFromStrings(1,&targetDescriptions[i]));
+            mxSetFieldByNumber(targetFields,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&targetDescriptions[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais8_1_17 type.
-    targetDims[0]=msg.targets.size();
+    targetDims[0]=msg->targets.size();
     targetDims[1]=1;
     targetArray=mxCreateStructArray(2, dims, numberOfTargetFields, targetFieldNames);
     mxSetFieldByNumber(theStruct,0,6,targetArray);
-    for (curTarget = 0; curTarget < msg.targets.size(); curTarget++) {
-        mxSetFieldByNumber(targetArray,curTarget,0,intMat2MatlabDoubles(&msg.targets[curTarget].type,1,1));
-        if(msg.targets[curTarget].id.compare("@@@@@@@")!=0) {
-            const char *charString=msg.targets[curTarget].id.c_str();
+    for (curTarget = 0; curTarget < msg->targets.size(); curTarget++) {
+        mxSetFieldByNumber(targetArray,curTarget,0,intMat2MatlabDoubles(&msg->targets[curTarget].type,1,1));
+        if(msg->targets[curTarget].id.compare("@@@@@@@")!=0) {
+            const char *charString=msg->targets[curTarget].id.c_str();
             mxSetFieldByNumber(targetArray,curTarget,1,mxCreateCharMatrixFromStrings(1,&charString));
         } else {//No target ID
             mxSetFieldByNumber(targetArray,curTarget,1,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        mxSetFieldByNumber(targetArray,curTarget,2,intMat2MatlabDoubles(&msg.targets[curTarget].spare,1,1));
-        if(fabs(msg.targets[curTarget].x)<=180) {
-            mxSetFieldByNumber(targetArray,curTarget,3,floatMat2MatlabDoubles(&msg.targets[curTarget].x,1,1));
+        mxSetFieldByNumber(targetArray,curTarget,2,intMat2MatlabDoubles(&msg->targets[curTarget].spare,1,1));
+        if(fabs(msg->targets[curTarget].position.lng_deg)<=180) {
+            mxSetFieldByNumber(targetArray,curTarget,3,doubleMat2Matlab(&msg->targets[curTarget].position.lng_deg,1,1));
         } else {//No longitude
             mxSetFieldByNumber(targetArray,curTarget,3,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(fabs(msg.targets[curTarget].y)<=90) {
-            mxSetFieldByNumber(targetArray,curTarget,4,floatMat2MatlabDoubles(&msg.targets[curTarget].y,1,1));
+        if(fabs(msg->targets[curTarget].position.lat_deg)<=90) {
+            mxSetFieldByNumber(targetArray,curTarget,4,doubleMat2Matlab(&msg->targets[curTarget].position.lat_deg,1,1));
         } else {//No latitude
             mxSetFieldByNumber(targetArray,curTarget,4,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.targets[curTarget].cog<=359) {
-            mxSetFieldByNumber(targetArray,curTarget,5,intMat2MatlabDoubles(&msg.targets[curTarget].cog,1,1));
+        if(msg->targets[curTarget].cog<=359) {
+            mxSetFieldByNumber(targetArray,curTarget,5,intMat2MatlabDoubles(&msg->targets[curTarget].cog,1,1));
         } else {//No course over ground
             mxSetFieldByNumber(targetArray,curTarget,5,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.targets[curTarget].timestamp<=59) {
-            mxSetFieldByNumber(targetArray,curTarget,6,intMat2MatlabDoubles(&msg.targets[curTarget].timestamp,1,1));
+        if(msg->targets[curTarget].timestamp<=59) {
+            mxSetFieldByNumber(targetArray,curTarget,6,intMat2MatlabDoubles(&msg->targets[curTarget].timestamp,1,1));
         } else {//No timestamp
             mxSetFieldByNumber(targetArray,curTarget,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
-        if(msg.targets[curTarget].sog<=254) {
-            mxSetFieldByNumber(targetArray,curTarget,7,intMat2MatlabDoubles(&msg.targets[curTarget].sog,1,1));
+        if(msg->targets[curTarget].sog<=254) {
+            mxSetFieldByNumber(targetArray,curTarget,7,intMat2MatlabDoubles(&msg->targets[curTarget].sog,1,1));
         } else {//No speed over ground
             mxSetFieldByNumber(targetArray,curTarget,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
         }
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS_8_1_19_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_1_19_ToMatlab(libais::Ais8_1_19 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 289.
 //Message "Marine Traffic Signal"
     const size_t numberOfFields=16;
@@ -5628,14 +4857,9 @@ AIS_STATUS AIS_8_1_19_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "dac", "fi","link_id", "name", "x", "y", "status",
+    "mmsi", "spare", "dac", "fi","link_id", "name", "lon", "lat", "status",
     "signal", "utc_hour_next", "utc_min_next", "next_signal", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_19 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -5657,94 +4881,85 @@ AIS_STATUS AIS_8_1_19_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "UTC minute of next signal shift (0-59)",//13
             "Expected next signal as defined in Table 8.2 of IMO circular 289"
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fields specific to the Ais8_1_19 type.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.link_id,1,1));
+    if(msg->link_id!=0) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->link_id,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-        const char *charString=msg.name.c_str();
+    if(msg->name.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+        const char *charString=msg->name.c_str();
         mxSetFieldByNumber(theStruct,0,7,mxCreateCharMatrixFromStrings(1,&charString));
     } else {
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,8,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,9,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,9,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.status!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.status,1,1));
+    if(msg->status!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->status,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.signal!=0) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.signal,1,1));
+    if(msg->signal!=0) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->signal,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_hour_next<=23) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_hour_next,1,1));
+    if(msg->utc_hour_next<=23) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_hour_next,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_min_next<=59) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.utc_min_next,1,1));
+    if(msg->utc_min_next<=59) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->utc_min_next,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.next_signal!=0) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.next_signal,1,1));
+    if(msg->next_signal!=0) {
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->next_signal,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(msg.spare2,4,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(msg->spare2.data(),4,1));
 }
 
-/*
-AIS_STATUS AIS_8_1_21_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_1_21_ToMatlab(libais::Ais8_1_21 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 289.
 //Message "Weather observation report from ship"
     const mwSize dims[2] = {1, 1};
-
     mxArray *theStruct;
-    
-    Ais8_1_21 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
-    switch(msg.type_wx_report) {
+
+    switch(msg->type_wx_report) {
         case 0:
         {
             const size_t numberOfFields=29;
@@ -5752,7 +4967,7 @@ AIS_STATUS AIS_8_1_21_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             //Matlab structre array.
             const char *fieldNames[numberOfFields] = {"message_id",
             "repeat_indicator", "mmsi","spare","dac", "fi",
-            "type_wx_report", "location", "x", "y", "utc_day", "utc_hour",
+            "type_wx_report", "location", "lon", "lat", "utc_day", "utc_hour",
             "utc_min", "wx","horz_viz", "humidity", "wind_speed", "wind_dir",
             "pressure", "pressure_tendency", "air_temp", "water_temp",
             "wave_period", "wave_height", "wave_dir", "swell_height",
@@ -5789,119 +5004,119 @@ AIS_STATUS AIS_8_1_21_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                  "Swell period in seconds",//27
                  "Not used. Set to zero."//28
                 };
-                int i;
+                unsigned int i;
 
                 *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
                 for(i=0;i<numberOfFields;i++) {
-                    mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+                    mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
                 }
             };
 
             //Create the Matlab structure array.
             theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-            *matlabStruct=theStruct;
+            *decodedMessage=theStruct;
             
             //Fill in the components unique to this message.
-            if(msg.location.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
-                const char *charString=msg.location.c_str();
+            if(msg->location.compare("@@@@@@@@@@@@@@@@@@@@")!=0) {
+                const char *charString=msg->location.c_str();
                 mxSetFieldByNumber(theStruct,0,7,mxCreateCharMatrixFromStrings(1,&charString));
             } else {
                 mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            if(fabs(msg.x)<=180) {
-                mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.x,1,1));
+            if(fabs(msg->position.lng_deg)<=180) {
+                mxSetFieldByNumber(theStruct,0,8,doubleMat2Matlab(&msg->position.lng_deg,1,1));
             } else {//No longitude
                 mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            if(fabs(msg.y)<=90) {
-                mxSetFieldByNumber(theStruct,0,9,floatMat2MatlabDoubles(&msg.y,1,1));
+            if(fabs(msg->position.lat_deg)<=90) {
+                mxSetFieldByNumber(theStruct,0,9,doubleMat2Matlab(&msg->position.lat_deg,1,1));
             } else {//No latitude
                 mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            if(msg.utc_day!=0) {
-                mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_day,1,1));
+            if(msg->utc_day!=0) {
+                mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_day,1,1));
             } else {//No UTC day
                 mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            if(msg.utc_hour<=23) {
-                mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_hour,1,1));
+            if(msg->utc_hour<=23) {
+                mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_hour,1,1));
             } else{//No UTC hour
                 mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            if(msg.utc_min<=59) {
-                mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_min,1,1));
+            if(msg->utc_min<=59) {
+                mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_min,1,1));
             } else {//No UTC minutes
                 mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.wx[0],1,1));
-            if(msg.horz_viz!=12.7) {
-                mxSetFieldByNumber(theStruct,0,14,floatMat2MatlabDoubles(&msg.horz_viz,1,1));
+            mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->wx[0],1,1));
+            if(msg->horz_viz!=12.7) {
+                mxSetFieldByNumber(theStruct,0,14,floatMat2MatlabDoubles(&msg->horz_viz,1,1));
             } else {//No Horizontal visibility
                 mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            if(msg.humidity<=100) {
-                mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.humidity,1,1));
+            if(msg->humidity<=100) {
+                mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->humidity,1,1));
             } else {//No humidity
                 mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wind_speed<=126) {
-                mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.wind_speed,1,1));
+            if(msg->wind_speed<=126) {
+                mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->wind_speed,1,1));
             } else {//No wind speed
                 mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wind_dir<=359) {
-                mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.wind_dir,1,1));
+            if(msg->wind_dir<=359) {
+                mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->wind_dir,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.pressure<=1201) {
-                mxSetFieldByNumber(theStruct,0,18,floatMat2MatlabDoubles(&msg.pressure,1,1));
+            if(msg->pressure<=1201) {
+                mxSetFieldByNumber(theStruct,0,18,floatMat2MatlabDoubles(&msg->pressure,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.pressure_tendency,1,1));
-            if(msg.air_temp>=-60&&msg.air_temp<=60) {
-                mxSetFieldByNumber(theStruct,0,20,floatMat2MatlabDoubles(&msg.air_temp,1,1));
+            mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->pressure_tendency,1,1));
+            if(msg->air_temp>=-60&&msg->air_temp<=60) {
+                mxSetFieldByNumber(theStruct,0,20,floatMat2MatlabDoubles(&msg->air_temp,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.water_temp>=-10&&msg.water_temp<=50) {
-                mxSetFieldByNumber(theStruct,0,21,floatMat2MatlabDoubles(&msg.water_temp,1,1));
+            if(msg->water_temp>=-10&&msg->water_temp<=50) {
+                mxSetFieldByNumber(theStruct,0,21,floatMat2MatlabDoubles(&msg->water_temp,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wave_period<=60) {
-                mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.wave_period,1,1));
+            if(msg->wave_period<=60) {
+                mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->wave_period,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wave_height<=25.1) {
-                mxSetFieldByNumber(theStruct,0,23,floatMat2MatlabDoubles(&msg.wave_height,1,1));
+            if(msg->wave_height<=25.1) {
+                mxSetFieldByNumber(theStruct,0,23,floatMat2MatlabDoubles(&msg->wave_height,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wave_dir<=359) {
-                mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.wave_dir,1,1));
+            if(msg->wave_dir<=359) {
+                mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->wave_dir,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_height<=25.1) {
-                mxSetFieldByNumber(theStruct,0,25,floatMat2MatlabDoubles(&msg.swell_height,1,1));
+            if(msg->swell_height<=25.1) {
+                mxSetFieldByNumber(theStruct,0,25,floatMat2MatlabDoubles(&msg->swell_height,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,25,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_dir<=359) {
-                mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg.swell_dir,1,1));
+            if(msg->swell_dir<=359) {
+                mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg->swell_dir,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,26,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_period<=60) {
-                mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg.swell_period,1,1));
+            if(msg->swell_period<=60) {
+                mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg->swell_period,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,27,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            mxSetFieldByNumber(theStruct,0,28,intMat2MatlabDoubles(&msg.spare2,1,1));
+            mxSetFieldByNumber(theStruct,0,28,intMat2MatlabDoubles(&msg->spare2,1,1));
         }
             break;
         case 1:
@@ -5911,7 +5126,7 @@ AIS_STATUS AIS_8_1_21_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             //Matlab structre array.
             const char *fieldNames[numberOfFields] = {"message_id",
             "repeat_indicator", "mmsi", "spare", "dac", "fi",
-            "type_wx_report", "x", "y",
+            "type_wx_report", "lon", "lat",
             "utc_month", "utc_day", "utc_hour", "utc_min", "cog", "sog",
             "heading", "pressure", "rel_pressure", "pressure_tendency",
             "wind_dir", "wind_speed_ms", "wind_dir_rel", "wind_speed_rel",
@@ -5983,237 +5198,237 @@ AIS_STATUS AIS_8_1_21_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 "Ice development as per WMO BUFR table 020037",//52
                 "Bearing of ice edge in degrees East of North (45-360)."//53
                 };
-                int i;
+                unsigned int i;
 
                 *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
                 for(i=0;i<numberOfFields;i++) {
-                    mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+                    mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
                 }
              };
             
             //Create the Matlab structure array.
             theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-            *matlabStruct=theStruct;
+            *decodedMessage=theStruct;
             
-            if(fabs(msg.x)<=180) {
-                mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.x,1,1));
+            if(fabs(msg->position.lng_deg)<=180) {
+                mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lng_deg,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(fabs(msg.y)<=90) {
-                mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.y,1,1));
+            if(fabs(msg->position.lat_deg)<=90) {
+                mxSetFieldByNumber(theStruct,0,8,doubleMat2Matlab(&msg->position.lat_deg,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.utc_month!=0) {
-                mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.utc_month,1,1));
+            if(msg->utc_month!=0) {
+                mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->utc_month,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.utc_day!=0) {
-                mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_day,1,1));
+            if(msg->utc_day!=0) {
+                mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_day,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.utc_hour<=23) {
-                mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_hour,1,1));
+            if(msg->utc_hour<=23) {
+                mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_hour,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.utc_min<=59) {
-                mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_min,1,1));
+            if(msg->utc_min<=59) {
+                mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_min,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.cog<=360) {
-                mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.cog,1,1));
+            if(msg->cog<=360) {
+                mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->cog,1,1));
             } else { 
                 mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.sog<=15) {
-                mxSetFieldByNumber(theStruct,0,14,floatMat2MatlabDoubles(&msg.sog,1,1));
+            if(msg->sog<=15) {
+                mxSetFieldByNumber(theStruct,0,14,floatMat2MatlabDoubles(&msg->sog,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.heading<=360){
-                mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.heading,1,1));
+            if(msg->heading<=360){
+                mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->heading,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.pressure<=1100) {
-                mxSetFieldByNumber(theStruct,0,16,floatMat2MatlabDoubles(&msg.pressure,1,1));
+            if(msg->pressure<=1100) {
+                mxSetFieldByNumber(theStruct,0,16,floatMat2MatlabDoubles(&msg->pressure,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.rel_pressure<=50&&msg.rel_pressure<=50) {
-                mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg.rel_pressure,1,1));
+            if(msg->rel_pressure<=50&&msg->rel_pressure<=50) {
+                mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg->rel_pressure,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
             }
 
-            mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.pressure_tendency,1,1));
-            if(msg.wind_dir<=360) {
-                mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.wind_dir,1,1));
+            mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->pressure_tendency,1,1));
+            if(msg->wind_dir<=360) {
+                mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->wind_dir,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wind_speed_ms<=127){
-                mxSetFieldByNumber(theStruct,0,20,floatMat2MatlabDoubles(&msg.wind_speed_ms,1,1));
+            if(msg->wind_speed_ms<=127){
+                mxSetFieldByNumber(theStruct,0,20,floatMat2MatlabDoubles(&msg->wind_speed_ms,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wind_dir_rel<=360) {
-                mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.wind_dir_rel,1,1));
+            if(msg->wind_dir_rel<=360) {
+                mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->wind_dir_rel,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wind_speed_rel<=127) {
-                mxSetFieldByNumber(theStruct,0,22,floatMat2MatlabDoubles(&msg.wind_speed_rel,1,1));
+            if(msg->wind_speed_rel<=127) {
+                mxSetFieldByNumber(theStruct,0,22,floatMat2MatlabDoubles(&msg->wind_speed_rel,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wind_gust_speed<=127) {
-                mxSetFieldByNumber(theStruct,0,23,floatMat2MatlabDoubles(&msg.wind_gust_speed,1,1));
+            if(msg->wind_gust_speed<=127) {
+                mxSetFieldByNumber(theStruct,0,23,floatMat2MatlabDoubles(&msg->wind_gust_speed,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wind_gust_dir<=360) {
-                mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.wind_gust_dir,1,1));
+            if(msg->wind_gust_dir<=360) {
+                mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->wind_gust_dir,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.air_temp_raw!=1023) {
-                mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg.air_temp_raw,1,1));
+            if(msg->air_temp_raw!=1023) {
+                mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg->air_temp_raw,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,25,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.humidity<=100) {
-                mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg.humidity,1,1));
+            if(msg->humidity<=100) {
+                mxSetFieldByNumber(theStruct,0,26,intMat2MatlabDoubles(&msg->humidity,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,26,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.water_temp_raw!=511) {
-                mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg.water_temp_raw,1,1));
+            if(msg->water_temp_raw!=511) {
+                mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg->water_temp_raw,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,27,mxCreateDoubleMatrix(0,0,mxREAL));
             } 
-            if(msg.horz_viz<=50000) {
-                mxSetFieldByNumber(theStruct,0,28,floatMat2MatlabDoubles(&msg.horz_viz,1,1));
+            if(msg->horz_viz<=50000) {
+                mxSetFieldByNumber(theStruct,0,28,floatMat2MatlabDoubles(&msg->horz_viz,1,1));
             } else {//No Horizontal visibility
                 mxSetFieldByNumber(theStruct,0,28,mxCreateDoubleMatrix(0,0,mxREAL)); 
             }
-            mxSetFieldByNumber(theStruct,0,29,intMat2MatlabDoubles(&msg.wx[0],3,1));
-            mxSetFieldByNumber(theStruct,0,30,intMat2MatlabDoubles(&msg.wx[1],3,1));
-            mxSetFieldByNumber(theStruct,0,31,intMat2MatlabDoubles(&msg.wx[2],3,1));
+            mxSetFieldByNumber(theStruct,0,29,intMat2MatlabDoubles(&msg->wx[0],3,1));
+            mxSetFieldByNumber(theStruct,0,30,intMat2MatlabDoubles(&msg->wx[1],3,1));
+            mxSetFieldByNumber(theStruct,0,31,intMat2MatlabDoubles(&msg->wx[2],3,1));
             
-            if(msg.cloud_total<=100) {
-                mxSetFieldByNumber(theStruct,0,32,intMat2MatlabDoubles(&msg.cloud_total,1,1));
+            if(msg->cloud_total<=100) {
+                mxSetFieldByNumber(theStruct,0,32,intMat2MatlabDoubles(&msg->cloud_total,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,32,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.cloud_low!=15) {
-                mxSetFieldByNumber(theStruct,0,33,intMat2MatlabDoubles(&msg.cloud_low,1,1));
+            if(msg->cloud_low!=15) {
+                mxSetFieldByNumber(theStruct,0,33,intMat2MatlabDoubles(&msg->cloud_low,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,33,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.cloud_low_type!=63) {
-                mxSetFieldByNumber(theStruct,0,34,intMat2MatlabDoubles(&msg.cloud_low_type,1,1));
+            if(msg->cloud_low_type!=63) {
+                mxSetFieldByNumber(theStruct,0,34,intMat2MatlabDoubles(&msg->cloud_low_type,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,34,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.cloud_middle_type!=63) {
-                mxSetFieldByNumber(theStruct,0,35,intMat2MatlabDoubles(&msg.cloud_middle_type,1,1));
+            if(msg->cloud_middle_type!=63) {
+                mxSetFieldByNumber(theStruct,0,35,intMat2MatlabDoubles(&msg->cloud_middle_type,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,35,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.cloud_high_type!=63) {
-                mxSetFieldByNumber(theStruct,0,36,intMat2MatlabDoubles(&msg.cloud_high_type,1,1));
+            if(msg->cloud_high_type!=63) {
+                mxSetFieldByNumber(theStruct,0,36,intMat2MatlabDoubles(&msg->cloud_high_type,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,36,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.alt_lowest_cloud_base<=2540.16) {
-                mxSetFieldByNumber(theStruct,0,37,floatMat2MatlabDoubles(&msg.alt_lowest_cloud_base,1,1));
+            if(msg->alt_lowest_cloud_base<=2540.16) {
+                mxSetFieldByNumber(theStruct,0,37,floatMat2MatlabDoubles(&msg->alt_lowest_cloud_base,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,37,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wave_period<=30) {
-                mxSetFieldByNumber(theStruct,0,38,intMat2MatlabDoubles(&msg.wave_period,1,1));
+            if(msg->wave_period<=30) {
+                mxSetFieldByNumber(theStruct,0,38,intMat2MatlabDoubles(&msg->wave_period,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,38,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.wave_height<=30) {
-                mxSetFieldByNumber(theStruct,0,39,floatMat2MatlabDoubles(&msg.wave_height,1,1));
+            if(msg->wave_height<=30) {
+                mxSetFieldByNumber(theStruct,0,39,floatMat2MatlabDoubles(&msg->wave_height,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,39,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_dir<=360) {
-                mxSetFieldByNumber(theStruct,0,40,intMat2MatlabDoubles(&msg.swell_dir,1,1));
+            if(msg->swell_dir<=360) {
+                mxSetFieldByNumber(theStruct,0,40,intMat2MatlabDoubles(&msg->swell_dir,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,40,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_period<=30) {
-                mxSetFieldByNumber(theStruct,0,41,intMat2MatlabDoubles(&msg.swell_period,1,1));
+            if(msg->swell_period<=30) {
+                mxSetFieldByNumber(theStruct,0,41,intMat2MatlabDoubles(&msg->swell_period,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,41,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_height<=30) {
-                mxSetFieldByNumber(theStruct,0,42,floatMat2MatlabDoubles(&msg.swell_height,1,1));
+            if(msg->swell_height<=30) {
+                mxSetFieldByNumber(theStruct,0,42,floatMat2MatlabDoubles(&msg->swell_height,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,42,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_dir_2<=360) {
-                mxSetFieldByNumber(theStruct,0,43,intMat2MatlabDoubles(&msg.swell_dir_2,1,1));
+            if(msg->swell_dir_2<=360) {
+                mxSetFieldByNumber(theStruct,0,43,intMat2MatlabDoubles(&msg->swell_dir_2,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,43,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_period_2<=30) {
-                mxSetFieldByNumber(theStruct,0,44,intMat2MatlabDoubles(&msg.swell_period_2,1,1));
+            if(msg->swell_period_2<=30) {
+                mxSetFieldByNumber(theStruct,0,44,intMat2MatlabDoubles(&msg->swell_period_2,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,44,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.swell_height_2<=30) {
-                mxSetFieldByNumber(theStruct,0,45,intMat2MatlabDoubles(&msg.swell_height_2,1,1));
+            if(msg->swell_height_2<=30) {
+                mxSetFieldByNumber(theStruct,0,45,floatMat2MatlabDoubles(&msg->swell_height_2,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,45,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.ice_thickness<=126) {
-                mxSetFieldByNumber(theStruct,0,46,floatMat2MatlabDoubles(&msg.ice_thickness,1,1));
+            if(msg->ice_thickness<=126) {
+                mxSetFieldByNumber(theStruct,0,46,floatMat2MatlabDoubles(&msg->ice_thickness,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,46,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.ice_accretion!=7) {
-                mxSetFieldByNumber(theStruct,0,47,intMat2MatlabDoubles(&msg.ice_accretion,1,1));
+            if(msg->ice_accretion!=7) {
+                mxSetFieldByNumber(theStruct,0,47,intMat2MatlabDoubles(&msg->ice_accretion,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,47,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.ice_accretion_cause!=7) {
-                mxSetFieldByNumber(theStruct,0,48,intMat2MatlabDoubles(&msg.ice_accretion_cause,1,1));
+            if(msg->ice_accretion_cause!=7) {
+                mxSetFieldByNumber(theStruct,0,48,intMat2MatlabDoubles(&msg->ice_accretion_cause,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,48,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.sea_ice_concentration!=31) {
-                mxSetFieldByNumber(theStruct,0,49,intMat2MatlabDoubles(&msg.sea_ice_concentration,1,1));
+            if(msg->sea_ice_concentration!=31) {
+                mxSetFieldByNumber(theStruct,0,49,intMat2MatlabDoubles(&msg->sea_ice_concentration,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,49,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.amt_type_ice!=15) {
-                mxSetFieldByNumber(theStruct,0,50,intMat2MatlabDoubles(&msg.amt_type_ice,1,1));
+            if(msg->amt_type_ice!=15) {
+                mxSetFieldByNumber(theStruct,0,50,intMat2MatlabDoubles(&msg->amt_type_ice,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,50,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.ice_situation!=31) {
-                mxSetFieldByNumber(theStruct,0,51,intMat2MatlabDoubles(&msg.ice_situation,1,1));
+            if(msg->ice_situation!=31) {
+                mxSetFieldByNumber(theStruct,0,51,intMat2MatlabDoubles(&msg->ice_situation,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,51,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.ice_devel!=31) {
-                mxSetFieldByNumber(theStruct,0,52,intMat2MatlabDoubles(&msg.ice_devel,1,1));
+            if(msg->ice_devel!=31) {
+                mxSetFieldByNumber(theStruct,0,52,intMat2MatlabDoubles(&msg->ice_devel,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,52,mxCreateDoubleMatrix(0,0,mxREAL));
             }
-            if(msg.bearing_ice_edge!=15) {
-                mxSetFieldByNumber(theStruct,0,53,intMat2MatlabDoubles(&msg.bearing_ice_edge,1,1));
+            if(msg->bearing_ice_edge!=15) {
+                mxSetFieldByNumber(theStruct,0,53,intMat2MatlabDoubles(&msg->bearing_ice_edge,1,1));
             } else {
                 mxSetFieldByNumber(theStruct,0,53,mxCreateDoubleMatrix(0,0,mxREAL));
             }
@@ -6239,35 +5454,352 @@ AIS_STATUS AIS_8_1_21_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 "Function identifier (FI)",//5
                 "Type of ship weather report"//6
                 };
-                int i;
+                unsigned int i;
 
                 *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
                 for(i=0;i<numberOfFields;i++) {
-                    mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+                    mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
                 }
             }
             
             theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-            *matlabStruct=theStruct;
+            *decodedMessage=theStruct;
         }
             break;
     }
         
-    //Fill in the first 4 field,s which are common to all of the types. 
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.type_wx_report,1,1));
-    
-    return AIS_OK;
+    //Fill all of the elements of the structure with the set that is common
+    //to all AIS8 messages.
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
+  
+    //Another field specific to this message.
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->type_wx_report,1,1));
 }
-*/
 
-AIS_STATUS AIS_8_1_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_1_22_ToMatlab(libais::Ais8_1_22 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
+//This message format is described in IMO circular 289.
+//Message "Area notice (broadcast)"
+    const size_t numberOfFields=14;
+    const mwSize dims[2] = {1, 1};
+    mwSize cellArrayDims[2];
+    //These are the names of all of the fields that will be added to the
+    //Matlab structre array.
+    const char *fieldNames[numberOfFields] = {"message_id",
+    "repeat_indicator", "mmsi", "spare", "dac", "fi", "link_id",
+    "notice_type", "month", "day", "hour", "minute", "duration_minutes",
+    "sub_areas"};
+    mxArray *theStruct, *subareaCellArray;
+    size_t curSubarea;
+    
+    //If text descriptions of the fields are desired, then put them into a
+    //structure.
+    if(fieldDescriptions!=NULL) {
+        const char *descriptionStrings[numberOfFields] = {
+            "Identifier for Message 8; always 8.",//0
+            "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
+            "Maritime mobile service identity (MMSI) number of source station",//2
+            "Not used. Should be zero. Reserved for future use",//3
+            "Designated area code (DAC)",//4
+            "Function identifier (FI)",//5
+            "A source specific running number (1-1023), unique across all binary messages equipped with Message Linkage ID. Used to link additional information to the message by a Text Description message. The Message Linkage ID and the first six digits of the source MMSI uniquely identify the sent message.",//6
+            "Notice Description, 0-127 as per table 11.11 in IMO circular 289",//7
+            "UTC month (1-12)",//8
+            "UTC day (1-31)",//9
+            "UTC hour (0-23)",//10
+            "UTC minute (0-59)",//11
+            "Duration in minutes until the end of the area notice measured from the start date and time of the notice. Max is 262142",//12
+            "A structure of elements for the subareas as defined in IMO circular 289. The subareas define shapes"//13
+        };
+        unsigned int i;
+
+        *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
+
+        for(i=0;i<numberOfFields;i++) {
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+        }
+    }
+    
+    //Create the Matlab structure array.
+    theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
+    *decodedMessage=theStruct;
+    
+    //Fill all of the elements of the structure with the set that is common
+    //to all AIS8 messages.
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
+    
+    //Fill in the components unique to this message.
+    if(msg->link_id!=0) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->link_id,1,1));
+    } else {
+        mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
+    }
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->notice_type,1,1));
+    if(msg->month!=0) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->month,1,1));
+    } else {
+        mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
+    }
+    if(msg->day!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->day,1,1));
+    } else {
+        mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL)); 
+    }
+    if(msg->hour<=23) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->hour,1,1));
+    } else {
+        mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL)); 
+    }
+    if(msg->minute<=59) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->minute,1,1));
+    } else {
+        mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL)); 
+    }
+    if(msg->duration_minutes!=262143) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->duration_minutes,1,1));
+    } else {
+        mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL)); 
+    }
+
+    //The subareas are put into a cell array.
+    cellArrayDims[0]=msg->sub_areas.size();
+    cellArrayDims[1]=1;
+    //Make space to hold all of the reports in a cell array.
+    subareaCellArray=mxCreateCellArray(2, cellArrayDims);
+    mxSetFieldByNumber(theStruct,0,13,subareaCellArray);
+
+    //Fill in all of the reports.
+    for(curSubarea=0;curSubarea<msg->sub_areas.size();curSubarea++) {
+        int area_shape=msg->sub_areas[curSubarea]->getType();
+        switch(area_shape) {
+            case libais::AIS8_1_22_SHAPE_CIRCLE:
+            {
+                const size_t numReportFields=6;
+                const mwSize reportDims[2] = {1, 1};
+                const char *reportFieldNames[numReportFields]={"area_shape",
+                "lon", "lat", "precision", "radius_m", "spare"};                      
+                mxArray *reportStruct;
+                libais::Ais8_1_22_Circle *c =reinterpret_cast<libais::Ais8_1_22_Circle*>(msg->sub_areas[curSubarea]);
+                
+                //Create the Matlab structure array.
+                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
+                //Fill in the component common to all subareas.
+                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
+
+                //Fill in the components for this subarea
+                if(fabs(c->position.lng_deg)<=180) {
+                    mxSetFieldByNumber(reportStruct,0,1,doubleMat2Matlab(&c->position.lng_deg,1,1));
+                } else {
+                    mxSetFieldByNumber(reportStruct,0,1,mxCreateDoubleMatrix(0,0,mxREAL));
+                }
+                if(fabs(c->position.lat_deg)<=90) {
+                    mxSetFieldByNumber(reportStruct,0,2,doubleMat2Matlab(&c->position.lat_deg,1,1));
+                } else {
+                    mxSetFieldByNumber(reportStruct,0,2,mxCreateDoubleMatrix(0,0,mxREAL));
+                }
+                mxSetFieldByNumber(reportStruct,0,3,intMat2MatlabDoubles(&c->precision,1,1));
+                mxSetFieldByNumber(reportStruct,0,4,intMat2MatlabDoubles(&c->radius_m,1,1));
+                mxSetFieldByNumber(reportStruct,0,5,mat2MatlabDoubles(&c->spare,1,1));
+                
+                mxSetCell(subareaCellArray,curSubarea,reportStruct);
+            }
+                break;
+            case libais::AIS8_1_22_SHAPE_RECT:
+            {
+                const size_t numReportFields=8;
+                const mwSize reportDims[2] = {1, 1};
+                const char *reportFieldNames[numReportFields]={"area_shape",
+                "lon", "lat", "precision", "e_dim_m", "n_dim_m", "orient_deg",
+                "spare"};                      
+                mxArray *reportStruct;
+                libais::Ais8_1_22_Rect *c =reinterpret_cast<libais::Ais8_1_22_Rect*>(msg->sub_areas[curSubarea]);
+                
+                //Create the Matlab structure array.
+                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
+                //Fill in the component common to all subareas.
+                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
+
+                //Fill in the components for this subarea
+                if(fabs(c->position.lng_deg)<=180) {
+                    mxSetFieldByNumber(reportStruct,0,1,doubleMat2Matlab(&c->position.lng_deg,1,1));
+                } else {
+                    mxSetFieldByNumber(reportStruct,0,1,mxCreateDoubleMatrix(0,0,mxREAL));
+                }
+                if(fabs(c->position.lat_deg)<=90) {
+                    mxSetFieldByNumber(reportStruct,0,2,doubleMat2Matlab(&c->position.lat_deg,1,1));
+                } else {
+                    mxSetFieldByNumber(reportStruct,0,2,mxCreateDoubleMatrix(0,0,mxREAL));
+                }
+                mxSetFieldByNumber(reportStruct,0,3,intMat2MatlabDoubles(&c->precision,1,1));
+                mxSetFieldByNumber(reportStruct,0,4,intMat2MatlabDoubles(&c->e_dim_m,1,1));
+                mxSetFieldByNumber(reportStruct,0,5,intMat2MatlabDoubles(&c->n_dim_m,1,1));
+                mxSetFieldByNumber(reportStruct,0,6,intMat2MatlabDoubles(&c->orient_deg,1,1));
+                mxSetFieldByNumber(reportStruct,0,7,mat2MatlabDoubles(&c->spare,1,1));
+                
+                mxSetCell(subareaCellArray,curSubarea,reportStruct);
+            }
+                break;
+            case libais::AIS8_1_22_SHAPE_SECTOR:
+            {
+                const size_t numReportFields=7;
+                const mwSize reportDims[2] = {1, 1};
+                const char *reportFieldNames[numReportFields]={"area_shape",
+                "lon", "lat", "precision", "radius_m", "left_bound_deg",
+                "right_bound_deg"};                      
+                mxArray *reportStruct;
+                libais::Ais8_1_22_Sector *c =reinterpret_cast<libais::Ais8_1_22_Sector*>(msg->sub_areas[curSubarea]);
+                
+                //Create the Matlab structure array.
+                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
+                //Fill in the component common to all subareas.
+                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
+
+                //Fill in the components for this subarea
+                if(fabs(c->position.lng_deg)<=180) {
+                    mxSetFieldByNumber(reportStruct,0,1,doubleMat2Matlab(&c->position.lng_deg,1,1));
+                } else {
+                    mxSetFieldByNumber(reportStruct,0,1,mxCreateDoubleMatrix(0,0,mxREAL));
+                }
+                if(fabs(c->position.lat_deg)<=90) {
+                    mxSetFieldByNumber(reportStruct,0,2,doubleMat2Matlab(&c->position.lat_deg,1,1));
+                } else {
+                    mxSetFieldByNumber(reportStruct,0,2,mxCreateDoubleMatrix(0,0,mxREAL));
+                }
+                mxSetFieldByNumber(reportStruct,0,3,intMat2MatlabDoubles(&c->precision,1,1));
+                mxSetFieldByNumber(reportStruct,0,4,intMat2MatlabDoubles(&c->radius_m,1,1));
+                mxSetFieldByNumber(reportStruct,0,5,intMat2MatlabDoubles(&c->left_bound_deg,1,1));
+                mxSetFieldByNumber(reportStruct,0,6,intMat2MatlabDoubles(&c->right_bound_deg,1,1));
+
+                mxSetCell(subareaCellArray,curSubarea,reportStruct);
+            }
+                break;
+            case libais::AIS8_1_22_SHAPE_POLYLINE:
+            {
+                const size_t numReportFields=4;
+                const mwSize reportDims[2] = {1, 1};
+                const char *reportFieldNames[numReportFields]={"area_shape",
+                "angles", "dists_m", "spare"};                      
+                mxArray *reportStruct, *angleArray, *distArray;
+                libais::Ais8_1_22_Polyline *c =reinterpret_cast<libais::Ais8_1_22_Polyline*>(msg->sub_areas[curSubarea]);
+                size_t curItem;
+                double *data;
+                
+                //Create the Matlab structure array.
+                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
+                //Fill in the component common to all subareas.
+                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
+
+                //Fill in the components for this subarea
+                angleArray=mxCreateDoubleMatrix(c->angles.size(),1,mxREAL);
+                data=reinterpret_cast<double*>(mxGetData(angleArray));
+                for(curItem=0;curItem<c->angles.size();curItem++) {
+                    data[curItem]=c->angles[curItem];
+                }
+                mxSetFieldByNumber(reportStruct,0,1,angleArray);
+                
+                distArray=mxCreateDoubleMatrix(c->dists_m.size(),1,mxREAL);
+                data=reinterpret_cast<double*>(mxGetData(distArray));
+                for(curItem=0;curItem<c->dists_m.size();curItem++) {
+                    data[curItem]=c->dists_m[curItem];
+                }
+                mxSetFieldByNumber(reportStruct,0,2,distArray);
+                
+                mxSetFieldByNumber(reportStruct,0,3,mat2MatlabDoubles(&c->spare,1,1));
+
+                mxSetCell(subareaCellArray,curSubarea,reportStruct);
+            }
+                break;
+            case libais::AIS8_1_22_SHAPE_POLYGON:
+                        {
+                const size_t numReportFields=4;
+                const mwSize reportDims[2] = {1, 1};
+                const char *reportFieldNames[numReportFields]={"area_shape",
+                "angles", "dists_m", "spare"};                      
+                mxArray *reportStruct,*angleArray, *distArray;
+                libais::Ais8_1_22_Polygon *c =reinterpret_cast<libais::Ais8_1_22_Polygon*>(msg->sub_areas[curSubarea]);
+                size_t curItem;
+                double *data;
+                
+                //Create the Matlab structure array.
+                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
+                //Fill in the component common to all subareas.
+                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
+
+                //Fill in the components for this subarea
+                angleArray=mxCreateDoubleMatrix(c->angles.size(),1,mxREAL);
+                data=reinterpret_cast<double*>(mxGetData(angleArray));
+                for(curItem=0;curItem<c->angles.size();curItem++) {
+                    data[curItem]=c->angles[curItem];
+                }
+                mxSetFieldByNumber(reportStruct,0,1,angleArray);
+                
+                distArray=mxCreateDoubleMatrix(c->dists_m.size(),1,mxREAL);
+                data=reinterpret_cast<double*>(mxGetData(distArray));
+                for(curItem=0;curItem<c->dists_m.size();curItem++) {
+                    data[curItem]=c->dists_m[curItem];
+                }
+                mxSetFieldByNumber(reportStruct,0,2,distArray);
+                
+                mxSetFieldByNumber(reportStruct,0,3,mat2MatlabDoubles(&c->spare,1,1));
+
+                mxSetCell(subareaCellArray,curSubarea,reportStruct);
+            }
+                break;
+            case libais::AIS8_1_22_SHAPE_TEXT:
+            {
+                //save the area shape number.
+                const size_t numReportFields=2;
+                const mwSize reportDims[2] = {1, 1};
+                const char *reportFieldNames[numReportFields]={"area_shape",
+                "text"};                      
+                mxArray *reportStruct;
+                libais::Ais8_1_22_Text *c =reinterpret_cast<libais::Ais8_1_22_Text*>(msg->sub_areas[curSubarea]);
+
+                //Create the Matlab structure array.
+                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
+                //Fill in the component common to all subareas.
+                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
+                
+                //Fill in the components for this subarea
+                {
+                    const char *charString=c->text.c_str();
+                    mxSetFieldByNumber(reportStruct,0,1,mxCreateCharMatrixFromStrings(1,&charString));
+                }
+
+                mxSetCell(subareaCellArray,curSubarea,reportStruct);
+            }
+                break;
+            default://An error or an unknown shape.
+            {
+                //save the area shape number.
+                const size_t numReportFields=1;
+                const mwSize reportDims[2] = {1, 1};
+                const char *reportFieldNames[numReportFields]={"area_shape"};                      
+                mxArray *reportStruct;
+                
+                //Create the Matlab structure array.
+                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
+                //Fill in the component common to all subareas.
+                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
+                
+                mxSetCell(subareaCellArray,curSubarea,reportStruct);
+            }
+                break;
+        }
+    }
+}
+
+void AIS_8_1_24_ToMatlab(libais::Ais8_1_24 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 289.
 //Message "Extended ship static and voyage-related data (broadcast)"
     const size_t numberOfFields=23;
@@ -6281,12 +5813,7 @@ AIS_STATUS AIS_8_1_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     "laden_ballast", "heavy_oil", "light_oil", "diesel", "bunker_oil",
     "persons", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_24 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -6315,116 +5842,114 @@ AIS_STATUS AIS_8_1_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
              "Number of persons currently ob board including crew members (1-8191)",//21
              "Not used. Set to zero."//22
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.link_id,1,1));
-    mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.air_draught,1,1));
-    if(msg.last_port.compare("@@@@@")!=0) {
-        const char *charString=msg.last_port.c_str();
+    mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->link_id,1,1));
+    mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg->air_draught,1,1));
+    if(msg->last_port.compare("@@@@@")!=0) {
+        const char *charString=msg->last_port.c_str();
         mxSetFieldByNumber(theStruct,0,8,mxCreateCharMatrixFromStrings(1,&charString));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     {
-        const char *theStrings[2]={msg.next_ports[0].c_str(),msg.next_ports[1].c_str()};
+        const char *theStrings[2]={msg->next_ports[0].c_str(),msg->next_ports[1].c_str()};
 
-        if(msg.next_ports[0].compare("@@@@@")!=0&&msg.next_ports[1].compare("@@@@@")!=0) {
+        if(msg->next_ports[0].compare("@@@@@")!=0&&msg->next_ports[1].compare("@@@@@")!=0) {
             mxSetFieldByNumber(theStruct,0,9,mxCreateCharMatrixFromStrings(2,theStrings));
-        } else if (msg.next_ports[0].compare("@@@@@")!=0&&msg.next_ports[1].compare("@@@@@")==0) {
+        } else if (msg->next_ports[0].compare("@@@@@")!=0&&msg->next_ports[1].compare("@@@@@")==0) {
             mxSetFieldByNumber(theStruct,0,9,mxCreateCharMatrixFromStrings(1,theStrings));
-        } else if (msg.next_ports[0].compare("@@@@@")==0&&msg.next_ports[1].compare("@@@@@")!=0) {
+        } else if (msg->next_ports[0].compare("@@@@@")==0&&msg->next_ports[1].compare("@@@@@")!=0) {
             mxSetFieldByNumber(theStruct,0,9,mxCreateCharMatrixFromStrings(1,&theStrings[1]));
         } else {
             mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
         }
     }
     
-    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(msg.solas_status,26,1));
+    mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(msg->solas_status.data(),26,1));
 
-    if(msg.ice_class!=15) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.ice_class,1,1));
+    if(msg->ice_class!=15) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->ice_class,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     
-    if(msg.shaft_power!=262143) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.shaft_power,1,1));
+    if(msg->shaft_power!=262143) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->shaft_power,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.vhf!=0) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.vhf,1,1));
+    if(msg->vhf!=0) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->vhf,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.lloyds_ship_type.compare("@@@@@@@")!=0) {
-        const char *charString=msg.lloyds_ship_type.c_str();
+    if(msg->lloyds_ship_type.compare("@@@@@@@")!=0) {
+        const char *charString=msg->lloyds_ship_type.c_str();
         mxSetFieldByNumber(theStruct,0,14,mxCreateCharMatrixFromStrings(1,&charString));
     } else {
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.gross_tonnage!=262143){
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.gross_tonnage,1,1));
+    if(msg->gross_tonnage!=262143){
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->gross_tonnage,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.laden_ballast!=0) {
-        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.laden_ballast,1,1));
+    if(msg->laden_ballast!=0) {
+        mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->laden_ballast,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.heavy_oil!=0) {
-        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.heavy_oil,1,1));
+    if(msg->heavy_oil!=0) {
+        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->heavy_oil,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.light_oil!=0) {
-        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg.light_oil,1,1));
+    if(msg->light_oil!=0) {
+        mxSetFieldByNumber(theStruct,0,18,intMat2MatlabDoubles(&msg->light_oil,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.diesel!=0) {
-        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.diesel,1,1));
+    if(msg->diesel!=0) {
+        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg->diesel,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.bunker_oil!=16383) {
-        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.bunker_oil,1,1));
+    if(msg->bunker_oil!=16383) {
+        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->bunker_oil,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.persons!=0) {
-        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.persons,1,1));
+    if(msg->persons!=0) {
+        mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->persons,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_8_1_26_ToMatlab(libais::Ais8_1_26 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 289.
 //Message "Environmental"
     const size_t numberOfFields=7;
@@ -6436,12 +5961,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     mwSize cellArrayDims[2];
     mxArray *theStruct, *reportsCellArray;
     size_t curReport;
-    
-    Ais8_1_26 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -6454,46 +5974,46 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "Function identifier (FI)",//5
             "A cell array containing sensor reports as structures where the structures fields are as given in IMO circular 289"//6
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-    cellArrayDims[0]=msg.reports.size();
+    cellArrayDims[0]=msg->reports.size();
     cellArrayDims[1]=1;
     //Make space to hold all of the reports in a cell array.
     reportsCellArray=mxCreateCellArray(2, cellArrayDims);
     mxSetFieldByNumber(theStruct,0,6,reportsCellArray);
 
     //Fill in all of the reports.
-    for(curReport=0;curReport<msg.reports.size();curReport++) {
-        switch (msg.reports[curReport]->report_type) { 
-            case AIS8_1_26_SENSOR_LOCATION:
+    for(curReport=0;curReport<msg->reports.size();curReport++) {
+        switch (msg->reports[curReport]->report_type) { 
+            case libais::AIS8_1_26_SENSOR_LOCATION:
             {
                 const size_t numReportFields=11;
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
-                "utc_day", "utc_hr", "utc_min", "site_id", "x", "y", "z",
+                "utc_day", "utc_hr", "utc_min", "site_id", "lon", "lat", "z",
                 "owner", "timeout", "spare"};                      
-                Ais8_1_26_Location *rpt = reinterpret_cast<Ais8_1_26_Location *>(msg.reports[curReport]);
+                libais::Ais8_1_26_Location *rpt = reinterpret_cast<libais::Ais8_1_26_Location *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -6518,13 +6038,13 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetFieldByNumber(reportStruct,0,4,intMat2MatlabDoubles(&rpt->site_id,1,1));
                 
                 //Fill in the components for this sensor report type.
-                if(fabs(rpt->x)<=180) {
-                    mxSetFieldByNumber(reportStruct,0,5,floatMat2MatlabDoubles(&rpt->x,1,1));
+                if(fabs(rpt->position.lng_deg)<=180) {
+                    mxSetFieldByNumber(reportStruct,0,5,doubleMat2Matlab(&rpt->position.lng_deg,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,5,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(fabs(rpt->y)<=90) {
-                    mxSetFieldByNumber(reportStruct,0,6,floatMat2MatlabDoubles(&rpt->y,1,1));
+                if(fabs(rpt->position.lat_deg)<=90) {
+                    mxSetFieldByNumber(reportStruct,0,6,doubleMat2Matlab(&rpt->position.lat_deg,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
@@ -6542,16 +6062,15 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetFieldByNumber(reportStruct,0,10,intMat2MatlabDoubles(&rpt->spare,1,1));
 
                 mxSetCell(reportsCellArray,curReport,reportStruct);
-                
             }
                 break;
-            case AIS8_1_26_SENSOR_STATION:
+            case libais::AIS8_1_26_SENSOR_STATION:
             {
                 const size_t numReportFields=7;
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
                 "utc_day", "utc_hr", "utc_min", "site_id", "name", "spare"};                      
-                Ais8_1_26_Station *rpt = reinterpret_cast<Ais8_1_26_Station *>(msg.reports[curReport]);
+                libais::Ais8_1_26_Station *rpt = reinterpret_cast<libais::Ais8_1_26_Station *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -6587,7 +6106,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_WIND:
+            case libais::AIS8_1_26_SENSOR_WIND:
             {
                 const size_t numReportFields=18;
                 const mwSize reportDims[2] = {1, 1};
@@ -6597,7 +6116,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 "wind_forecast", "wind_gust_forecast", "wind_dir_forecast",
                 "utc_day_forecast", "utc_hour_forecast",
                 "utc_min_forecast", "duration", "spare"};                      
-                Ais8_1_26_Wind *rpt = reinterpret_cast<Ais8_1_26_Wind *>(msg.reports[curReport]);
+                libais::Ais8_1_26_Wind *rpt = reinterpret_cast<libais::Ais8_1_26_Wind *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -6648,33 +6167,33 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 } else {
                     mxSetFieldByNumber(reportStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->wind_forcast<=121) {
-                    mxSetFieldByNumber(reportStruct,0,10,intMat2MatlabDoubles(&rpt->wind_forcast,1,1));
+                if(rpt->wind_forecast<=121) {
+                    mxSetFieldByNumber(reportStruct,0,10,intMat2MatlabDoubles(&rpt->wind_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->wind_gust_forcast<=121) {
-                    mxSetFieldByNumber(reportStruct,0,11,intMat2MatlabDoubles(&rpt->wind_gust_forcast,1,1));
+                if(rpt->wind_gust_forecast<=121) {
+                    mxSetFieldByNumber(reportStruct,0,11,intMat2MatlabDoubles(&rpt->wind_gust_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->wind_dir_forcast<=359) {
-                    mxSetFieldByNumber(reportStruct,0,12,intMat2MatlabDoubles(&rpt->wind_dir_forcast,1,1));
+                if(rpt->wind_dir_forecast<=359) {
+                    mxSetFieldByNumber(reportStruct,0,12,intMat2MatlabDoubles(&rpt->wind_dir_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_day_forcast!=0) {
-                    mxSetFieldByNumber(reportStruct,0,13,intMat2MatlabDoubles(&rpt->utc_day_forcast,1,1));
+                if(rpt->utc_day_forecast!=0) {
+                    mxSetFieldByNumber(reportStruct,0,13,intMat2MatlabDoubles(&rpt->utc_day_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_hour_forcast<=23) {
-                    mxSetFieldByNumber(reportStruct,0,14,intMat2MatlabDoubles(&rpt->utc_hour_forcast,1,1));
+                if(rpt->utc_hour_forecast<=23) {
+                    mxSetFieldByNumber(reportStruct,0,14,intMat2MatlabDoubles(&rpt->utc_hour_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_min_forcast<=59) {
-                    mxSetFieldByNumber(reportStruct,0,15,intMat2MatlabDoubles(&rpt->utc_min_forcast,1,1));
+                if(rpt->utc_min_forecast<=59) {
+                    mxSetFieldByNumber(reportStruct,0,15,intMat2MatlabDoubles(&rpt->utc_min_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
@@ -6684,16 +6203,16 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_WATER_LEVEL:
+            case libais::AIS8_1_26_SENSOR_WATER_LEVEL:
             {
                 const size_t numReportFields=17;
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
                 "utc_day", "utc_hr", "utc_min", "site_id", "type", "level",
                 "trend", "vdatum", "sensor_type", "forecast_type",
-                "level_forcast", "utc_day_forcast", "utc_hour_forcast",
-                "utc_min_forcast", "duration", "spare"};                      
-                Ais8_1_26_WaterLevel *rpt = reinterpret_cast<Ais8_1_26_WaterLevel *>(msg.reports[curReport]);
+                "level_forecast", "utc_day_forecast", "utc_hour_forecast",
+                "utc_min_forecast", "duration", "spare"};                      
+                libais::Ais8_1_26_WaterLevel *rpt = reinterpret_cast<libais::Ais8_1_26_WaterLevel *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -6735,24 +6254,24 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                     mxSetFieldByNumber(reportStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
                 mxSetFieldByNumber(reportStruct,0,9,intMat2MatlabDoubles(&rpt->sensor_type,1,1));
-                mxSetFieldByNumber(reportStruct,0,10,intMat2MatlabDoubles(&rpt->forcast_type,1,1));
-                if(rpt->level_forcast>-327.68) {
-                    mxSetFieldByNumber(reportStruct,0,11,floatMat2MatlabDoubles(&rpt->level_forcast,1,1));
+                mxSetFieldByNumber(reportStruct,0,10,intMat2MatlabDoubles(&rpt->forecast_type,1,1));
+                if(rpt->level_forecast>-327.68) {
+                    mxSetFieldByNumber(reportStruct,0,11,floatMat2MatlabDoubles(&rpt->level_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_day_forcast!=0) {
-                    mxSetFieldByNumber(reportStruct,0,12,intMat2MatlabDoubles(&rpt->utc_day_forcast,1,1));
+                if(rpt->utc_day_forecast!=0) {
+                    mxSetFieldByNumber(reportStruct,0,12,intMat2MatlabDoubles(&rpt->utc_day_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_hour_forcast<=23) {
-                    mxSetFieldByNumber(reportStruct,0,13,intMat2MatlabDoubles(&rpt->utc_hour_forcast,1,1));
+                if(rpt->utc_hour_forecast<=23) {
+                    mxSetFieldByNumber(reportStruct,0,13,intMat2MatlabDoubles(&rpt->utc_hour_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_min_forcast<=59) {
-                    mxSetFieldByNumber(reportStruct,0,14,intMat2MatlabDoubles(&rpt->utc_min_forcast,1,1));
+                if(rpt->utc_min_forecast<=59) {
+                    mxSetFieldByNumber(reportStruct,0,14,intMat2MatlabDoubles(&rpt->utc_min_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
@@ -6762,14 +6281,14 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_CURR_2D:
+            case libais::AIS8_1_26_SENSOR_CURR_2D:
             {
                 const size_t numReportFields=8;
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
                 "utc_day", "utc_hr", "utc_min", "site_id", "type", "spare",
                 "currents"};                      
-                Ais8_1_26_Curr2D *rpt = reinterpret_cast<Ais8_1_26_Curr2D *>(msg.reports[curReport]);
+                libais::Ais8_1_26_Curr2D *rpt = reinterpret_cast<libais::Ais8_1_26_Curr2D *>(msg->reports[curReport]);
                 const mwSize currentsDims[2] = {3,1};
                 const size_t numberOfCurrentFields=3;
                 const char *currentFieldNames[numberOfCurrentFields]={"speed",
@@ -6825,14 +6344,14 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_CURR_3D:
+            case libais::AIS8_1_26_SENSOR_CURR_3D:
             {
                 const size_t numReportFields=8;
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
                 "utc_day", "utc_hr", "utc_min", "site_id", "type", "spare",
                 "currents"};                      
-                Ais8_1_26_Curr3D *rpt = reinterpret_cast<Ais8_1_26_Curr3D *>(msg.reports[curReport]);
+                libais::Ais8_1_26_Curr3D *rpt = reinterpret_cast<libais::Ais8_1_26_Curr3D *>(msg->reports[curReport]);
                 const mwSize currentsDims[2] = {2,1};
                 const size_t numberOfCurrentFields=4;
                 const char *currentFieldNames[numberOfCurrentFields]={"north",
@@ -6889,14 +6408,14 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_HORZ_FLOW:
+            case libais::AIS8_1_26_SENSOR_HORZ_FLOW:
             {
                 const size_t numReportFields=7;
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
                 "utc_day", "utc_hr", "utc_min", "site_id", "spare",
                 "currents"};                      
-                Ais8_1_26_HorzFlow *rpt = reinterpret_cast<Ais8_1_26_HorzFlow *>(msg.reports[curReport]);
+                libais::Ais8_1_26_HorzFlow *rpt = reinterpret_cast<libais::Ais8_1_26_HorzFlow *>(msg->reports[curReport]);
                 const mwSize flowDims[2] = {2,1};
                 const size_t numberOfFlowFields=5;
                 const char *flowFieldNames[numberOfFlowFields]={"bearing",
@@ -6961,7 +6480,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_SEA_STATE:
+            case libais::AIS8_1_26_SENSOR_SEA_STATE:
             {
                 const size_t numReportFields=18;
                 const mwSize reportDims[2] = {1, 1};
@@ -6971,7 +6490,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 "water_temp", "water_temp_depth", "water_sensor_type",
                 "wave_height", "wave_period", "wave_dir", "wave_sensor_type",
                 "salinity"};                      
-                Ais8_1_26_SeaState *rpt = reinterpret_cast<Ais8_1_26_SeaState *>(msg.reports[curReport]);
+                libais::Ais8_1_26_SeaState *rpt = reinterpret_cast<libais::Ais8_1_26_SeaState *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -7065,7 +6584,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_SALINITY:
+            case libais::AIS8_1_26_SENSOR_SALINITY:
             {
                 const size_t numReportFields=12;
                 const mwSize reportDims[2] = {1, 1};
@@ -7073,7 +6592,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 "utc_day", "utc_hr", "utc_min", "site_id", "water_temp",
                 "conductivity", "pressure", "salinity", "salinity_type",
                 "sensor_type", "spare"};                      
-                Ais8_1_26_Salinity *rpt = reinterpret_cast<Ais8_1_26_Salinity *>(msg.reports[curReport]);
+                libais::Ais8_1_26_Salinity *rpt = reinterpret_cast<libais::Ais8_1_26_Salinity *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -7129,7 +6648,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_WX:
+            case libais::AIS8_1_26_SENSOR_WX:
             {
                 const size_t numReportFields=16;
                 const mwSize reportDims[2] = {1, 1};
@@ -7138,7 +6657,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 "air_temp_sensor_type", "precip", "horz_vis", "dew_point",
                 "dew_point_type", "air_pressure", "air_pressure_trend",
                 "air_pressor_type", "salinity", "spare"};                      
-                Ais8_1_26_Wx *rpt = reinterpret_cast<Ais8_1_26_Wx *>(msg.reports[curReport]);
+                libais::Ais8_1_26_Wx *rpt = reinterpret_cast<libais::Ais8_1_26_Wx *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -7190,7 +6709,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                     mxSetFieldByNumber(reportStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
                 if(rpt->air_pressure<=1201) {
-                    mxSetFieldByNumber(reportStruct,0,11,intMat2MatlabDoubles(&rpt->air_pressure,1,1));
+                    mxSetFieldByNumber(reportStruct,0,11,floatMat2MatlabDoubles(&rpt->air_pressure,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
@@ -7214,15 +6733,15 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 mxSetCell(reportsCellArray,curReport,reportStruct);
             }
                 break;
-            case AIS8_1_26_SENSOR_AIR_DRAUGHT:
+            case libais::AIS8_1_26_SENSOR_AIR_DRAUGHT:
             {
                 const size_t numReportFields=13;
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
                 "utc_day", "utc_hr", "utc_min", "site_id", "draught", "gap",
-                "forcast_gap", "trend", "utc_day_forcast", "utc_hour_forcast",
-                "utc_min_forcast", "spare"};                      
-                Ais8_1_26_AirDraught *rpt = reinterpret_cast<Ais8_1_26_AirDraught *>(msg.reports[curReport]);
+                "forecast_gap", "trend", "utc_day_forecast", "utc_hour_forecast",
+                "utc_min_forecast", "spare"};                      
+                libais::Ais8_1_26_AirDraught *rpt = reinterpret_cast<libais::Ais8_1_26_AirDraught *>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -7258,8 +6777,8 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 } else {
                     mxSetFieldByNumber(reportStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->forcast_gap!=3) {
-                    mxSetFieldByNumber(reportStruct,0,7,floatMat2MatlabDoubles(&rpt->forcast_gap,1,1));
+                if(rpt->forecast_gap!=3) {
+                    mxSetFieldByNumber(reportStruct,0,7,floatMat2MatlabDoubles(&rpt->forecast_gap,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
@@ -7268,18 +6787,18 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 } else {
                     mxSetFieldByNumber(reportStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_day_forcast!=0) {
-                    mxSetFieldByNumber(reportStruct,0,9,intMat2MatlabDoubles(&rpt->utc_day_forcast,1,1));
+                if(rpt->utc_day_forecast!=0) {
+                    mxSetFieldByNumber(reportStruct,0,9,intMat2MatlabDoubles(&rpt->utc_day_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_hour_forcast<=23) {
-                    mxSetFieldByNumber(reportStruct,0,10,intMat2MatlabDoubles(&rpt->utc_hour_forcast,1,1));
+                if(rpt->utc_hour_forecast<=23) {
+                    mxSetFieldByNumber(reportStruct,0,10,intMat2MatlabDoubles(&rpt->utc_hour_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
-                if(rpt->utc_min_forcast<=59) {
-                    mxSetFieldByNumber(reportStruct,0,11,intMat2MatlabDoubles(&rpt->utc_min_forcast,1,1));
+                if(rpt->utc_min_forecast<=59) {
+                    mxSetFieldByNumber(reportStruct,0,11,intMat2MatlabDoubles(&rpt->utc_min_forecast,1,1));
                 } else {
                     mxSetFieldByNumber(reportStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
                 }
@@ -7295,7 +6814,7 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 const mwSize reportDims[2] = {1, 1};
                 const char *reportFieldNames[numReportFields]={"report_type",
                 "utc_day", "utc_hr", "utc_min", "site_id"};                      
-                Ais8_1_26_SensorReport *rpt = reinterpret_cast<Ais8_1_26_SensorReport*>(msg.reports[curReport]);
+                libais::Ais8_1_26_SensorReport *rpt = reinterpret_cast<libais::Ais8_1_26_SensorReport*>(msg->reports[curReport]);
                 mxArray *reportStruct;
                 
                 //Create the Matlab structure array.
@@ -7324,11 +6843,9 @@ AIS_STATUS AIS_8_1_26_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
                 break;
         }
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS_8_1_27_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_1_27_ToMatlab(libais::Ais8_1_27 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 289.
 //Message "Route Information (Broadcast)"
     const size_t numberOfFields=15;
@@ -7341,14 +6858,9 @@ AIS_STATUS AIS_8_1_27_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     "utc_min", "duration", "waypoints"};
     const size_t numberOfWaypointFields=2;
     mwSize waypointDims[2];
-    const char *waypointFieldNames[numberOfWaypointFields] = {"x", "y"};
+    const char *waypointFieldNames[numberOfWaypointFields] = {"lon", "lat"};
     mxArray *theStruct, *waypointArray;
     size_t curWaypoint;
-
-    Ais8_1_27 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
        
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -7370,84 +6882,82 @@ AIS_STATUS AIS_8_1_27_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "Minutes until end of validity of the route. Measured from start time of Route Information. 0 = cancel route",//13
             "An array containing WGS-84 longitude East and latitude North coordinates in degrees of the waypoints"//14
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.link_id,1,1));
+    if(msg->link_id!=0) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->link_id,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.sender_type,1,1));
-    if(msg.route_type!=0) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.route_type,1,1));
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->sender_type,1,1));
+    if(msg->route_type!=0) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->route_type,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.utc_month!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.utc_month,1,1));
+    if(msg->utc_month!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->utc_month,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.utc_day!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_day,1,1));
+    if(msg->utc_day!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_day,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.utc_hour<=23) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_hour,1,1));
+    if(msg->utc_hour<=23) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_hour,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.utc_min<=59) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_min,1,1));
+    if(msg->utc_min<=59) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_min,1,1));
     } else{
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.duration,1,1));
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->duration,1,1));
 
-    waypointDims[0]=msg.waypoints.size();
+    waypointDims[0]=msg->waypoints.size();
     waypointDims[1]=1;
     waypointArray=mxCreateStructArray(2, waypointDims, numberOfWaypointFields, waypointFieldNames);
     mxSetFieldByNumber(theStruct,0,14,waypointArray);
 
-    for(curWaypoint= 0; curWaypoint < msg.waypoints.size(); curWaypoint++) {
-        if(fabs(msg.waypoints[curWaypoint].x)<=180) {
-            mxSetFieldByNumber(waypointArray,curWaypoint,0,floatMat2MatlabDoubles(&msg.waypoints[curWaypoint].x,1,1));
+    for(curWaypoint= 0; curWaypoint < msg->waypoints.size(); curWaypoint++) {
+        if(fabs(msg->waypoints[curWaypoint].lng_deg)<=180) {
+            mxSetFieldByNumber(waypointArray,curWaypoint,0,doubleMat2Matlab(&msg->waypoints[curWaypoint].lng_deg,1,1));
         } else {
             mxSetFieldByNumber(waypointArray,curWaypoint,0,mxCreateDoubleMatrix(0,0,mxREAL));
         }
-        if(msg.waypoints[curWaypoint].y<=90) {
-            mxSetFieldByNumber(waypointArray,curWaypoint,1,floatMat2MatlabDoubles(&msg.waypoints[curWaypoint].y,1,1));
+        if(msg->waypoints[curWaypoint].lat_deg<=90) {
+            mxSetFieldByNumber(waypointArray,curWaypoint,1,doubleMat2Matlab(&msg->waypoints[curWaypoint].lat_deg,1,1));
         } else {
             mxSetFieldByNumber(waypointArray,curWaypoint,1,mxCreateDoubleMatrix(0,0,mxREAL));
         }
     }
-    
-    return AIS_OK;
 }
 
-AIS_STATUS AIS_8_1_29_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_1_29_ToMatlab(libais::Ais8_1_29 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 289.
 //Message "Text description (broadcast)"
     const size_t numberOfFields=9;
@@ -7458,11 +6968,7 @@ AIS_STATUS AIS_8_1_29_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     "repeat_indicator", "mmsi", "spare", "dac", "fi", "link_id", "text",
     "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_29 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -7476,45 +6982,42 @@ AIS_STATUS AIS_8_1_29_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "Message Linkage ID. Used to link the Text Description message with a main message. The Connection ID and source MMSI MID uniquely identifies the main message. (1-1023)",
             "Text String"
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
 
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.link_id,1,1));
+    if(msg->link_id!=0) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->link_id,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
     {
-        const char *charString=msg.text.c_str();
+        const char *charString=msg->text.c_str();
         mxSetFieldByNumber(theStruct,0,7,mxCreateCharMatrixFromStrings(1,&charString));
     }
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-
-AIS_STATUS AIS_8_1_31_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_8_1_31_ToMatlab(libais::Ais8_1_31 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message format is described in IMO circular 289.
 //Message "Meteorological and Hydrographic data"
     const size_t numberOfFields=44;
@@ -7522,7 +7025,7 @@ AIS_STATUS AIS_8_1_31_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id",
-    "repeat_indicator", "mmsi", "spare", "dac", "fi", "x", "y",
+    "repeat_indicator", "mmsi", "spare", "dac", "fi", "lon", "lat",
     "position_accuracy", "utc_day", "utc_hour", "utc_min", "wind_ave",
     "wind_gust", "wind_dir", "wind_gust_dir", "air_temp", "rel_humid",
     "dew_point", "air_pres", "air_pres_trend", "horz_vis", "water_level",
@@ -7532,12 +7035,7 @@ AIS_STATUS AIS_8_1_31_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
     "swell_dir", "sea_state", "water_temp", "precip_type", "salinity",
     "ice", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_1_31 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -7587,281 +7085,216 @@ AIS_STATUS AIS_8_1_31_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "A boolean value indicating the presence of ice",//42
             "Not used. Should be zero."//43
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-   if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+   if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {//No longitude
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {//No latitude
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.position_accuracy,1,1));
+    mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->position_accuracy,1,1));
     
-    if(msg.utc_day!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.utc_day,1,1));
+    if(msg->utc_day!=0) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->utc_day,1,1));
     } else {//Day of departure not available
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.utc_hour<24) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_hour,1,1));
+    if(msg->utc_hour<24) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_hour,1,1));
     } else {//Hour of departure not available
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.utc_min<60) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_min,1,1));
+    if(msg->utc_min<60) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_min,1,1));
     } else {//Minute of departure not available
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_ave<=126) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.wind_ave,1,1));
+    if(msg->wind_ave<=126) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->wind_ave,1,1));
     } else {//No wind average
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_gust<=126) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.wind_gust,1,1));
+    if(msg->wind_gust<=126) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->wind_gust,1,1));
     } else {//No wind gust speed
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.wind_dir,1,1));
+    if(msg->wind_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->wind_dir,1,1));
     } else {//No wind direction
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wind_gust_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.wind_gust_dir,1,1));
+    if(msg->wind_gust_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->wind_gust_dir,1,1));
     } else {//No wind gust direction
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.air_temp<=60&&msg.air_temp>=-60) {
-        mxSetFieldByNumber(theStruct,0,16,floatMat2MatlabDoubles(&msg.air_temp,1,1));
+    if(msg->air_temp<=60&&msg->air_temp>=-60) {
+        mxSetFieldByNumber(theStruct,0,16,floatMat2MatlabDoubles(&msg->air_temp,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,16,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.rel_humid<=100) {
-        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg.rel_humid,1,1));
+    if(msg->rel_humid<=100) {
+        mxSetFieldByNumber(theStruct,0,17,intMat2MatlabDoubles(&msg->rel_humid,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,17,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.dew_point<=50&&msg.dew_point>=-20) {
-        mxSetFieldByNumber(theStruct,0,18,floatMat2MatlabDoubles(&msg.dew_point,1,1));
+    if(msg->dew_point<=50&&msg->dew_point>=-20) {
+        mxSetFieldByNumber(theStruct,0,18,floatMat2MatlabDoubles(&msg->dew_point,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,18,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.air_pres<=1201) {
-        mxSetFieldByNumber(theStruct,0,19,intMat2MatlabDoubles(&msg.air_pres,1,1));
+    if(msg->air_pres<=1201) {
+        mxSetFieldByNumber(theStruct,0,19,floatMat2MatlabDoubles(&msg->air_pres,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,19,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.air_pres_trend<=2){
-        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.air_pres_trend,1,1));
+    if(msg->air_pres_trend<=2){
+        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->air_pres_trend,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.horz_vis<=12.6) {
-        mxSetFieldByNumber(theStruct,0,21,floatMat2MatlabDoubles(&msg.horz_vis,1,1));
+    if(msg->horz_vis<=12.6) {
+        mxSetFieldByNumber(theStruct,0,21,floatMat2MatlabDoubles(&msg->horz_vis,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,21,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.water_level<=30&&msg.water_level>=-10) {
-        mxSetFieldByNumber(theStruct,0,22,floatMat2MatlabDoubles(&msg.water_level,1,1));
+    if(msg->water_level<=30&&msg->water_level>=-10) {
+        mxSetFieldByNumber(theStruct,0,22,floatMat2MatlabDoubles(&msg->water_level,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,22,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.water_level_trend<=2) {
-        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg.water_level_trend,1,1));
+    if(msg->water_level_trend<=2) {
+        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg->water_level_trend,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.surf_cur_speed<=25.1) {
-        mxSetFieldByNumber(theStruct,0,24,floatMat2MatlabDoubles(&msg.surf_cur_speed,1,1));
+    if(msg->surf_cur_speed<=25.1) {
+        mxSetFieldByNumber(theStruct,0,24,floatMat2MatlabDoubles(&msg->surf_cur_speed,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.surf_cur_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg.surf_cur_dir,1,1));
+    if(msg->surf_cur_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg->surf_cur_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,25,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_speed_2<=25.1) {
-        mxSetFieldByNumber(theStruct,0,26,floatMat2MatlabDoubles(&msg.cur_speed_2,1,1));
+    if(msg->cur_speed_2<=25.1) {
+        mxSetFieldByNumber(theStruct,0,26,floatMat2MatlabDoubles(&msg->cur_speed_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,26,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_dir_2<=359) {
-        mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg.cur_dir_2,1,1));
+    if(msg->cur_dir_2<=359) {
+        mxSetFieldByNumber(theStruct,0,27,intMat2MatlabDoubles(&msg->cur_dir_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,27,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_depth_2<=30) {
-        mxSetFieldByNumber(theStruct,0,28,intMat2MatlabDoubles(&msg.cur_depth_2,1,1));
+    if(msg->cur_depth_2<=30) {
+        mxSetFieldByNumber(theStruct,0,28,intMat2MatlabDoubles(&msg->cur_depth_2,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,28,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_speed_3<=25) {
-        mxSetFieldByNumber(theStruct,0,29,floatMat2MatlabDoubles(&msg.cur_speed_3,1,1));
+    if(msg->cur_speed_3<=25) {
+        mxSetFieldByNumber(theStruct,0,29,floatMat2MatlabDoubles(&msg->cur_speed_3,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,29,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_dir_3<=359) {
-        mxSetFieldByNumber(theStruct,0,30,intMat2MatlabDoubles(&msg.cur_dir_3,1,1));
+    if(msg->cur_dir_3<=359) {
+        mxSetFieldByNumber(theStruct,0,30,intMat2MatlabDoubles(&msg->cur_dir_3,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,30,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.cur_depth_3<=30) {
-        mxSetFieldByNumber(theStruct,0,31,intMat2MatlabDoubles(&msg.cur_depth_3,1,1));
+    if(msg->cur_depth_3<=30) {
+        mxSetFieldByNumber(theStruct,0,31,intMat2MatlabDoubles(&msg->cur_depth_3,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,31,mxCreateDoubleMatrix(0,0,mxREAL));
     }
-    if(msg.wave_height<=25.1) {
-        mxSetFieldByNumber(theStruct,0,32,floatMat2MatlabDoubles(&msg.wave_height,1,1));
+    if(msg->wave_height<=25.1) {
+        mxSetFieldByNumber(theStruct,0,32,floatMat2MatlabDoubles(&msg->wave_height,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,32,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.wave_period<=60) {
-        mxSetFieldByNumber(theStruct,0,33,intMat2MatlabDoubles(&msg.wave_period,1,1));
+    if(msg->wave_period<=60) {
+        mxSetFieldByNumber(theStruct,0,33,intMat2MatlabDoubles(&msg->wave_period,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,33,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.wave_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,34,intMat2MatlabDoubles(&msg.wave_dir,1,1));
+    if(msg->wave_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,34,intMat2MatlabDoubles(&msg->wave_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,34,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.swell_height<=25.1) {
-        mxSetFieldByNumber(theStruct,0,35,floatMat2MatlabDoubles(&msg.swell_height,1,1));
+    if(msg->swell_height<=25.1) {
+        mxSetFieldByNumber(theStruct,0,35,floatMat2MatlabDoubles(&msg->swell_height,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,35,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.swell_period<=60) {
-        mxSetFieldByNumber(theStruct,0,36,intMat2MatlabDoubles(&msg.swell_period,1,1));
+    if(msg->swell_period<=60) {
+        mxSetFieldByNumber(theStruct,0,36,intMat2MatlabDoubles(&msg->swell_period,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,36,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.swell_dir<=359) {
-        mxSetFieldByNumber(theStruct,0,37,intMat2MatlabDoubles(&msg.swell_dir,1,1));
+    if(msg->swell_dir<=359) {
+        mxSetFieldByNumber(theStruct,0,37,intMat2MatlabDoubles(&msg->swell_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,37,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.sea_state<=12) {
-        mxSetFieldByNumber(theStruct,0,38,intMat2MatlabDoubles(&msg.sea_state,1,1));
+    if(msg->sea_state<=12) {
+        mxSetFieldByNumber(theStruct,0,38,intMat2MatlabDoubles(&msg->sea_state,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,38,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.water_temp<=50&&msg.water_temp>=-10) {
-        mxSetFieldByNumber(theStruct,0,39,floatMat2MatlabDoubles(&msg.water_temp,1,1));
+    if(msg->water_temp<=50&&msg->water_temp>=-10) {
+        mxSetFieldByNumber(theStruct,0,39,floatMat2MatlabDoubles(&msg->water_temp,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,39,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.precip_type<7) {
-        mxSetFieldByNumber(theStruct,0,40,intMat2MatlabDoubles(&msg.precip_type,1,1));
+    if(msg->precip_type<7) {
+        mxSetFieldByNumber(theStruct,0,40,intMat2MatlabDoubles(&msg->precip_type,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,40,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.salinity<=50) {
-        mxSetFieldByNumber(theStruct,0,41,floatMat2MatlabDoubles(&msg.salinity,1,1));
+    if(msg->salinity<=50) {
+        mxSetFieldByNumber(theStruct,0,41,floatMat2MatlabDoubles(&msg->salinity,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,41,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.ice==0||msg.ice==1) {
-        mxSetFieldByNumber(theStruct,0,42,intMat2MatlabDoubles(&msg.ice,1,1));
+    if(msg->ice==0||msg->ice==1) {
+        mxSetFieldByNumber(theStruct,0,42,intMat2MatlabDoubles(&msg->ice,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,42,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
 
-    mxSetFieldByNumber(theStruct,0,43,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,43,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-/*
-AIS_STATUS AIS_8_1_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
-//This message format is described in Annex 5 of ITU-R M.1371-1. It is not
-//present in ITU-R M.1371-5
-    const size_t numberOfFields=8;
-    const mwSize dims[2] = {1, 1};
-    //These are the names of all of the fields that will be added to the
-    //Matlab structre array.
-    const char *fieldNames[numberOfFields] = {"message_id", "repeat_indicator",
-    "mmsi", "spare", "dac", "fi", "persons", "spare2"};
-    mxArray *theStruct;
-    
-    Ais8_1_40 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
-    //If text descriptions of the fields are desired, then put them into a
-    //structure.
-    if(fieldDescriptions!=NULL) {
-        const char *descriptionStrings[numberOfFields] = {
-            "Identifier for Message 8; always 8.",//0
-            "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
-            "Maritime mobile service identity (MMSI) number of source station",//2
-            "Not used. Should be zero. Reserved for future use",//3
-            "Designated area code (DAC)",//4
-            "Function identifier (FI)",//5
-            "Current number of persons on board, including crew members (1-8191)",//6
-            "Not used. Should be set to zero"//7
-        };
-        int i;
-
-        *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-
-        for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
-        }
-    }
-    
-    //Create the Matlab structure array.
-    theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
-    
-    //Fill all of the elements of the structure with the set that is common
-    //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
-
-    //Fields specific to the Ais8_1_40 type.
-    if(msg.persons!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.persons,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
-    }
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
-}
-*/
-AIS_STATUS AIS_8_200_10_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_8_200_10_ToMatlab(libais::Ais8_200_10 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message is defined in ECE-TRANS-SC3-176e.pdf
 //Message "Inland ship static and voyage related data"
     const size_t numberOfFields=17;
@@ -7873,12 +7306,7 @@ AIS_STATUS AIS_8_200_10_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "beam", "ship_type", "haz_cargo", "draught", "loaded", "speed_qual",
     "course_qual", "heading_qual", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_200_10 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-    
+
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -7889,73 +7317,70 @@ AIS_STATUS AIS_8_200_10_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Not used. Should be zero. Reserved for future use",//3
             "Designated area code (DAC)",//4
             "Function identifier (FI)",//5
-            "European Identifier string",
-            "Length of ship in meters (0=default)",
-            "Beam of ship in meters (0=default)",
-            "Numeric ERI Classification for ship or combination type",
-            "Hazardous Cargo, number of blue cones/ lights0-3, 4=B-flag",
-            "Draught in meters"
-            "1=loaded, 2=unloaded, 3 should not be used",
-            "Quality of speed information1=high, 0=low/GNSS",
-            "Quality of course information1=high, 0=low/GNSS",
-            "Quality of heading information1=high, 0=low",
-            "Not used, should be set to zero. Reserved for future use."
+            "European Identifier string",//6
+            "Length of ship in meters (0=default)",//7
+            "Beam of ship in meters (0=default)",//8
+            "Numeric ERI Classification for ship or combination type",//9
+            "Hazardous Cargo, number of blue cones/ lights0-3, 4=B-flag",//10
+            "Draught in meters",//11
+            "1=loaded, 2=unloaded, 3 should not be used",//12
+            "Quality of speed information1=high, 0=low/GNSS",//13
+            "Quality of course information1=high, 0=low/GNSS",//14
+            "Quality of heading information1=high, 0=low",//15
+            "Not used, should be set to zero. Reserved for future use."//16
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
     {
-        const char *charString=msg.eu_id.c_str();
+        const char *charString=msg->eu_id.c_str();
         mxSetFieldByNumber(theStruct,0,6,mxCreateCharMatrixFromStrings(1,&charString));
     }
-    mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.length,1,1));
-    mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg.beam,1,1));
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.ship_type,1,1));
-    if(msg.haz_cargo<=4) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.haz_cargo,1,1));
+    mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg->length,1,1));
+    mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(&msg->beam,1,1));
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->ship_type,1,1));
+    if(msg->haz_cargo<=4) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->haz_cargo,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.draught!=0) {
-        mxSetFieldByNumber(theStruct,0,11,floatMat2MatlabDoubles(&msg.draught,1,1));
+    if(msg->draught!=0) {
+        mxSetFieldByNumber(theStruct,0,11,floatMat2MatlabDoubles(&msg->draught,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.loaded!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.loaded,1,1));
+    if(msg->loaded!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->loaded,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.speed_qual,1,1));
-    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.course_qual,1,1));
-    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.heading_qual,1,1));
-    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->speed_qual,1,1));
+    mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->course_qual,1,1));
+    mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->heading_qual,1,1));
+    mxSetFieldByNumber(theStruct,0,16,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-/*
-AIS_STATUS AIS_8_200_23_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions,const char *nmea_payload, const size_t pad) {
+void AIS_8_200_23_ToMatlab(libais::Ais8_200_23 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message is defined in ECE-TRANS-SC3-176e.pdf
 //Message "EMMA warning"
     const size_t numberOfFields=26;
@@ -7966,14 +7391,9 @@ AIS_STATUS AIS_8_200_23_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "repeat_indicator", "mmsi", "spare", "dac", "fi", "utc_year_start",
     "utc_month_start", "utc_day_start", "utc_hour_start", "utc_min_start"
     "utc_year_end", "utc_month_end", "utc_day_end", "utc_hour_end",
-    "utc_min_end", "x1", "y1", "x2", "y2", "type", "min", "max",
+    "utc_min_end", "lon1", "lat1", "lon2", "lat2", "type", "min", "max",
     "classification", "wind_dir", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_200_23 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -8006,107 +7426,104 @@ AIS_STATUS AIS_8_200_23_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Wind direction such that\n1 North\n2 North East\n3 East\n4 South East\n5 South\n6 South West\n7 West\n8 North West",//24
             "Not used, should be set to zero. Reserved for future use."//25
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-    if(msg.utc_year_start!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.utc_year_start,1,1));
+    if(msg->utc_year_start!=0) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->utc_year_start,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_month_start!=0) {
-        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.utc_month_start,1,1));
+    if(msg->utc_month_start!=0) {
+        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->utc_month_start,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_day_start!=0) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.utc_day_start,1,1));
+    if(msg->utc_day_start!=0) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->utc_day_start,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_hour_start<=23) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.utc_hour_start,1,1));
+    if(msg->utc_hour_start<=23) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->utc_hour_start,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_min_start<=59) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.utc_min_start,1,1));
+    if(msg->utc_min_start<=59) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->utc_min_start,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_year_end!=0) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.utc_year_end,1,1));
+    if(msg->utc_year_end!=0) {
+        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->utc_year_end,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_month_end!=0) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.utc_month_end,1,1));
+    if(msg->utc_month_end!=0) {
+        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->utc_month_end,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_day_end!=0) {
-        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg.utc_day_end,1,1)); 
+    if(msg->utc_day_end!=0) {
+        mxSetFieldByNumber(theStruct,0,13,intMat2MatlabDoubles(&msg->utc_day_end,1,1)); 
     } else {
         mxSetFieldByNumber(theStruct,0,13,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_hour_end<=23) {
-        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg.utc_hour_end,1,1));
+    if(msg->utc_hour_end<=23) {
+        mxSetFieldByNumber(theStruct,0,14,intMat2MatlabDoubles(&msg->utc_hour_end,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,14,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.utc_min_end<=59) {
-        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg.utc_min_end,1,1));
+    if(msg->utc_min_end<=59) {
+        mxSetFieldByNumber(theStruct,0,15,intMat2MatlabDoubles(&msg->utc_min_end,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,15,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,16,floatMat2MatlabDoubles(&msg.x1,1,1));
-    mxSetFieldByNumber(theStruct,0,17,floatMat2MatlabDoubles(&msg.y1,1,1));
-    mxSetFieldByNumber(theStruct,0,18,floatMat2MatlabDoubles(&msg.x2,1,1));
-    mxSetFieldByNumber(theStruct,0,19,floatMat2MatlabDoubles(&msg.y2,1,1));
-    if(msg.type!=0){
-        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg.type,1,1));
+    mxSetFieldByNumber(theStruct,0,16,doubleMat2Matlab(&msg->position1.lng_deg,1,1));
+    mxSetFieldByNumber(theStruct,0,17,doubleMat2Matlab(&msg->position1.lat_deg,1,1));
+    mxSetFieldByNumber(theStruct,0,18,doubleMat2Matlab(&msg->position2.lng_deg,1,1));
+    mxSetFieldByNumber(theStruct,0,19,doubleMat2Matlab(&msg->position2.lat_deg,1,1));
+    if(msg->type!=0){
+        mxSetFieldByNumber(theStruct,0,20,intMat2MatlabDoubles(&msg->type,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,20,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg.min,1,1));
-    mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg.max,1,1));
-    if(msg.classification!=0) {
-        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg.classification,1,1));
+    mxSetFieldByNumber(theStruct,0,21,intMat2MatlabDoubles(&msg->min,1,1));
+    mxSetFieldByNumber(theStruct,0,22,intMat2MatlabDoubles(&msg->max,1,1));
+    if(msg->classification!=0) {
+        mxSetFieldByNumber(theStruct,0,23,intMat2MatlabDoubles(&msg->classification,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,23,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.wind_dir!=0) {
-        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg.wind_dir,1,1));
+    if(msg->wind_dir!=0) {
+        mxSetFieldByNumber(theStruct,0,24,intMat2MatlabDoubles(&msg->wind_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,24,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg.spare2,1,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,25,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
-*/
 
-AIS_STATUS AIS_8_200_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_200_24_ToMatlab(libais::Ais8_200_24 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message is defined in ECE-TRANS-SC3-176e.pdf
 //Message "Water levels"
     const size_t numberOfFields=9;
@@ -8117,11 +7534,6 @@ AIS_STATUS AIS_8_200_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "repeat_indicator", "mmsi", "spare", "dac", "fi", "country",
     "gauge_ids", "levels"};
     mxArray *theStruct;
-    
-    Ais8_200_24 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -8137,40 +7549,38 @@ AIS_STATUS AIS_8_200_24_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "An array of four gauge IDs, (0-2047) 0 means unknown.",//7
             "An array of water levels in meters (0-204.7), 0 means unknown",//8
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
     {
-        const char *charString=msg.country.c_str();
+        const char *charString=msg->country.c_str();
         mxSetFieldByNumber(theStruct,0,6,mxCreateCharMatrixFromStrings(1,&charString));
     }
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(msg.gauge_ids,4,1));
-    mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(msg.levels,4,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(msg->gauge_ids.data(),4,1));
+    mxSetFieldByNumber(theStruct,0,8,floatMat2MatlabDoubles(msg->levels.data(),4,1));
 }
 
-AIS_STATUS AIS_8_200_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_200_40_ToMatlab(libais::Ais8_200_40 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message is defined in ECE-TRANS-SC3-176e.pdf
 //Message "Signal Status"
     const size_t numberOfFields=13;
@@ -8178,14 +7588,9 @@ AIS_STATUS AIS_8_200_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id",
-    "repeat_indicator", "mmsi", "spare", "dac", "fi", "x", "y", "form",
+    "repeat_indicator", "mmsi", "spare", "dac", "fi", "lon", "lat", "form",
     "dir", "stream_dir", "status_raw", "spare2"};
     mxArray *theStruct;
-    
-    Ais8_200_40 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -8205,61 +7610,59 @@ AIS_STATUS AIS_8_200_40_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "The light status as per ECE-TRANS-SC3-2006-10e.pdf",//11
             "Not used, should be set to zero. Reserved for future use."//12
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-    if(fabs(msg.x)<=180) {
-        mxSetFieldByNumber(theStruct,0,6,floatMat2MatlabDoubles(&msg.x,1,1));
+    if(fabs(msg->position.lng_deg)<=180) {
+        mxSetFieldByNumber(theStruct,0,6,doubleMat2Matlab(&msg->position.lng_deg,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(fabs(msg.y)<=90) {
-        mxSetFieldByNumber(theStruct,0,7,floatMat2MatlabDoubles(&msg.y,1,1));
+    if(fabs(msg->position.lat_deg)<=90) {
+        mxSetFieldByNumber(theStruct,0,7,doubleMat2Matlab(&msg->position.lat_deg,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.form!=0&&msg.form!=15) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.form,1,1));
+    if(msg->form!=0&&msg->form!=15) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->form,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.dir<=359) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.dir,1,1));
+    if(msg->dir<=359) {
+        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg->dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.stream_dir!=0) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.stream_dir,1,1));
+    if(msg->stream_dir!=0) {
+        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg->stream_dir,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.status_raw,1,1));
-    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.spare2,1,1));
-    
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg->status_raw,1,1));
+    mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg->spare2,1,1));
 }
 
-AIS_STATUS AIS_8_200_55_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
+void AIS_8_200_55_ToMatlab(libais::Ais8_200_55 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
 //This message is defined in ECE-TRANS-SC3-176e.pdf
 //Message "number of persons on board"
     const size_t numberOfFields=10;
@@ -8271,11 +7674,6 @@ AIS_STATUS AIS_8_200_55_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
     "yet_more_personnel", "spare2"};
     mxArray *theStruct;
     
-    Ais8_200_55 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
-     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
     if(fieldDescriptions!=NULL) {
@@ -8291,68 +7689,55 @@ AIS_STATUS AIS_8_200_55_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescript
             "Number of shipboard personnel on board (0-254)",//8
             "Not used, should be set to zero. Reserved for future use."//9
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
     //Fill in the components unique to this message.
-    if(msg.crew!=255) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.crew,1,1));
+    if(msg->crew!=255) {
+        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg->crew,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.passengers!=8191) {
-        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.passengers,1,1));
+    if(msg->passengers!=8191) {
+        mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg->passengers,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,7,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    if(msg.yet_more_personnel!=255) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.yet_more_personnel,1,1));
+    if(msg->yet_more_personnel!=255) {
+        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg->yet_more_personnel,1,1));
     } else {
         mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
     }
-    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(msg.spare2,3,1));
-
-    return AIS_OK;
+    mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(msg->spare2.data(),3,1));
 }
 
-AIS_STATUS AIS_8_1_22_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
-//This message format is described in IMO circular 289.
-//Message "Area notice (broadcast)"
-    const size_t numberOfFields=14;
+void AIS_8_366_56_ToMatlab(libais::Ais8_366_56 *msg, mxArray **decodedMessage,mxArray **fieldDescriptions) {
+    const size_t numberOfFields=7;
     const mwSize dims[2] = {1, 1};
-    mwSize cellArrayDims[2];
     //These are the names of all of the fields that will be added to the
     //Matlab structre array.
     const char *fieldNames[numberOfFields] = {"message_id",
-    "repeat_indicator", "mmsi", "spare", "dac", "fi", "link_id",
-    "notice_type", "month", "day", "hour", "minute", "duration_minutes",
-    "sub_areas"};
-    mxArray *theStruct, *subareaCellArray;
-    size_t curSubarea;
-
-    Ais8_001_22 msg(nmea_payload, pad);
-    if (msg.had_error()) {
-        return msg.get_error();
-    }
+    "repeat_indicator", "mmsi", "spare", "dac", "fi", "encrypted"};
+    mxArray *theStruct;
     
     //If text descriptions of the fields are desired, then put them into a
     //structure.
@@ -8364,360 +7749,30 @@ AIS_STATUS AIS_8_1_22_ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptio
             "Not used. Should be zero. Reserved for future use",//3
             "Designated area code (DAC)",//4
             "Function identifier (FI)",//5
-            "A source specific running number (1-1023), unique across all binary messages equipped with Message Linkage ID. Used to link additional information to the message by a Text Description message. The Message Linkage ID and the first six digits of the source MMSI uniquely identify the sent message.",//6
-            "Notice Description, 0-127 as per table 11.11 in IMO circular 289",
-            "UTC month (1-12)",
-            "UTC day (1-31)",
-            "UTC hour (0-23)",
-            "UTC minute (0-59)",
-            "Duration in minutes until the end of the area notice measured from the start date and time of the notice. Max is 262142",
-            "A structure of elements for the subareas as defined in IMO circular 289. The subareas define shapes"
+            "Encrypted data string as unsigned characters"//6
         };
-        int i;
+        unsigned int i;
 
         *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
 
         for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
+            mxSetFieldByNumber(*fieldDescriptions,0,static_cast<int>(i),mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
         }
     }
     
     //Create the Matlab structure array.
     theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
+    *decodedMessage=theStruct;
     
     //Fill all of the elements of the structure with the set that is common
     //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
+    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg->message_id,1,1));
+    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg->repeat_indicator,1,1));
+    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg->mmsi,1,1));
+    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg->spare,1,1));
+    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg->dac,1,1));
+    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg->fi,1,1));
     
-    //Fill in the components unique to this message.
-    if(msg.link_id!=0) {
-        mxSetFieldByNumber(theStruct,0,6,intMat2MatlabDoubles(&msg.link_id,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,6,mxCreateDoubleMatrix(0,0,mxREAL)); 
-    }
-    mxSetFieldByNumber(theStruct,0,7,intMat2MatlabDoubles(&msg.notice_type,1,1));
-    if(msg.month!=0) {
-        mxSetFieldByNumber(theStruct,0,8,intMat2MatlabDoubles(&msg.month,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,8,mxCreateDoubleMatrix(0,0,mxREAL)); 
-    }
-    if(msg.day!=0) {
-        mxSetFieldByNumber(theStruct,0,9,intMat2MatlabDoubles(&msg.day,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,9,mxCreateDoubleMatrix(0,0,mxREAL)); 
-    }
-    if(msg.hour<=23) {
-        mxSetFieldByNumber(theStruct,0,10,intMat2MatlabDoubles(&msg.hour,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,10,mxCreateDoubleMatrix(0,0,mxREAL)); 
-    }
-    if(msg.minute<=59) {
-        mxSetFieldByNumber(theStruct,0,11,intMat2MatlabDoubles(&msg.minute,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,11,mxCreateDoubleMatrix(0,0,mxREAL)); 
-    }
-    if(msg.duration_minutes!=262143) {
-        mxSetFieldByNumber(theStruct,0,12,intMat2MatlabDoubles(&msg.duration_minutes,1,1));
-    } else {
-        mxSetFieldByNumber(theStruct,0,12,mxCreateDoubleMatrix(0,0,mxREAL)); 
-    }
-
-    //The subareas are put into a cell array.
-    cellArrayDims[0]=msg.sub_areas.size();
-    cellArrayDims[1]=1;
-    //Make space to hold all of the reports in a cell array.
-    subareaCellArray=mxCreateCellArray(2, cellArrayDims);
-    mxSetFieldByNumber(theStruct,0,13,subareaCellArray);
-
-    //Fill in all of the reports.
-    for(curSubarea=0;curSubarea<msg.sub_areas.size();curSubarea++) {
-        int area_shape=msg.sub_areas[curSubarea]->getType();
-        switch(area_shape) {
-            case AIS8_001_22_SHAPE_CIRCLE:
-            {
-                const size_t numReportFields=6;
-                const mwSize reportDims[2] = {1, 1};
-                const char *reportFieldNames[numReportFields]={"area_shape",
-                "x", "y", "precision", "radius_m", "spare"};                      
-                mxArray *reportStruct;
-                Ais8_001_22_Circle *c =reinterpret_cast<Ais8_001_22_Circle*>(msg.sub_areas[curSubarea]);
-                
-                //Create the Matlab structure array.
-                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
-                //Fill in the component common to all subareas.
-                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
-
-                //Fill in the components for this subarea
-                mxSetFieldByNumber(reportStruct,0,1,floatMat2MatlabDoubles(&c->x,1,1));
-                mxSetFieldByNumber(reportStruct,0,2,floatMat2MatlabDoubles(&c->y,1,1));
-                mxSetFieldByNumber(reportStruct,0,3,intMat2MatlabDoubles(&c->precision,1,1));
-                mxSetFieldByNumber(reportStruct,0,4,intMat2MatlabDoubles(&c->radius_m,1,1));
-                mxSetFieldByNumber(reportStruct,0,5,mat2MatlabDoubles(&c->spare,1,1));
-                
-                mxSetCell(subareaCellArray,curSubarea,reportStruct);
-            }
-                break;
-            case AIS8_001_22_SHAPE_RECT:
-            {
-                const size_t numReportFields=8;
-                const mwSize reportDims[2] = {1, 1};
-                const char *reportFieldNames[numReportFields]={"area_shape",
-                "x", "y", "precision", "e_dim_m", "n_dim_m", "orient_deg",
-                "spare"};                      
-                mxArray *reportStruct;
-                Ais8_001_22_Rect *c =reinterpret_cast<Ais8_001_22_Rect*>(msg.sub_areas[curSubarea]);
-                
-                //Create the Matlab structure array.
-                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
-                //Fill in the component common to all subareas.
-                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
-
-                //Fill in the components for this subarea
-                if(fabs(c->x)<=180) {
-                    mxSetFieldByNumber(reportStruct,0,1,floatMat2MatlabDoubles(&c->x,1,1));
-                } else {
-                    mxSetFieldByNumber(reportStruct,0,1,mxCreateDoubleMatrix(0,0,mxREAL));
-                }
-                if(fabs(c->y)<=90) {
-                    mxSetFieldByNumber(reportStruct,0,2,floatMat2MatlabDoubles(&c->y,1,1));
-                } else {
-                    mxSetFieldByNumber(reportStruct,0,2,mxCreateDoubleMatrix(0,0,mxREAL));
-                }
-                mxSetFieldByNumber(reportStruct,0,3,intMat2MatlabDoubles(&c->precision,1,1));
-                mxSetFieldByNumber(reportStruct,0,4,intMat2MatlabDoubles(&c->e_dim_m,1,1));
-                mxSetFieldByNumber(reportStruct,0,5,intMat2MatlabDoubles(&c->n_dim_m,1,1));
-                mxSetFieldByNumber(reportStruct,0,6,intMat2MatlabDoubles(&c->orient_deg,1,1));
-                mxSetFieldByNumber(reportStruct,0,7,mat2MatlabDoubles(&c->spare,1,1));
-                
-                mxSetCell(subareaCellArray,curSubarea,reportStruct);
-            }
-                break;
-            case AIS8_001_22_SHAPE_SECTOR:
-            {
-                const size_t numReportFields=7;
-                const mwSize reportDims[2] = {1, 1};
-                const char *reportFieldNames[numReportFields]={"area_shape",
-                "x", "y", "precision", "radius_m", "left_bound_deg",
-                "right_bound_deg"};                      
-                mxArray *reportStruct;
-                Ais8_001_22_Sector *c =reinterpret_cast<Ais8_001_22_Sector*>(msg.sub_areas[curSubarea]);
-                
-                //Create the Matlab structure array.
-                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
-                //Fill in the component common to all subareas.
-                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
-
-                //Fill in the components for this subarea
-                if(fabs(c->x)<=180) {
-                    mxSetFieldByNumber(reportStruct,0,1,floatMat2MatlabDoubles(&c->x,1,1));
-                } else {
-                    mxSetFieldByNumber(reportStruct,0,1,mxCreateDoubleMatrix(0,0,mxREAL));
-                }
-                if(fabs(c->y)<=90) {
-                    mxSetFieldByNumber(reportStruct,0,2,floatMat2MatlabDoubles(&c->y,1,1));
-                } else {
-                    mxSetFieldByNumber(reportStruct,0,2,mxCreateDoubleMatrix(0,0,mxREAL));
-                }
-                mxSetFieldByNumber(reportStruct,0,3,intMat2MatlabDoubles(&c->precision,1,1));
-                mxSetFieldByNumber(reportStruct,0,4,intMat2MatlabDoubles(&c->radius_m,1,1));
-                mxSetFieldByNumber(reportStruct,0,5,intMat2MatlabDoubles(&c->left_bound_deg,1,1));
-                mxSetFieldByNumber(reportStruct,0,6,intMat2MatlabDoubles(&c->right_bound_deg,1,1));
-
-                mxSetCell(subareaCellArray,curSubarea,reportStruct);
-            }
-                break;
-            case AIS8_001_22_SHAPE_POLYLINE:
-            {
-                const size_t numReportFields=4;
-                const mwSize reportDims[2] = {1, 1};
-                const char *reportFieldNames[numReportFields]={"area_shape",
-                "angles", "dists_m", "spare"};                      
-                mxArray *reportStruct, *angleArray, *distArray;
-                Ais8_001_22_Polyline *c =reinterpret_cast<Ais8_001_22_Polyline*>(msg.sub_areas[curSubarea]);
-                size_t curItem;
-                double *data;
-                
-                //Create the Matlab structure array.
-                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
-                //Fill in the component common to all subareas.
-                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
-
-                //Fill in the components for this subarea
-                angleArray=mxCreateDoubleMatrix(c->angles.size(),1,mxREAL);
-                data=(double*)mxGetData(angleArray);
-                for(curItem=0;curItem<c->angles.size();curItem++) {
-                    data[curItem]=c->angles[curItem];
-                }
-                mxSetFieldByNumber(reportStruct,0,1,angleArray);
-                
-                distArray=mxCreateDoubleMatrix(c->dists_m.size(),1,mxREAL);
-                data=(double*)mxGetData(distArray);
-                for(curItem=0;curItem<c->dists_m.size();curItem++) {
-                    data[curItem]=c->dists_m[curItem];
-                }
-                mxSetFieldByNumber(reportStruct,0,2,distArray);
-                
-                mxSetFieldByNumber(reportStruct,0,3,mat2MatlabDoubles(&c->spare,1,1));
-
-                mxSetCell(subareaCellArray,curSubarea,reportStruct);
-            }
-                break;
-            case AIS8_001_22_SHAPE_POLYGON:
-                        {
-                const size_t numReportFields=4;
-                const mwSize reportDims[2] = {1, 1};
-                const char *reportFieldNames[numReportFields]={"area_shape",
-                "angles", "dists_m", "spare"};                      
-                mxArray *reportStruct,*angleArray, *distArray;
-                Ais8_001_22_Polygon *c =reinterpret_cast<Ais8_001_22_Polygon*>(msg.sub_areas[curSubarea]);
-                size_t curItem;
-                double *data;
-                
-                //Create the Matlab structure array.
-                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
-                //Fill in the component common to all subareas.
-                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
-
-                //Fill in the components for this subarea
-                angleArray=mxCreateDoubleMatrix(c->angles.size(),1,mxREAL);
-                data=(double*)mxGetData(angleArray);
-                for(curItem=0;curItem<c->angles.size();curItem++) {
-                    data[curItem]=c->angles[curItem];
-                }
-                mxSetFieldByNumber(reportStruct,0,1,angleArray);
-                
-                distArray=mxCreateDoubleMatrix(c->dists_m.size(),1,mxREAL);
-                data=(double*)mxGetData(distArray);
-                for(curItem=0;curItem<c->dists_m.size();curItem++) {
-                    data[curItem]=c->dists_m[curItem];
-                }
-                mxSetFieldByNumber(reportStruct,0,2,distArray);
-                
-                mxSetFieldByNumber(reportStruct,0,3,mat2MatlabDoubles(&c->spare,1,1));
-
-                mxSetCell(subareaCellArray,curSubarea,reportStruct);
-            }
-                break;
-            case AIS8_001_22_SHAPE_TEXT:
-            {
-                //save the area shape number.
-                const size_t numReportFields=2;
-                const mwSize reportDims[2] = {1, 1};
-                const char *reportFieldNames[numReportFields]={"area_shape",
-                "text"};                      
-                mxArray *reportStruct;
-                Ais8_001_22_Text *c =reinterpret_cast<Ais8_001_22_Text*>(msg.sub_areas[curSubarea]);
-
-                //Create the Matlab structure array.
-                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
-                //Fill in the component common to all subareas.
-                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
-                
-                //Fill in the components for this subarea
-                {
-                    const char *charString=c->text.c_str();
-                    mxSetFieldByNumber(reportStruct,0,1,mxCreateCharMatrixFromStrings(1,&charString));
-                }
-
-                mxSetCell(subareaCellArray,curSubarea,reportStruct);
-            }
-                break;
-            default://An error or an unknown shape. In this instance, just
-            {
-                //save the area shape number.
-                const size_t numReportFields=1;
-                const mwSize reportDims[2] = {1, 1};
-                const char *reportFieldNames[numReportFields]={"area_shape"};                      
-                mxArray *reportStruct;
-                
-                //Create the Matlab structure array.
-                reportStruct=mxCreateStructArray(2, reportDims, numReportFields, reportFieldNames);
-                //Fill in the component common to all subareas.
-                mxSetFieldByNumber(reportStruct,0,0,intMat2MatlabDoubles(&area_shape,1,1));
-                
-                mxSetCell(subareaCellArray,curSubarea,reportStruct);
-            }
-                break;
-        }
-    }
-
-    return AIS_OK;   
+    //Now for the data associated with this message.
+    mxSetFieldByNumber(theStruct,0,5,unsignedCharMat2Matlab(msg->encrypted.data(),msg->encrypted.size(),1));
 }
-
-AIS_STATUS AIS8ToMatlab(mxArray **matlabStruct, mxArray **fieldDescriptions, const char *nmea_payload, const size_t pad) {
-//This is only called if no subtype can be identified
-    const size_t numberOfFields=6;
-    const mwSize dims[2] = {1, 1};
-    //These are the names of all of the fields that will be added to the
-    //Matlab structre array.
-    const char *fieldNames[numberOfFields] = {"message_id",
-    "repeat_indicator", "mmsi", "spare", "dac", "fi"};
-    mwSize cellArrayDims[2];
-    mxArray *theStruct, *reportsCellArray;
-    size_t curReport;
-    
-    Ais8 msg(nmea_payload, pad);
-    if (msg.had_error()&&msg.get_error()!=AIS_UNINITIALIZED) {
-        return msg.get_error();
-    }
-    
-    //If text descriptions of the fields are desired, then put them into a
-    //structure. These are just the descriptions of fields common to all
-    //AIS-8 messages.
-    if(fieldDescriptions!=NULL) {
-        const char *descriptionStrings[numberOfFields] = {
-            "Identifier for Message 8; always 8.",//0
-            "Repeat indicator. Used by the repeater to indicate how many times a message has been repeated. 0 = default; 3 = do not repeat any more.",//1
-            "Maritime mobile service identity (MMSI) number of source station",//2
-            "Not used. Should be zero. Reserved for future use",//3
-            "Designated area code (DAC)",//4
-            "Function identifier (FI)",//5
-        };
-        int i;
-
-        *fieldDescriptions=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-
-        for(i=0;i<numberOfFields;i++) {
-            mxSetFieldByNumber(*fieldDescriptions,0,i,mxCreateCharMatrixFromStrings(1,&descriptionStrings[i]));
-        }
-    }
-    
-    //Create the Matlab structure array.
-    theStruct=mxCreateStructArray(2, dims, numberOfFields, fieldNames);
-    *matlabStruct=theStruct;
-    
-    //Fill all of the elements of the structure with the set that is common
-    //to all AIS8 messages.
-    mxSetFieldByNumber(theStruct,0,0,intMat2MatlabDoubles(&msg.message_id,1,1));
-    mxSetFieldByNumber(theStruct,0,1,intMat2MatlabDoubles(&msg.repeat_indicator,1,1));
-    mxSetFieldByNumber(theStruct,0,2,intMat2MatlabDoubles(&msg.mmsi,1,1));
-    mxSetFieldByNumber(theStruct,0,3,intMat2MatlabDoubles(&msg.spare,1,1));
-    mxSetFieldByNumber(theStruct,0,4,intMat2MatlabDoubles(&msg.dac,1,1));
-    mxSetFieldByNumber(theStruct,0,5,intMat2MatlabDoubles(&msg.fi,1,1));
-
-    return AIS_OK;
-}
-
-/*LICENSE:
-%
-%The source code is in the public domain and not licensed or under
-%copyright. The information and software may be used freely by the public.
-%As required by 17 U.S.C. 403, third parties producing copyrighted works
-%consisting predominantly of the material produced by U.S. government
-%agencies must provide notice with such work(s) identifying the U.S.
-%Government material incorporated and stating that such material is not
-%subject to copyright protection.
-%
-%Derived works shall not identify themselves in a manner that implies an
-%endorsement by or an affiliation with the Naval Research Laboratory.
-%
-%RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE OF THE
-%SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO INDEMNIFY THE NAVAL
-%RESEARCH LABORATORY FOR ALL THIRD-PARTY CLAIMS RESULTING FROM THE ACTIONS
-%OF RECIPIENT IN THE USE OF THE SOFTWARE.*/

@@ -12,14 +12,15 @@ function vals=invGudermannian(x)
 %OUTPUTS: val   The inverse Gudermannian evaluated at each point in x. It
 %               ranges from -Inf to Inf.
 %
-%A noted on
-%Weisstein, Eric W. "Gudermannian." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/Gudermannian.html
-%the Gudermannian can be easily expressed in terms of hyperbolic and
-%regular trigonometric functions. The inverse function comes from inverting
-%those.
+%A noted at [1], the Gudermannian can be easily expressed in terms of
+%hyperbolic and regular trigonometric functions. The inverse function comes
+%from inverting those.
 %
-%This is the inverse of the function Gudermannian. 
+%This is the inverse of the function Gudermannian.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Gudermannian." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/Gudermannian.html
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

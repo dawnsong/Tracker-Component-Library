@@ -18,7 +18,6 @@ function J=calcPolarJacob(point,systemType)
 %               and azimuth (in that order by row) with derivatives taken
 %               with respect to [x,y] by column.
 %
-%
 %May 2014 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 

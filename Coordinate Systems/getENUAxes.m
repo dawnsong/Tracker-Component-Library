@@ -12,7 +12,7 @@ function [u,c]=getENUAxes(plhPoint,justVertical,a,f)
 %                   direction vectors u but it does change c.
 %      justVertical An optional parameter. If this is given and is
 %                   true, then u and c only for the Up direction will be
-%                   returned.
+%                   returned. The default is false.
 %           a       The semi-major axis of the reference ellipsoid. If
 %                   this argument is omitted, the value in
 %                   Constants.WGS84SemiMajorAxis is used.

@@ -42,12 +42,14 @@ function [C21,S21]=getAdjustedGravCoeffs4PolarMotion(C,S,TT1,TT2,updateCAndS)
 %             when accounting for polar motion.
 %
 %The effects of polar motion on gravitational coefficients is decribed on
-%pages 80-81  (Chapter 6.1) of
-%G. Petit and B. Luzum, IERS Conventions (2010), International Earth
-%Rotation and Reference Systems Service Std. 36, 2010.
-%The model does not include Earth-orientation parameters for the offset of
-%the pole from the mean model, which suggests that the model is not
-%sufficiently high fidelity for that to matter.
+%pages 80-81  (Chapter 6.1) of [1]. The model does not include Earth-
+%orientation parameters for the offset of the pole from the mean model,
+%which suggests that the model is not sufficiently high fidelity for that
+%to matter.
+%
+%REFERENCES:
+%[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+%    Rotation and Reference Systems Service Std. 36, 2010.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

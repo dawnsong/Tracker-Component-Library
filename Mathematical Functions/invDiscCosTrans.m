@@ -21,12 +21,14 @@ function x=invDiscCosTrans(C,type)
 %
 %OUTPUTS: x The inverse discrete cosine transformation of C.
 %
-%The algorithm implemented is taken from
-%J. Makhoul, "A fast cosine transform in one and two dimensions," IEEE
-%Transactions on Acoustics, Speech, and Signal Processing, vol. ASSP-
-%28, no. 1, pp. 27-34, Feb. 1980.
+%The algorithm implemented is taken from [1].
 %
 %This function is the inverse of discCosTrans.
+%
+%REFERENCES:
+%[1] J. Makhoul, "A fast cosine transform in one and two dimensions," IEEE
+%    Transactions on Acoustics, Speech, and Signal Processing, vol. ASSP-
+%    28, no. 1, pp. 27-34, Feb. 1980.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

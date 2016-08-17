@@ -7,7 +7,7 @@ function [R,t,c]=findTransParam(A,B)
 %                outputs are desired, then a least squares estimate of the
 %                parameters for the transformation A=bsxfun(@plus,c*R*B,t)
 %                is given. If only R and t are desired, it is assumed that
-%                c=0.
+%                c=1.
 %
 %INPUTS: A   An mXn matrix of n m-dimensional real vectors in the
 %            destination coordinate system.
@@ -19,14 +19,10 @@ function [R,t,c]=findTransParam(A,B)
 %         c  A scale factor for the transformation from B to A.
 %
 %For both scenarios, when just R is desired and when more parameters are
-%desired, the algorithms of 
-%S. Umeyama, "Least squares estimation of transformation parameters
-%between two point patterns," IEEE Transactions on Pattern Analysis and
-%Machine Intelligence, vol. 13, no. 4, pp. 376-380, Apr. 1991.
-%are used. When only R is desired, the solution in Equation 4 is used. When
-%more parameters are desired, then the solution of Equation 40-42 are used.
-%If the scale factor c is not requested, then the translation t is computed
-%assuming that c is one.
+%desired, the algorithms of [1] are used. When only R is desired, the
+%solution in Equation 4 is used. When more parameters are desired, then the
+%solution of Equation 40-42 are used. If the scale factor c is not
+%requested, then the translation t is computed assuming that c is one.
 %
 %The cost function used in the paper minimizes the cost function 
 %||A-R*B||^2, where the vertical lines indicate the sum of the L2 norm
@@ -45,6 +41,11 @@ function [R,t,c]=findTransParam(A,B)
 %distances of the form (A(:,i)-R*B(:,i))'*inv(P)*(A(:,i)-R*B(:,i)). Such a
 %simple rescaling of the inputs does not work when a translation vector
 %might be present.
+%
+%REFERENCES:
+%[1] S. Umeyama, "Least squares estimation of transformation parameters
+%    between two point patterns," IEEE Transactions on Pattern Analysis and
+%    Machine Intelligence, vol. 13, no. 4, pp. 376-380, Apr. 1991.
 %
 %March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

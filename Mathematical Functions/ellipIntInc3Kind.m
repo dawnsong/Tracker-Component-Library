@@ -14,10 +14,12 @@ function intVal=ellipIntInc3Kind(phi,m,n)
 %OUTPUTS: intVal The value of the incomplete elliptic integral of the
 %                third kind with the given parameters.
 %
-%The expression used to implement the function comes from
-%B. C. Carlson, "Numerical computation of real or complex elliptic
-%integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
-%whereby negative values are handled by switching the sign of the result.
+%The expression used to implement the function comes from [1], whereby
+%negative values are handled by switching the sign of the result.
+%
+%REFERENCES:
+%[1] B. C. Carlson, "Numerical computation of real or complex elliptic
+%    integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

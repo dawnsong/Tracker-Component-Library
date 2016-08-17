@@ -20,6 +20,13 @@ function [Jul1,Jul2]=UTC2GPS(Jul1,Jul2)
 %UTC began at 1960 January 1.0 (JD 2436934.5) and this function should not
 %be called with an earlier date.
 %
+%Many temporal coordinate systems standards are compared in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
+%
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 

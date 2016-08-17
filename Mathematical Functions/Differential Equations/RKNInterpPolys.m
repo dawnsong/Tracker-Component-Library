@@ -70,13 +70,11 @@ function [interpPolyA,interpPolyC]=RKNInterpPolys(x0,t0,x1,t1,df,probIsGeneral,o
 %[1] and in [2].
 %
 %REFERENCES:
-%
 %[1] J. R. Dormand, Numerical Methods for Differential Equations.
 %     Raton: CRC Press, 1996.
-%
 %[2] J. R. Dormand and P. J. Prince, "Runge-Kutta-Nystrom triples,"
-%    Computers
-%    and Mathematics with Applications, vol. 13, no. 12, pp. 937-949, 1987.
+%    Computers and Mathematics with Applications, vol. 13, no. 12, pp.
+%    937-949, 1987.
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

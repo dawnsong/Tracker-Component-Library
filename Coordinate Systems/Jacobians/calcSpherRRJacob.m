@@ -67,19 +67,21 @@ function J=calcSpherRRJacob(components,xState,systemType,useHalfRange,sTx,sRx,M)
 %
 %The derivatives in the monostatic case can be computed in a
 %straightforward manner from the basic relation between spherical and
-%Cartesian coordinates, which is given in
-%R. L. Duncombe, "Computational techniques," in Explanatory Supplement
-%to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
-%Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013,
-%ch. 14.4.4.1.
-%among other sources for the monostatic case. In general, such derivatives
-%can be used in the bistatic case in the same manner that a bistatic
-%Jacobian for r-u0v and range rate coordinates was derived in "Basic
-%Tracking Using Nonlinear 3D Monostatic and Bistatic Measurements" by
-%David F. Crouse.
+%Cartesian coordinates, which is given in Ch. 14.4.4.1 of [1] among other
+%sources for the monostatic case. In general, such derivatives can be used
+%in the bistatic case in the same manner that a bistatic Jacobian for r-u-v
+%and range rate coordinates was derived in [2].
 %
 %Note that singularities exist at the poles; that is when the elevation is
 %+/-(pi/2).
+%
+%REFERENCES:
+%[1] R. L. Duncombe, "Computational techniques," in Explanatory Supplement
+%    to the Astronomical Almanac, 3rd ed., S. E. Urban and P. K.
+%    Seidelmann, Eds. Mill Valley, CA: University Science Books, 2013.
+%[2] D. F. Crouse, "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems
+%    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
 %
 %July 2014 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -130,7 +132,7 @@ function J=calcSpherRRJacob(components,xState,systemType,useHalfRange,sTx,sRx,M)
             hasRangeRate=true;
     end
 
-    %These are still in global Cartesian coordiantes.
+    %These are still in global Cartesian coordinates.
     dtr=xState(1:3)-sRx(1:3);
     dtl=xState(1:3)-sTx(1:3);
 
@@ -140,7 +142,7 @@ function J=calcSpherRRJacob(components,xState,systemType,useHalfRange,sTx,sRx,M)
     z=tL(3);
     
     if(hasDirection==true)
-        %The gradients of azimuth and elevation in local coordiantes.
+        %The gradients of azimuth and elevation in local coordinates.
         dAz=zeros(6,1);
         dEl=zeros(6,1);
         
@@ -187,7 +189,7 @@ function J=calcSpherRRJacob(components,xState,systemType,useHalfRange,sTx,sRx,M)
         drB(1:3)=dtr/norm(dtr)+dtl/norm(dtl);
     end
 
-    %The gradient of the range-rate in local coordiantes.
+    %The gradient of the range-rate in local coordinates.
     if(hasRangeRate)
         drd=zeros(6,1);
         dvr=xState(4:6)-sRx(4:6);

@@ -30,13 +30,13 @@ function R=getICRS2LunarRotMat(Jul1,Jul2,timeCoordSys,moonCoordSys,deltaTTUT1)
 %moonCoordSys  A parameter indicating which of the two moon coordinate
 %              systems to use. Possible values are
 %              'MOON_PA' (the default if omitted or an empty matrix is
-%                        passed) Use the principle axis coordiante system
+%                        passed) Use the principle axis coordinate system
 %                        of the Moon. This is defined in terms of the
 %                        Moon's inertia tensor. This is usually the
 %                        coordinate system to use when dealing with
 %                        spherical harmonic representations of the
 %                        Moon's gravity. 
-%              'MOON_ME' Use the Mean Earth/Polar Axis coordiante system
+%              'MOON_ME' Use the Mean Earth/Polar Axis coordinate system
 %                        for the Moon. This coordinate system is most
 %                        appropriate when describing points on the surface
 %                        of the Moon.
@@ -50,11 +50,7 @@ function R=getICRS2LunarRotMat(Jul1,Jul2,timeCoordSys,moonCoordSys,deltaTTUT1)
 %              then the value provided by the function getEOP will be used
 %              instead.
 %               
-%The two lunar coordinate systems are mentioned in
-%R. B. Roncoli, "Lunar constants and models document," Jet
-%Propulsion Laboratory, California Institute of Technology, Tech.
-%Rep. JPL D-32296, 23 Sep. 2005. [Online]. Available: 
-%http://www.hq.nasa.gov/alsj/lunar cmd 2005 jpl d32296.pdf
+%The two lunar coordinate systems are mentioned in [1].
 %
 %Routines from the the National Aeronautics and Space Administration's
 %(NASA's) Navigation and Ancillary Information Facility's (NAIF's) SPICE
@@ -63,6 +59,12 @@ function R=getICRS2LunarRotMat(Jul1,Jul2,timeCoordSys,moonCoordSys,deltaTTUT1)
 %DE430 ephemerides, because the difference is not very big and no Moon
 %orientation data with the DE430 ephemerides has come out for the SPICE
 %toolkit yet.
+%
+%REFERENCES:
+%[1] R. B. Roncoli, "Lunar constants and models document," Jet
+%    Propulsion Laboratory, California Institute of Technology, Tech.
+%    Rep. JPL D-32296, 23 Sep. 2005. [Online]. Available: 
+%    http://www.hq.nasa.gov/alsj/lunar cmd 2005 jpl d32296.pdf
 %
 %March 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -75,14 +77,6 @@ function R=getICRS2LunarRotMat(Jul1,Jul2,timeCoordSys,moonCoordSys,deltaTTUT1)
         moonCoordSys='MOON_PA';
     end
     
-    %If the time has to be converted and no Earth orientation parameter is
-    %provided.
-    if(~strcmp(timeCoordSys,'TDB')&&(nargin<5||isempty(deltaTTUT1)))
-        
-        
-    end
-    
-
     %Load the data for the orientaiton of the moon. Two kernels must be
     %loaded.
     ScriptPath=mfilename('fullpath');
@@ -109,6 +103,13 @@ function R=getICRS2LunarRotMat(Jul1,Jul2,timeCoordSys,moonCoordSys,deltaTTUT1)
             error('An unsupported coordinate system for the time is given.')
     end
 
+    if(~strcmp(timeCoordSys,'TDB')&&(nargin<5||isempty(deltaTTUT1)))
+        [Jul1UTC,Jul2UTC]=TT2UTC(Jul1,Jul2);
+        [~,~,~,deltaTTUT1]=getEOP(Jul1UTC,Jul2UTC);
+    end
+    
+    %If the time has to be converted and no Earth orientation parameter is
+    %provided, just use whatever the getEOP function returns.
     if(~strcmp(timeCoordSys,'TDB'))
         %Convert to TDB without topocentric corrections.
         [TDB1,TDB2]=TT2TDB(Jul1,Jul2,deltaTTUT1,[0;0;0]);

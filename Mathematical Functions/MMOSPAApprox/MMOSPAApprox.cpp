@@ -44,16 +44,18 @@
 * approximation close to the true MMOSPA estimate.
 *
 * The algorithm as well as the concept of MOSPA error are described in
-* detail in 
-* D. F. Crouse, "Advances in displaying uncertain estimates of multiple
-* targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion, and
-* Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
+* detail in [1].
 *
 * The algorithm can be compiled for use in Matlab  using the 
 * CompileCLibraries function.
 *
 * The algorithm is run in Matlab using the command format
 * [MMOSPAEst,orderList]=MMOSPAApprox(x,w,numScans);
+*
+*REFERENCES:
+*[1] D. F. Crouse, "Advances in displaying uncertain estimates of multiple
+*    targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion,
+*    and Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
 *
 * November 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
@@ -127,12 +129,12 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     MMOSPAEstMATLAB = mxCreateNumericMatrix(xDim,numTar,mxDOUBLE_CLASS,mxREAL);
     orderListMATLAB=allocUnsignedSizeMatInMatlab(numTar,numHyp);
 
-    MMOSPAEst=(double*)mxGetData(MMOSPAEstMATLAB);
-    orderList=(size_t*)mxGetData(orderListMATLAB);
+    MMOSPAEst=reinterpret_cast<double*>(mxGetData(MMOSPAEstMATLAB));
+    orderList=reinterpret_cast<size_t*>(mxGetData(orderListMATLAB));
 
 /*Get the matrices*/
-    x = (double*)mxGetData(prhs[0]); 
-    w = (double*)mxGetData(prhs[1]);
+    x = reinterpret_cast<double*>(mxGetData(prhs[0])); 
+    w = reinterpret_cast<double*>(mxGetData(prhs[1]));
     
     //Run the algorithm
     MMOSPAApproxCPP(MMOSPAEst,
@@ -145,14 +147,14 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
                     numScans);
     
 /*Set the outputs*/
-     switch(nlhs) {
-        case 2:
-            /*Convert C++ indices to Matlab indices*/
-            for_each(orderList, orderList+numTar*numHyp, increment<size_t>);
-            plhs[1]=orderListMATLAB;
-        default:
-            plhs[0]=MMOSPAEstMATLAB;
-    }   
+    plhs[0]=MMOSPAEstMATLAB;
+    if(nlhs>1) {
+        /*Convert C++ indices to Matlab indices*/
+        for_each(orderList, orderList+numTar*numHyp, increment<size_t>);
+        plhs[1]=orderListMATLAB;
+    } else {
+        mxDestroyArray(orderListMATLAB);
+    } 
 }
 
 /*LICENSE:

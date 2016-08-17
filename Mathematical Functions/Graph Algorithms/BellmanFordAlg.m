@@ -45,11 +45,9 @@ function [retPath,retDist,cycleNodes]=BellmanFordAlg(adjMat,sourceIdx,destIdx)
 %                 loop in the graph; a negative cost cycle is one where the
 %                 sum of the costs in the cycle is negative.
 %
-%The algorithm implemented is that of Chapter 24.1 of
-%T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, Introduction
-%to Algorithms, 2nd ed. Cambridge, MA: The MIT Press, 2001.
-%where the extraction of a negative cost cycle accessible from the source
-%is added when a negative cost cycle is detected.
+%The algorithm implemented is that of Chapter 24.1 of [1], where the
+%extraction of a negative cost cycle accessible from the source is added
+%when a negative cost cycle is detected.
 %
 %Ad an example, consider the adjacency matric with two negative cost
 %cycles:
@@ -60,6 +58,11 @@ function [retPath,retDist,cycleNodes]=BellmanFordAlg(adjMat,sourceIdx,destIdx)
 %Looking for a path from 1 to 3, the algorithm would encounter the cycle.
 %Thus, the return values would be [] and [] for retPath and retDist and 
 %cycleNodes=[3;2], because that is the first cycle found.
+%
+%REFERENCES:
+%[1] T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein,
+%    Introduction to Algorithms, 2nd ed. Cambridge, MA: The MIT Press,
+%    2001.
 %
 %June 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

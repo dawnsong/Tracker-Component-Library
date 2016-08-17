@@ -37,6 +37,13 @@
  *or
  *[Jul1,Jul2]=TT2TCB(Jul1,Jul2,deltaT,clockLoc);
  *
+ *Many temporal coordinate systems standards are compared in [1].
+ *
+ *REFERENCES:
+ *[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+ *    temporal coordinate systems for target tracking", Report, U. S. Naval
+ *    Research Laboratory, to appear, 2016.
+ *
  *March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/

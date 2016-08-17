@@ -100,28 +100,29 @@ function [SGP4Elements,TTEpoch1,TTEpoch2,otherInfo,checksumIsBad]=TLE2SGP4OrbEls
 %Note that parts of the input strings that cannot be read will be filled
 %with NaN values.
 %
-%Information of the format of the TLE sets can be found on
-%T. C. for Space Standards and Innovation. (2012, 27 Sep.) NORAD two-line
-%element sets. [Online].
-%Available: http://www.celestrak.com/NORAD/elements/
-%The documentation discussing how the element sets are used is in
-%F. R. Hoots and R. L. Roehrich, "Spacetrack report no. 3: Models for
-%propagation of NORAD element sets," Department of Defense, Tech. Rep.,
-%31 Dec. 1988. [Online].
-%Available: http://www.amsat.org/amsat/ftp/docs/spacetrk.pdf
-%and 
-%D. A. Vallado, P. Crawford, R. Hujsak, and T. S. Kelso, "Revisiting
-%spacetrack report # 3: Rev 2," in Proceedings of the AIAA/AAS
-%Astrodynamics Specialist Conference and Exhibit, Keystone, CO, 21? 24
-%Aug. 2006. [Online].
-%Available: http://celestrak.com/publications/AIAA/2006-6753/AIAA-2006-6753.pdf
+%Information of the format of the TLE sets can be found at [1]. The
+%documentation discussing how the element sets are used is in [2] and [3].
 %The decimal point parsing part of this function is loosely based on David
-%Vallado's public domain code for the SGP4 propagator that was downloaded
-%from
-%http://www.centerforspace.com/downloads/
+%Vallado's public-domain code for the SGP4 propagator that was downloaded
+%from http://www.centerforspace.com/downloads/
+%
 %A sample TLE that accompanies Vallado's code is
 %TLELine1='1 11801U          80230.29629788  .01431103  00000-0  14311-1      13'
 %TLELine2='2 11801  46.7916 230.4354 7318036  47.4722  10.4117  2.28537848    13'
+%
+%REFERENCES:
+%[1] T. C. for Space Standards and Innovation. (2012, 27 Sep.) NORAD two-
+%    line element sets. [Online].
+%    Available: http://www.celestrak.com/NORAD/elements/
+%[2] F. R. Hoots and R. L. Roehrich, "Spacetrack report no. 3: Models for
+%    propagation of NORAD element sets," Department of Defense, Tech. Rep.,
+%    31 Dec. 1988. [Online].
+%    Available: http://www.amsat.org/amsat/ftp/docs/spacetrk.pdf
+%[3] D. A. Vallado, P. Crawford, R. Hujsak, and T. S. Kelso, "Revisiting
+%    spacetrack report # 3: Rev 2," in Proceedings of the AIAA/AAS
+%    Astrodynamics Specialist Conference and Exhibit, Keystone, CO, 21-24
+%    Aug. 2006. [Online].
+%    Available: http://celestrak.com/publications/AIAA/2006-6753/AIAA-2006-6753.pdf
 %
 %December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

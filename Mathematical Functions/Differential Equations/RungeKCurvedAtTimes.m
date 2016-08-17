@@ -5,7 +5,7 @@ function [xList,uList]=RungeKCurvedAtTimes(xInit,uInit,times,aDyn,uFunc,deltaTMa
 %                     change at the target moves. The position components
 %                     of the state are kept in the global coordinate system
 %                     whereas the rest of the components are kept in the
-%                     local coordiante system. This Runge-Kutta method is
+%                     local coordinate system. This Runge-Kutta method is
 %                     used to integrate flat-Earth models on a curved
 %                     Earth.
 %
@@ -15,12 +15,12 @@ function [xList,uList]=RungeKCurvedAtTimes(xInit,uInit,times,aDyn,uFunc,deltaTMa
 %                    Cartesian coordinates. The next 3 components must be
 %                    the target velocity in local (flat) Cartesian
 %                    coordinates. The other components are arbitrary in the
-%                    local coordiante system.
+%                    local coordinate system.
 %           uInit    If the basis vectors evolve according to a
 %                    differential equation, as is the case when moving
 %                    along geodesics on the surface of the Earth, then this
 %                    is a 3X 3 matrix of vectors specifying the local
-%                    coordiante axes. uInit(:,i) coresponds to the ith
+%                    coordinate axes. uInit(:,i) coresponds to the ith
 %                    position component in xInite. That is xInit(i) for i
 %                    from 1 to 3. On the other hand, if the basis vectors
 %                    are deterministically known at all locations as a
@@ -72,8 +72,12 @@ function [xList,uList]=RungeKCurvedAtTimes(xInit,uInit,times,aDyn,uFunc,deltaTMa
 %
 %This function maps an arbitrary continuous-time, deterministic flat-Earth
 %dynamic model to curvature of the WGS-84 ellipsoid. The algorithm is
-%described in "Simulating Aerial Targets in 3D Accounting for the
-%Earth's Curvature" by David F. Crouse
+%described in [1]. 
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Simulating aerial targets in 3D accounting for the
+%    Earth's curvature," Journal of Advances in Information Fusion, vol.
+%    10, no. 1, Jun. 2015.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -37,6 +37,13 @@
  *or
  *[Jul1,Jul2]=TT2TDB(Jul1,Jul2);
  *
+ *Many temporal coordinate systems standards are compared in [1].
+ *
+ *REFERENCES:
+ *[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+ *    temporal coordinate systems for target tracking", Report, U. S. Naval
+ *    Research Laboratory, to appear, 2016.
+ *
  *March 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
@@ -48,7 +55,7 @@
 #include "MexValidation.h"
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-    double TT1,TT2,TDB1,TDB2,Jul2,deltaTTUT1,deltaT,Jul1UT1, Jul2UT1,UT1Frac;
+    double TT1,TT2,TDB1,TDB2,deltaTTUT1,deltaT,Jul1UT1, Jul2UT1,UT1Frac;
     double u, v, elon;
     int retVal;
     

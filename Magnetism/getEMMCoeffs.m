@@ -50,22 +50,25 @@ function [C,S,a,c]=getEMMCoeffs(M,year,fullyNormalize)
 %files that one can obtain directly from the NOAA. Reading from the text
 %files is very slow.
 %
-%Documentation on the model is available at
+%Documentation is in [1] and [2]. Documentation as well as some code
+%containing containing the coefficients is available at
 %http://www.ngdc.noaa.gov/geomag/EMM/
-%and
-%S. Maus, "An ellipsoidal harmonic representation of Earth's lithospheric
-%magnetic field to degree and order 720," Geochemistry, Geophysics,
-%Geosystems, vol. 11, no. 6, Jun. 2010.
-%
-%Information on Schmidt semi-normalized Legendre functions is given in
-%D. E. Winch, D. J. Ivers, J. P. R. Turner, and R. J. Stening,
-%"Geomagnetism and Schmidt quasi-normalization," Geophysical Journal
-%International, vol. 160, no. 2, pp. 487-504, Feb. 2005.
+%Being created by the U.S. government, the model is not subject to
+%copyright.
 %
 %The data is kept in zipped files in the ./data folder. If all of the data
 %is being loaded for a particular year (M=Inf), then a .mat file will be
 %created in the ./data folder with the data for that year so that it can be
 %loaded more quickly in the future.
+%
+%REFERENCES:
+%[1] S. Maus, "An ellipsoidal harmonic representation of Earth's
+%    lithospheric magnetic field to degree and order 720," Geochemistry,
+%    Geophysics, Geosystems, vol. 11, no. 6, Jun. 2010.
+%[2] Information on Schmidt semi-normalized Legendre functions is given in
+%    D. E. Winch, D. J. Ivers, J. P. R. Turner, and R. J. Stening,
+%    "Geomagnetism and Schmidt quasi-normalization," Geophysical Journal
+%    International, vol. 160, no. 2, pp. 487-504, Feb. 2005.
 %
 %June 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

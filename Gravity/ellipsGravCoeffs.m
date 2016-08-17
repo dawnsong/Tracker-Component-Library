@@ -49,10 +49,7 @@ function [CBar,SBar,a,c]=ellipsGravCoeffs(maxOrder,isNormalized,omega,a,f,GM)
 %                   series is multiplied, having units of m^3/s^2.
 %
 %This function implements a number of equations from Chapters 2.5, 2.7,
-%2.8, and 2.9 of 
-%B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
-%SpringerWienNewYork, 2006.
-%The equation numbers are cited in the code below.
+%2.8, and 2.9 of [1]. The equation numbers are cited in the code below.
 %
 %On the surface of the reference ellipsoid, the gravity potential V plus
 %the potential due to the centripetal acceleration of the Earth, that is
@@ -66,6 +63,10 @@ function [CBar,SBar,a,c]=ellipsGravCoeffs(maxOrder,isNormalized,omega,a,f,GM)
 %gravity field. The J2 model is equivalent to the coefficients
 %obtained when maxOrder=2. The J4 model is equivalent to the coefficients
 %obtained when maxOrder=4.
+%
+%REFERENCES:
+%[1] B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, 2nd ed. 
+%    SpringerWienNewYork, 2006.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -2,7 +2,9 @@ function perm=unrankPermutation(rank,n)
 %%UNRANKPERMUTATION Return the permutation of the given rank in the
 %                   lexicographic ordering of permutations consisting of
 %                   numElements elements, where the where the first element
-%                   of perm is the most significant.
+%                   of perm is the most significant. This requires that
+%                   factorial(numElements) is small enough to be evaluated
+%                   without a loss of precision.
 %
 %INPUTS:    rank The order of the desired permutation of
 %                [1;2;3;...;n] in lexicographic order. Note 
@@ -14,10 +16,12 @@ function perm=unrankPermutation(rank,n)
 %               to or greater than the  total number of unique permutations
 %               is given, then an empty matrix is returned.
 %
-%The algorithm is from
-%J. Liebehenschel, "Ranking and unranking of lexicographically ordered
-%words: An average-case analysis," Journal of Automata, Languages and
-%Combinatorics, vol. 26, no. 4, pp. 227-268, Jul. 2004.
+%The algorithm is from [1].
+%
+%REFERENCES:
+%[1] J. Liebehenschel, "Ranking and unranking of lexicographically ordered
+%    words: An average-case analysis," Journal of Automata, Languages and
+%    Combinatorics, vol. 26, no. 4, pp. 227-268, Jul. 2004.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

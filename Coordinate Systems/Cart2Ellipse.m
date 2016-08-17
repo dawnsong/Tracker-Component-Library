@@ -16,25 +16,28 @@ function points=Cart2Ellipse(cartPoints,a,f)
 %                   matrix has the format [latitude;longitude;altitude],
 %                   with latitude and longitude given in radians.
 %
-%The primary algorithm implemented in this function is
-%I. Sofair "Improved method for calculating exact geodetic latitude and
-%altitude revisited," Journal of Guidance, Control, and Dynamics, vol. 23,
-%no. 2, p. 369, Mar. 2000.
-%which is a modified version of the algorithm in
-%I. Sofair, "Improved method for calculating exact geodetic latitude and
-%altitude," Journal of Guidance, Control, and Dynamics, vol. 20, no. 4,
-%pp. 824-826, Jul.-Aug. 1997.
+%The primary algorithm implemented in this function is [1], which is a
+%modified version of the algorithm in [2].
+%
 %However, both techniques cited above will fail if the point in question
 %is too close to the origin (deep within the Earth). In such an instance,
-%Halley's method as described in
-%Fukushima, T., "Transformation from Cartesian to geodetic coordinates
-%accelerated by Halley's method", J.Geodesy (2006) 79: 689-693.
-%is used instead, with a minor modification. If one lets the algorithm run
-%for an arbitrary number of iterations, there will generally be underflows,
-%since the ratio of S and C matter, but both terms can drift by a constant
-%factor during the iterations. Thus, after each iterative step, the values
-%are normalized so that C=1 (it takes one division). Convergence of
-%Fukushima's method is assumed to occur after six iterations.
+%Halley's method as described in [3] is used instead, with a minor
+%modification. If one lets the algorithm run for an arbitrary number of
+%iterations, there will generally be underflows, since the ratio of S and C
+%matter, but both terms can drift by a constant factor during the
+%iterations. Thus, after each iterative step, the values are normalized so
+%that C=1 (it takes one division). Convergence of Fukushima's method is
+%assumed to occur after six iterations.
+%
+%REFERENCES:
+%[1] I. Sofair "Improved method for calculating exact geodetic latitude and
+%    altitude revisited," Journal of Guidance, Control, and Dynamics, vol.
+%    23, no. 2, p. 369, Mar. 2000.
+%[2] I. Sofair, "Improved method for calculating exact geodetic latitude
+%    and altitude," Journal of Guidance, Control, and Dynamics, vol. 20,
+%    no. 4, pp. 824-826, Jul.-Aug. 1997.
+%[3] Fukushima, T., "Transformation from Cartesian to geodetic coordinates
+%    accelerated by Halley's method", J.Geodesy (2006) 79: 689-693.
 %
 %September 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

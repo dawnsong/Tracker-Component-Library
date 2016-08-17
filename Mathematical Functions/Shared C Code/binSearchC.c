@@ -1,6 +1,6 @@
 /**BINSEARCHC A C implementation of an algorithm to perform a binary search.
 *
-*INPUTS:  numInVec  the number fo elements in the vector vec.
+*INPUTS:  numInVec  the number of elements in the vector vec.
 *           vec     A vector with elements sorted in increasing order.
 *           key     The value that one wishes to find in the vector vec.
 *           choice  An optional parameter that determines what is returned

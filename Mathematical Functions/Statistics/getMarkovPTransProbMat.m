@@ -18,14 +18,12 @@ function Lambda=getMarkovPTransProbMat(A,T)
 %                system was originally in state i, that after a time
 %                duration of T it will be in state j.
 %
-%As discussed in Chapter 16.2 of
-%A. Papoulis and S. U. Pillai, Probability, Random Variables and Stochastic
-%Processes, 4th ed. Boston: McGraw Hill, 2002.
-%the negative inverses of the diagonal elements of A are the mean sojourn
-%times in each state. Given that one is in state i at time zero, the
-%probability of leaving state i during a time-duration T is
-%1-exp(-A(i,i)*T) as per Equation 16-10 of Papoulis. The off-diagonal
-%terms in A affect to which state a transition will be made when switching.
+%As discussed in Chapter 16.2 of [1], the negative inverses of the diagonal
+%elements of A are the mean sojourn times in each state. Given that one is
+%in state i at time zero, the probability of leaving state i during a time-
+%duration T is 1-exp(-A(i,i)*T) as per Equation 16-10 of Papoulis. The off-
+%diagonal terms in A affect to which state a transition will be made when
+%switching.
 %
 %The transformation from the matrix A given T to a transition probability
 %matrix comes from the solution to the Kolmogorov equations given in
@@ -37,11 +35,14 @@ function Lambda=getMarkovPTransProbMat(A,T)
 % T=1;
 % Lambda=getMarkovPTransProbMat(A,T);
 %The resulting matrix is thus
-%Lambda =[0.9536    0.0464;
+%Lambda=[0.9536    0.0464;
 %         0.0929    0.9071];
 %
-%August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
+%REFERENCES:
+%[1] A. Papoulis and S. U. Pillai, Probability, Random Variables and
+%    Stochastic Processes, 4th ed. Boston: McGraw Hill, 2002.
 %
+%August 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
     %Equation 16-27.

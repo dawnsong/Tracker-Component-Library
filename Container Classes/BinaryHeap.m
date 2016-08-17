@@ -6,12 +6,15 @@ classdef BinaryHeap < handle
 %DEPENDENCIES: KeyVal.m
 %
 %The methods of the class are generally based on the implementation
-%described in Chapter 6.4 of
-%M.A.Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
-%Reading, MA: Addison-Wesley, 1999.
+%described in Chapter 6.4 of [1].
+%
 %The class makes use of the KeyValue class for storing keys associated with
 %values. The entire heap is stored in an array, which can be preallocated
 %to the maximum size and thus be efficient.
+%
+%REFERENCES:
+%[1] M.A.Weiss, Data Structures and Algorithm Analysis in C++, 2nd ed.
+%    Reading, MA: Addison-Wesley, 1999.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

@@ -1,7 +1,7 @@
 function [CartPoint,latLong]=randEllipsoidLoc(N,a,f)
 %%RANDELLIPSOIDLOC  Generate a random point uniformly distributed on a
 %              reference ellipsoid, such as the WGS-84 reference ellipsoid.
-%              The point is provided in Cartesian coordiantes as well as in
+%              The point is provided in Cartesian coordinates as well as in
 %              terms of latitude and longitude.
 %
 %INPUTS:    N       The number of random samples on the reference ellipsoid
@@ -20,16 +20,17 @@ function [CartPoint,latLong]=randEllipsoidLoc(N,a,f)
 %                   corresponding to points in CartPoint.
 %
 %The problem of generating a uniformly distributed sample on a reference
-%ellipsoid is number 28 in Chapter 3.4.1 of
-%D. Knuth, The Art of Computer Programming: Seminumerical Algo- rithms, 3rd
-%ed. Reading, MA: Addison-Wesley, 1998, vol. 2.
-%where the algorithm to do so is given in the back of the book. That
-%algorithm is implemented here, where the general ellipsoid formulation has
-%been modified to support the typical parameterization in terms of a
-%semimajor axis and a flattening factor. The algorithm is a rejection
-%sampling method.
+%ellipsoid is number 28 in Chapter 3.4.1 of [1], where the algorithm to do
+%so is given in the back of the book. That algorithm is implemented here,
+%where the general ellipsoid formulation has been modified to support the
+%typical parameterization in terms of a semimajor axis and a flattening
+%factor. The algorithm is a rejection sampling method.
 %
 %Large flattening factor values can make the algorithm slow.
+%
+%REFERENCES:
+%[1] D. Knuth, The Art of Computer Programming: Seminumerical Algorithms,
+%    3rd ed. Reading, MA: Addison-Wesley, 1998, vol. 2.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

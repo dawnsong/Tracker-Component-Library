@@ -49,23 +49,24 @@ function [n,dndr,T,P]=SinclairAtmos(h,phl0,Rh,P0,T0,wl,ht)
 %[2]. The original source is cited in [2] as being [3]. Reference 3 was not
 %consulted in implementing this algorithm.
 %
-%[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
-%Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
-%Books, 2013.
-%[2] C. Y. Hohenkerk and A. T. Sinclair, "The computation of angular
-%atmospheric refraction at large zenith angles," United Kingdom
-%Hydrographic Office, HM Nautical Almanac, Tech. Rep. 63, Apr. 1985.
-%http://astro.ukho.gov.uk/data/tn/naotn63.pdf
-%[3] A. T. Sinclair, "The effect of atmospheric refraction on laser ranging
-%data," United Kingdom Hydrographic Office, HM Nautical Almanac, Tech. Rep.
-%59, 1982.
-%
-%In the above references, the atmosphere is defined in terms of radial
+%In the references, the atmosphere is defined in terms of radial
 %distances from the center of the Earth. However, the radials distances
 %only appear as differences, so heights above mean sea level (MSL) can be
 %substituted. MSL in this implementations is just taken to be the surface
 %of the WGS-84 reference ellipsoid. The model makes a number of local
 %spherical Earth approximations.
+%
+%REFERENCES:
+%[1] S. E. Urban and K. P.Seidelmann, Eds.,Explanatory Supplement to the
+%    Astronomical Almanac, 3rd ed. Mill Valley, CA: University Science
+%    Books, 2013.
+%[2] C. Y. Hohenkerk and A. T. Sinclair, "The computation of angular
+%    atmospheric refraction at large zenith angles," United Kingdom
+%    Hydrographic Office, HM Nautical Almanac, Tech. Rep. 63, Apr. 1985.
+%    http://astro.ukho.gov.uk/data/tn/naotn63.pdf
+%[3] A. T. Sinclair, "The effect of atmospheric refraction on laser ranging
+%    data," United Kingdom Hydrographic Office, HM Nautical Almanac, Tech.
+%    Rep. 59, 1982.
 %
 %April 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

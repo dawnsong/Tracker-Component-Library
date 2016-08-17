@@ -13,11 +13,12 @@ function u=randDirVec(numDim,N)
 %One cannot simply generate a uniformly-distributed direction vector by
 %setting each dimensions to a Uniform(-1,1) random variable and then
 %normalizing the result. Rather, following the algorithm in Chapter 3.4.1,
-%E6 of
-%D. Knuth, The Art of Computer Programming: Seminumerical Algo- rithms, 3rd
-%ed. Reading, MA: Addison-Wesley, 1998, vol. 2.
-%the elements of the vector must be generated as normal 0-1 random
-%variables and then the vector normalized.
+%E6 of [1], the elements of the vector must be generated as normal 0-1
+%random variables and then the vector normalized.
+%
+%REFERENCES:
+%[1] D. Knuth, The Art of Computer Programming: Seminumerical Algorithms,
+%    3rd ed. Reading, MA: Addison-Wesley, 1998, vol. 2.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

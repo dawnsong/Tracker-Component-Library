@@ -15,7 +15,7 @@
 size_t findFirstMaxCPP(const double *arr, const size_t arrayLen);
 
 void spherHarmonicEvalCPP(double *V, double *gradV, const ClusterSetCPP<double> &C,const ClusterSetCPP<double> &S, const double *point, const size_t numPoints,const double a, const double c, const double scalFactor);
-void spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<double> &CStdDev,const ClusterSetCPP<double> &SStdDev, const double *point, const size_t numPoints,const double a, const double c, const double scalFactor);
+bool spherHarmonicCovCPP(double *sigma2, double *Sigma, const ClusterSetCPP<double> &CStdDev,const ClusterSetCPP<double> &SStdDev, const double *point, const size_t numPoints,const double a, const double c, const double scalFactor);
 
 void NALegendreCosRatCPP(ClusterSetCPP<double> &PBarUVals, const double theta, const double scalFactor);
 void NALegendreCosRatDerivCPP(ClusterSetCPP<double> &dPBarUValsdTheta, const ClusterSetCPP<double> &PBarUVals, const double theta);

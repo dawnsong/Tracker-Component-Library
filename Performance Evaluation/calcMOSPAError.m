@@ -26,10 +26,12 @@ function val=calcMOSPAError(xEst,x,w)
 %targets were omitted, the OSPA statistic is just the root mean squared
 %error summed over all targets.
 %
-%The concept of MOSPA error is described in detail in 
-%D. F. Crouse, "Advances in displaying uncertain estimates of multiple
-%targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion, and
-%Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
+%The concept of MOSPA error is described in detail in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "Advances in displaying uncertain estimates of multiple
+%    targets," in Proceedings of SPIE: Signal Processing, Sensor Fusion,
+%    and Target Recognition XXII, vol. 8745, Baltimore, MD, Apr. 2013.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

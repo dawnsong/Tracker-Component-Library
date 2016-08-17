@@ -11,6 +11,15 @@ function [Jul1,Jul2]=GPS2TT(Jul1,Jul2)
 %
 %OUTPUTS:   Jul1, Jul2  The time as a Julian date in TT.
 %
+%This function just calls GPS2TAI and TAI2TT.
+%
+%Many temporal coordinate systems standards are compared in [1].
+%
+%REFERENCES:
+%[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
+%
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 

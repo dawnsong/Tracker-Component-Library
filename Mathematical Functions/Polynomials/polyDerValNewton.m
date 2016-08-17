@@ -1,6 +1,6 @@
 function [pDer,p]=polyDerValNewton(z,a,c,numDer)
 %%POLYDERVALNEWTON Evaluate derivatives of a set of polynomials given in
-%                  Newton's at a desired set of points.
+%                  Newton's form at a desired set of points.
 %
 %INPUTS: z A numZX1 or 1XnumZ vector of the points at which the derivatives
 %          should be evaluated.
@@ -23,11 +23,13 @@ function [pDer,p]=polyDerValNewton(z,a,c,numDer)
 %A polynomial function in Newton's form evaluated at point z has the form
 %y(z)=a(1)+sum_{k=1}^{n-1}a(k+1)(z-c(1))*(z-c(2))*...*(z-c(k))
 %
-%The algorithm VALUE taken from Chapter 19 of 
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
-%Provides a recursion for evaluating polynomials in Newton form. The
-%derivative algorithm comes from differentiating the recursion.
+%The algorithm VALUE taken from Chapter 19 of [1] provides a recursion for
+%evaluating polynomials in Newton form. The derivative algorithm comes from
+%differentiating the recursion.
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

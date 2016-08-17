@@ -24,26 +24,28 @@ function [F,Q,u]=linDynMod2Disc(T,A,D,alpha)
 %           discretized system.
 %         u The xDimX1 discrete-time control input.
 %
-%Chapter 6.2.2 of
-%Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications
-%to Tracking and Navigation. New York: John Wiley and Sons, Inc, 2001.
-%describes how such discretization is performed. The F matrix is easily
-%found using a matrix exponential. However, the Q matrix requires an
-%integral over a matrix exponential. In Problem 9.3.4 of Chapter 9 of 
-%G. H. Golub and C. F. Van Loan, Matrix Computations, 4th ed.
-%Baltimore: Johns Hopkins University Press, 2012.
-%A technique for evaluating such a matrix exponential is presented. That
-%method is used here. The originally comes from
-%C. F. Van Loan, "Computing Integrals Involving the Matrix Exponential,"
-%IEEE Transactions on Automatic Control, vol. AC-23, no. 3, pp. 395-404,
-%Jun. 1967.
-%The control input solution is standard from (non-stochastic) linear
-%systems theory as given in Chapter 4.2 of
-%C.-T. Chen, Linear System Theory and Design, 4th ed. New York:
-%Oxford University Press, 2013.
-%The non-stochastic solution can be applied to the stochastic system,
-%because in a linear system, the effects of the noise can just be
-%superpositioned on the effects of the non-stochastic system.
+%Chapter 6.2.2 of [1] describes how such discretization is performed. The F
+%matrix is easily found using a matrix exponential. However, the Q matrix
+%requires an integral over a matrix exponential. In Problem 9.3.4 of
+%Chapter 9 of [2], a technique for evaluating such a matrix exponential is
+%presented. That method is used here. It originally comes from [3]. The
+%control input solution is standard from (non-stochastic) linear systems
+%theory as given in Chapter 4.2 of [4]. The non-stochastic solution can be
+%applied to the stochastic system, because in a linear system, the effects
+%of the noise can just be superpositioned on the effects of the non-
+%stochastic system.
+%
+%REFERENCES:
+%[1] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with
+%    Applications to Tracking and Navigation. New York: John Wiley and
+%    Sons, Inc, 2001.
+%[2] G. H. Golub and C. F. Van Loan, Matrix Computations, 4th ed.
+%    Baltimore: Johns Hopkins University Press, 2013.
+%[3] C. F. Van Loan, "Computing Integrals Involving the Matrix
+%    Exponential," IEEE Transactions on Automatic Control, vol. AC-23, no.
+%    3, pp. 395-404, Jun. 1967.
+%[4] C.-T. Chen, Linear System Theory and Design, 4th ed. New York: Oxford
+%    University Press, 2013.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

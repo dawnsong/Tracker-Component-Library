@@ -25,8 +25,12 @@ function M=axisAng2RotMat(u,theta,handed)
 %
 %The rotation matrix is obtained by obtaining the unit quaternion for the
 %rotation and turning it into the corresponding rotation matrix as
-%described in  "Basic Tracking Using Nonlinear 3D Monostatic and Bistatic
-%Measurements" by David F. Crouse.
+%described in  [1].
+%
+%REFERENCES:
+%[1] David F. Crouse , "Basic tracking using nonlinear 3D monostatic and
+%    bistatic measurements," IEEE Aerospace and Electronic Systems
+%    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

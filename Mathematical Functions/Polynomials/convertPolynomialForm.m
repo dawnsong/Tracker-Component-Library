@@ -36,9 +36,11 @@ function [a,c]=convertPolynomialForm(formOrig,formDes,a,cIn,cNew)
 %                of cNew, because the Taylor form is the same as a Newton
 %                form where all of the points are the same.
 %
-%The conversions come from Chapter 19 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
+%The conversions come from Chapter 19 of [1].
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -58,7 +60,7 @@ switch(formOrig)
         %The Taylor series is the same as Newton's form with all of the
         %points being the same.
         formOrig=1;
-        cIn=repmat(cIn(1),n-1,1);
+        cIn=repmat(cIn(1),[n-1,1]);
     case 'Newton'
         formOrig=1;
     otherwise
@@ -72,7 +74,7 @@ switch(formDes)
         %The Taylor series is the same as Newton's form with all of the
         %points being the same.
         formDes=1;
-        cNew=repmat(cNew(1),n-1,1);
+        cNew=repmat(cNew(1),[n-1,1]);
     case 'Newton'
         formDes=1;
     otherwise

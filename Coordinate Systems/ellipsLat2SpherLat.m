@@ -20,10 +20,12 @@ function spherLat=ellipsLat2SpherLat(ellipsLat,f)
 %                 -pi/2 to pi/2. It is measured up from the x-y plane.
 %
 %The formula for converting between spherical and ellipsoidal latitudes is
-%in Section 3.4 of
-%R. H. Rapp, "Geometric geodesy, part I," Ohio State University
-%Department of Geodetic Science and Surveying, Tech. Rep., Apr. 1991.
-%[Online]. Available: http://hdl.handle.net/1811/24333
+%in Section 3.4 of [1].
+%
+%REFERENCES:
+%[1] R. H. Rapp, "Geometric geodesy, part I," Ohio State University
+%    Department of Geodetic Science and Surveying, Tech. Rep., Apr. 1991.
+%    [Online]. Available: http://hdl.handle.net/1811/24333
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

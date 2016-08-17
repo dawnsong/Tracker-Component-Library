@@ -12,11 +12,8 @@ function val=sinInt(x)
 %             the points in x.
 %
 %The sine integral can be related to the exponential integral as discussed
-%in
-%Weisstein, Eric W. "Sine Integral." From MathWorld--A Wolfram Web
-%Resource. http://mathworld.wolfram.com/SineIntegral.html
-%This function uses Matlab's built-in expint function to evaluate the sine
-%integral using the identity relating the two when x is finite and
+%in [1]. This function uses Matlab's built-in expint function to evaluate
+%the sine integral using the identity relating the two when x is finite and
 %negative. Due to the odd symmetry of the sine integral, the same identity
 %can be used when x is positive by flipping the sign of x and the sign of
 %the result.
@@ -26,6 +23,10 @@ function val=sinInt(x)
 %asymptotic values of the sine integral are substituted. If x was too large
 %in magnitude the -/+ pi/2 is substituted for small/ large x. If x was too
 %close to 0, then 0 is substituted.
+%
+%REFERENCES:
+%[1] Weisstein, Eric W. "Sine Integral." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/SineIntegral.html
 %
 %June 2014 David F.Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

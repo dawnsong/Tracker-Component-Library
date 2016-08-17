@@ -14,27 +14,22 @@ function Q=quatDivR(quat2,quat1,handed)
 %             i, j, and k are all roots of -1.
 %       quat1 A 4XN set of N quaternions by which the corresponding
 %             quaternion in quat2 is to be right-divided.
-%     handed The handedness of the quaternions. If omitted, it is assumed
-%            that the quaternions are right-handed (the standard). Possible
-%            values are
+%     handed The handedness of the quaternions. If omitted or an empty
+%            matrix is passed,, it is assumed that the quaternions are
+%            right-handed (the standard). Possible values are
 %            'right' The default if omitted. The quaternion multiplication
-%                    and division are assumed right-handed (standard).
-%            'left'  The quaternion multiplication and division are assumed
-%                    left-handed. This is used in someplaces, including the
-%                    reference from Shuster, below.
+%                    is assumed right-handed (standard).
+%            'left'  The quaternion multiplication is assumed left-handed.
+%                    This is used in someplaces, including the reference
+%                    from Shuster, below.
 %
 %OUTPUTS: Q The 4XN matrix of quaternions divided such that
 %           Q(:,i)=quat2(:,i)/quat1(:,i), where the division is right
 %           quaternion division.
 %
 %Properties of quaternions including multiplication and division are
-%described in 
-%Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/Quaternion.html
-%Additional aspects of quaternions, including their use in a left-handed
-%system, are in 
-%M. D. Shuster, "A survey of attitude representations," The Journal of the
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.?Dec. 1993.
+%described in [1]. Additional aspects of quaternions, including their use
+%in a left-handed system, are in [2].
 %
 %A quaternion of the form q(1)+i*q(2)+j*q(3)+k*q(4) that obeys right-handed
 %multiplication and division rules supports the following rules for
@@ -51,10 +46,17 @@ function Q=quatDivR(quat2,quat1,handed)
 %j  k,-1,-i
 %k -j, i,-1
 %
+%REFERENCES:
+%[1] Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/Quaternion.html
+%[2] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    the Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.-Dec.
+%    1993.
+%
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<3)
+if(nargin<3||isempty(handed))
     handed='right';
 end
 

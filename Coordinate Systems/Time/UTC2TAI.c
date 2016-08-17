@@ -30,6 +30,13 @@
  *The algorithm is run in Matlab using the command format
  *[Jul1,Jul2]=UTC2TAI(Jul1,Jul2);
  *
+ *Many temporal coordinate systems standards are compared in [1].
+ *
+ *REFERENCES:
+ *[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+ *    temporal coordinate systems for target tracking", Report, U. S. Naval
+ *    Research Laboratory, to appear, 2016.
+ *
  * October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/

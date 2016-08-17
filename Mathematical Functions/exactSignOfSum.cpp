@@ -11,14 +11,12 @@
  *OUTPUTS: sgn This is 1 if the exact sum of the elements of S is
  *             positive, 0 if it is zero and -1 if it is negative.
  *
- *The algorithm is taken from
- *H. Ratschek and J. Rokne, "Exact computation of the sign of a finite
- *sum," Applied Mathematics and Computation, vol. 99, no. 2?3, pp. 99-127,
- *15 Mar. 1999.
- *where code is provided in an appendix. The code with minor changes and
- *corrections is also available from Jon Rokne's web site. The
- *implementation here uses the corrections and uses the sort algorithm in
- *the C++ standard template library rather than the sort algorithm provided
+ *The algorithm is taken from [1], where code is provided in an appendix.
+ *The code with minor changes and corrections is also available from Jon
+ *Rokne's web site at
+ *http://pages.cpsc.ucalgary.ca/~rokne/
+ *The implementation here uses the corrections and uses the sort algorithm
+ *in C++ standard template library rather than the sort algorithm provided
  *by Rokne.
  *
  *The algorithm can be compiled for use in Matlab  using the 
@@ -26,6 +24,11 @@
  *
  *The algorithm is run in Matlab using the command format
  *sgn=exactSignOfSum(S);
+ *
+ *REFERENCES:
+ *[1] H. Ratschek and J. Rokne, "Exact computation of the sign of a finite
+ *    sum," Applied Mathematics and Computation, vol. 99, no. 2?3, pp. 99-
+ *    127, 15 Mar. 1999.
  *
  *December 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
  **/
@@ -64,7 +67,7 @@ void mexFunction(const int nlhs, mxArray *plhs[], const int nrhs, const mxArray 
     }
     numElements=max(M,N);
     //Get the input vector.
-    S=(double*)mxGetData(prhs[0]);
+    S=reinterpret_cast<double*>(mxGetData(prhs[0]));
     sgn=exactSignOfSumCPP(S, numElements);
     //Set the return value.
     plhs[0]=intMat2MatlabDoubles(&sgn,1,1);

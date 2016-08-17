@@ -16,17 +16,19 @@ function X=RiccatiSolveD(A,B,Q,R,S,E)
 %This function finds the nonnegative definite solution to the discrete-time
 %Ricatti equation having the form
 %E'*X*E=A'*X*A-(A'*X*B+S)*inv(B'*X*B+R)*(A'*X*B+S)'+Q
-%The algorithm of 
-%W. F. Arnold III and A. J. Laub, "Generalized eigenproblem algorithms and
-%software for algebraic Riccati equations," Proceedings of the IEEE,
-%vol. 72, no. 12, pp. 1746-1754, Dec. 1984.
-%is used.
+%The algorithm of [1] is used.
 %
 %The discrete-time Ricatti equation arises when solving for the  steady-
 %state covariance of a continuous-time linear Kalman filter, as described
-%in Chapter 5.2.5 of
-%Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications
-%to Tracking and Navigation. New York: John Wiley and Sons, Inc, 2001.
+%in Chapter 5.2.5 of [2].
+%
+%REFERENCES:
+%[1] W. F. Arnold III and A. J. Laub, "Generalized eigenproblem algorithms
+%    and software for algebraic Riccati equations," Proceedings of the
+%    IEEE, vol. 72, no. 12, pp. 1746-1754, Dec. 1984.
+%[2] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with
+%    Applications to Tracking and Navigation. New York: John Wiley and
+%    Sons, Inc, 2001.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

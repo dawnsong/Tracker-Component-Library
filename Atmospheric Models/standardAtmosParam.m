@@ -1,17 +1,25 @@
-function [N,rho,T,P]=standardAtmosParam(Jul1,Jul2,point,rhow)
+function [N,rho,T,P]=standardAtmosParam(dayOfYear,secondOfTheDay,latLonAlt,rhow)
 %%STANDARDATMOSPARAM  Get basic parameters for atmospheric refractivity,
-%                     density, pressure and temperature from
-%                     a standard atmospheric model. The model is best
-%                     suited for altitudes below 90km.
+%                     density, pressure and temperature from the
+%                     NRLMSISE-00 atmospheric model. The model is best
+%                     suited for altitudes below 90km as the anomalous
+%                     oxygen parameter of the NRLMSISE-00 model is not
+%                     used by this function.
 %
-%INPUTS:    Jul1, Jul2  Two parts of a pseudo-Julian date given in UTC.
-%                       The units of the date are days. The full date is
-%                       the sum of both terms. The date is broken into two
-%                       parts to provide more bits of precision. It does
-%                       not matter how the date is split.
-%           point       The [x;y;x] Cartesian location under consideration
-%                       in 3D ECEF coordinates with units of meters.
-%           rhow        An optional parameter specifying the mass density
+%INPUTS:      dayOfYear The integer day of the year in the Gregorian
+%                       calendar in universal coordinated time (UTC).
+%                       Counting starts at 1. the resolution of the model
+%                       is not sufficient for it to metter whether 365 or
+%                       366 is given at the day if it isn't/is a leap
+%                       year.
+%        secondOfTheDay The second of the day. This starts at zero. The
+%                       resolution of the model is not high enough for
+%                       leap seconds to matter, so values above 86400.0
+%                       are just clipped to 86400.0.
+%             latLonAlt The location under consideration given in WGS-84
+%                       ellipsoidal coordinates of latitude and longitude
+%                       in radians and ellipsoidal height in meters.
+%                  rhow An optional parameter specifying the mass density
 %                       of water vapor at the point in question in units of
 %                       kilograms per cubic meter. If omitted, the air is
 %                       assumed to be dry (rhow=0). The total density of
@@ -35,19 +43,19 @@ function [N,rho,T,P]=standardAtmosParam(Jul1,Jul2,point,rhow)
 %The dry air density and temperature is obtained from the NRLMSISE-00
 %atmospheric model using the default parameters for magnetic and solar
 %parameters, which are generally valid below 90km, using the function
-%standAtmosGasTemp. The refractive index is then found using the dry and
-%wet air densities using the formula of
-%J. M. Aparicio and S. Laroche, "An evaluation of the expression of
-%the atmospheric refractivity for GPS signals," Journal of Geophysical
-%Research, vol. 116, no. D11, 16 Jun. 2011.
-%which should be valid for frequencies between 1GHz and 10GHz. It ignores
-%the lossiness of the atmosphere.
+%NRLMSISE00GasTemp. The reslting standard atmospheric parameters are then
+%passed to the atmosParam4GasTemp function.
 %
 %The atmospheric pressure is obtained using the Ideal Gas Law as described
-%in THE NRLMSISE-00 AND HWM-93 USERS GUIDE: Version 1.50, November 2003 by
-%Douglas P. Drob.
+%in [1]. The properties of atmospheric constituents used in
+%atmosParam4GasTemp are more recent than those used in the NRLMSISE-00
+%standard. Consequently, pressure obtained for the associated altitude is
+%not completely numerically consistent with the function
+%NRLMSISE00Alt4Pres.
 %
-%The anomalous oxygen parameter in the NRLMSISE-00 model is not used.
+%REFERENCES:
+%[1] D. P. Drob, THE NRLMSISE-00 AND HWM-93 USERS GUIDE: Version 1.50,
+%    Nov. 2003.
 %
 %December 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -56,35 +64,10 @@ if(nargin<4)
    rhow=0; 
 end
 
-[~,t,d]=standAtmosGasTemp(Jul1,Jul2,point);
-
+[gasTable,t]=NRLMSISE00GasTemp(dayOfYear,secondOfTheDay,latLonAlt);
 T=t(2);%The temperature in Kelving at the point.
-rhod=d(6);%The total mass density of dry air at the point in kg/m^3.
-rho=rhod+rhow;
 
-%To use the ideal gas law to find the air pressure, the number of water
-%molecules per cubic meter of the atmosphere is needed. This is obtained
-%using the molar mass of water (H2O) and Avogadro's constant
-Av=Constants.AvogadroConstant;
-%The molar mass of water (H2O) in atomic mass units (grams per mole).
-HAMU=Constants.elementAMU(1);
-OAMU=Constants.elementAMU(8);
-MMWater=HAMU*2+OAMU;
-
-%The number of atoms of water per cubic meter. The 1000 transforms grams to
-%kilograms.
-NH2O=rhow/(1000*Av*MMWater);
-
-%The total number density of the gasses in the atmosphere. That is, the
-%number of atoms per cubic meter.
-NTotal=sum(d(1:5))+d(7)+NH2O;
-kB=Constants.BoltzmannConstant;
-P=NTotal*kB*T;
-
-%T is the temperature in Kelvin.
-tau=273.15/T-1;
-N0=(222.682+0.069*tau)*rhod+(6701.605+6385.886*tau)*rhow;
-N=N0*(1+10^(-6)*N0/6);
+[N,rho,P]=atmosParam4GasTemp(gasTable,T,rhow);
 end
 
 %LICENSE:

@@ -47,21 +47,8 @@ function [latLonEnd,azEnd]=directGeodeticProbGen(latLonStart,azStart,dist,height
 %                   reference ellipsoid.
 %
 %If height=0, then the algorithm solves the direct geodetic problem on
-%the surface of the reference ellipsoid using the function geodreckon from
-%C. F. F. Karney. (2013, 2 Jul.) Geodesics on an ellipsoid of revolution.
-%Matlab Central. [Online].
-%Available: http://www.mathworks.com/matlabcentral/fileexchange/39108
-%which is documented in
-%C. F. F. Karney, "Algorithms for geodesics," Journal of Geodesy, vol. 87,
-%no. 1, pp. 43?45, Jan. 2013. [Online].
-%Available: http://arxiv.org/pdf/1109.4448.pdf
-%and 
-%C. F. F. Karney. (2013, 31 Aug.) Addenda and errata for papers on
-%geodesics. [Online].
-%Available: http://geographiclib.sourceforge.net/geod-addenda.html
-%and 
-%C. F. F. Karney. (2011, 7 Feb.) Geodesics on an ellipsoid of revolution.
-%[Online]. Available: http://arxiv.org/pdf/1102.1215.pdf
+%the surface of the reference ellipsoid using the function
+%directGeodeticProb.
 %
 %On the other hand, if height!=0, then the technique of propagating a
 %non-maneuvering flat-Earth dynamic model above an ellipsoid from
@@ -109,8 +96,8 @@ if(nargin<4)
 end
 
 for curTraj=1:N
-    %When on the surface of the reference ellipsoid, then just use the function
-    %from the Geodetic toolbox.
+    %When on the surface of the reference ellipsoid, then just use the
+    %function directGeodeticProb.
     if(height(curTraj)==0)
         [latLonEnd(:,curTraj),azEnd(curTraj)]=directGeodeticProb(latLonStart(:,curTraj),azStart(curTraj),dist(curTraj),a,f);
         continue;

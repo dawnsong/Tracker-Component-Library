@@ -23,9 +23,11 @@ function f=ChebyshevPolySynth(tau,a,tauStart,tauEnd)
 %                by a evaluated at all of the points in tau.
 %
 %The algorithm used is the Clenshaw method, which is described in Chapter
-%3.3.3 of
-%O. Montenbruck and E. Gill, Satellite Orbits, 4th ed. Heidelberg:
-%Springer, 2012.
+%3.3.3 of [1].
+%
+%REFERENCES:
+%[1] O. Montenbruck and E. Gill, Satellite Orbits, 4th ed. Heidelberg:
+%    Springer, 2012.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

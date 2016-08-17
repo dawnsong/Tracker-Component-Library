@@ -1,4 +1,4 @@
-function [sigma2,Sigma]=spherHarmonicCov(CStdDev,SStdDev,point,a,c,fullyNormalized,scalFactor)
+function [sigma2,Sigma,didOverflow]=spherHarmonicCov(CStdDev,SStdDev,point,a,c,fullyNormalized,scalFactor)
 %%SPHERHARMONICCOV  Evaluate the variance of a potential or the covariance
 %                   matrix of a gradient that one might compute using a
 %                   spherical harmonic coefficient model with
@@ -66,38 +66,72 @@ function [sigma2,Sigma]=spherHarmonicCov(CStdDev,SStdDev,point,a,c,fullyNormaliz
 %    scalFactor An optional scale factor used in computing the normalized
 %               associated Legendre polynomials if fullyNormalized=true.
 %               Generally, the default value (is if the scalFactor
-%               parameter is omitted) of 2^(-500)  is sufficient. When very
+%               parameter is omitted) of 2^(-470) is sufficient. When very
 %               high-order models are used, this scale factor prevents
 %               overflows. However overflows (and a loss of precision) are
-%               unavoidable when using the full EGM2008 model.
+%               unavoidable when using the full EGM2008 model. These
+%               effects are worse near the poles.
 %
 %OUTPUTS: sigma2 The NX1 vector of variances (squared standard deviations)
 %                of the potential estimate at the given points.
-%         Sigma  The covariance amtrix of the gradient of the potential  at
+%         Sigma  The covariance matrix of the gradient of the potential at
 %                the given points.
+%    didOverFlow This indicates whether during the computation of sigma2 or
+%                Sigma there were any overflow errors leading to term
+%                being dropped. Note that this does not indicate potential
+%                losses of precision due to underflow errors making terms
+%                zero, which becomes more common the smaller scalFactor is.
+%                Also, if scaling is extremely bad, it is possible for
+%                NaNs or Inf terms to still be returned in sigma2 and
+%                Sigma.
+%
+%The algorithm used here is described in [1].
 %
 %Since Matlab uses double precision arithmetic, when using high degree and
 %order models, such as the full 2190 degree EGM2008 model, the precision of
 %Sigma will be reduced as higher-order terms can experience overflow
-%problems and are thus discarded. Lower-order models will not suffer from
-%the same problem.
+%problems and are thus discarded to avoid NaNs from occurring. Lower-order
+%models will not suffer from the same problem.
+%
+%EXAMPLE:
+%Here, we evaluate the function at a point on the reference ellipsoid and
+%then at a point at the pole using the full degree 2190 EGM2008 model. Note
+%that the Matlab implementation will bee too slow for this high a degree
+%and the C++ implementation should be compiled.
+% latLongAlt=[-30*(pi/180);45*(pi/180);0];
+% spherLoc=Cart2Sphere(ellips2Cart(latLongAlt));
+% 
+% [C,S,a,c,CStdDev,SStdDev]=getEGMGravCoeffs(2190,false);
+% [sigma21,Sigma1,didOverflow1]=spherHarmonicCov(CStdDev,SStdDev,spherLoc,a,c)
+% spherLoc(end)=pi/2;%90 degree elevation --the pole.
+% [sigma22,Sigma2,didOverflow2]=spherHarmonicCov(CStdDev,SStdDev,spherLoc,a,c)
+%One will see that in both instances, finite values are returned, but for
+%the point at the pole, overflows are flagged indicating the loss of
+%prevision due to some terms being dropped due to overflows. A model with
+%fewer spherical harmonic coefficients would not be as susceptible to such
+%overflow problems.
+%
+%REFERENCES:
+%[1] D. F. Crouse, "An overview of major terrestrial, celestial, and
+%    temporal coordinate systems for target tracking", Report, U. S. Naval
+%    Research Laboratory, to appear, 2016.
 %
 %April 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-if(nargin<7)
-    scalFactor=2^(-500);
+if(nargin<7||isempty(scalFactor))
+    scalFactor=2^(-470);
 end
 
-if(nargin<6)
+if(nargin<6||isempty(fullyNormalized))
     fullyNormalized=true;
 end
 
-if(nargin<5)
+if(nargin<5||isempty(c))
     c=Constants.EGM2008GM;
 end
 
-if(nargin<4)
+if(nargin<4||isempty(a))
     a=Constants.EGM2008SemiMajorAxis;
 end
 
@@ -139,22 +173,10 @@ end
 
 %%If a compiled C++ implementation exists, then just use that.
 if(exist('spherHarmonicCovCPPInt','file'))
-%The function expects the format of offsetArray and clusterSizes to be in
-%the native unsigned format of the architecture, not as doubles (the
-%default of Matlab), so convert the types.
-    switch(systemNumberOfBits())
-        case 32
-            CStdDev.offsetArray=reshape(uint32(CStdDev.offsetArray),CStdDev.numClusters(),1);
-            CStdDev.clusterSizes=reshape(uint32(CStdDev.clusterSizes),CStdDev.numClusters(),1);
-        otherwise%Otherwise, assume it is a 64 bit system
-            CStdDev.offsetArray=reshape(uint64(CStdDev.offsetArray),CStdDev.numClusters(),1);
-            CStdDev.clusterSizes=reshape(uint64(CStdDev.clusterSizes),CStdDev.numClusters(),1);
-    end
-    
-    if(nargout==2)
-        [sigma2,Sigma]=spherHarmonicCovCPPInt(CStdDev.clusterEls,SStdDev.clusterEls,CStdDev.offsetArray,CStdDev.clusterSizes,point,a,c,scalFactor);
+    if(nargout>1)
+        [sigma2,Sigma,didOverflow]=spherHarmonicCovCPPInt(CStdDev.clusterEls,SStdDev.clusterEls,point,a,c,scalFactor);
     else
-        sigma2=spherHarmonicCovCPPInt(CStdDev.clusterEls,SStdDev.clusterEls,CStdDev.offsetArray,CStdDev.clusterSizes,point,a,c,scalFactor);
+        sigma2=spherHarmonicCovCPPInt(CStdDev.clusterEls,SStdDev.clusterEls,point,a,c,scalFactor);
     end
     return
 end
@@ -162,6 +184,7 @@ end
 sigma2=zeros(numPoints,1);
 Sigma=zeros(3,3,numPoints);
 
+didOverflow=false;
 rPrev=Inf;
 thetaPrev=Inf;
 for curPoint=1:numPoints
@@ -224,7 +247,11 @@ for curPoint=1:numPoints
         for m=0:n
             innerTerm=innerTerm+(CStdDev(n+1,m+1)*rm(m+1)*HBar(n+1,m+1))^2+(SStdDev(n+1,m+1)*im(m+1)*HBar(n+1,m+1))^2;
         end
-        sigma2(curPoint)=sigma2(curPoint)+nCoeff(n+1)^2*innerTerm;
+        if(isfinite(innerTerm))
+            sigma2(curPoint)=sigma2(curPoint)+nCoeff(n+1)^2*innerTerm;
+        else
+            didOverflow=true;
+        end
     end
 
     sigma2(curPoint)=(c/r)^2*sigma2(curPoint)/scalFactor^2;
@@ -271,28 +298,42 @@ for curPoint=1:numPoints
                 CProdMN=CStdDev(n+1,m+1)^2*rm(m+1)^2+SStdDev(n+1,m+1)^2*im(m+1)^2;
                 Lmn=(n+m+1)*HVal+u*dHVal;
                 
-                a11Loop=a11Loop+m^2*(CStdDev(n+1,m+1)^2*rm(m-1+1)^2+SStdDev(n+1,m+1)^2*im(m-1+1)^2)*HVal^2;
-                a22Loop=a22Loop+m^2*(SStdDev(n+1,m+1)^2*rm(m-1+1)^2+CStdDev(n+1,m+1)^2*im(m-1+1)^2)*HVal^2;
+                %These if-statements are to deal with numerical precision
+                %problems near the poles. We want to avoid 0*Inf terms due
+                %to limitations in the valid range of double precision
+                %numbers. Of course, the loss of the terms where overflow
+                %occurs means that the covariance matrix will be
+                %underestimated.
+                if(isfinite(HVal))
+                    a11Loop=a11Loop+m^2*(CStdDev(n+1,m+1)^2*rm(m-1+1)^2+SStdDev(n+1,m+1)^2*im(m-1+1)^2)*HVal^2;
+                    a12Loop=a12Loop+m^2*rm(m-1+1)*im(m-1+1)*(SStdDev(n+1,m+1)^2-CStdDev(n+1,m+1)^2)*HVal^2;
+                    a22Loop=a22Loop+m^2*(SStdDev(n+1,m+1)^2*rm(m-1+1)^2+CStdDev(n+1,m+1)^2*im(m-1+1)^2)*HVal^2;
+                else
+                    didOverflow=true;
+                end
                 
-                %This is to deal with numerical precision problems near the
-                %poles. We want to avoid 0*Inf terms due to limitations in
-                %the valid range of double precision numbers. Of course,
-                %the loss of the terms where overflow occurs means that the
-                %covariance matrix will be underestimated.
                 if(isfinite(Lmn))
                     a44Loop=a44Loop+CProdMN*Lmn^2;
-                    a14Loop=a14Loop-m*(CStdDev(n+1,m+1)^2*rm(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*im(m-1+1)*im(m+1))*HVal*Lmn;
-                    a24Loop=a24Loop-m*(-CStdDev(n+1,m+1)^2*im(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*rm(m-1+1)*im(m+1))*HVal*Lmn;
-                    a34Loop=a34Loop-CProdMN*Lmn*dHVal;
+                    if(isfinite(HVal))
+                        a14Loop=a14Loop-m*(CStdDev(n+1,m+1)^2*rm(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*im(m-1+1)*im(m+1))*HVal*Lmn;
+                        a24Loop=a24Loop-m*(-CStdDev(n+1,m+1)^2*im(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*rm(m-1+1)*im(m+1))*HVal*Lmn;
+                    end
+                    if(isfinite(dHVal))
+                        a34Loop=a34Loop-CProdMN*Lmn*dHVal;
+                    end
+                else
+                    didOverflow=true;
                 end
                 
                 if(isfinite(dHVal))
                     a33Loop=a33Loop+CProdMN*dHVal^2;
-                    a13Loop=a13Loop+m*(CStdDev(n+1,m+1)^2*rm(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*im(m-1+1)*im(m+1))*HVal*dHVal;
-                    a23Loop=a23Loop+m*(-CStdDev(n+1,m+1)^2*im(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*rm(m-1+1)*im(m+1))*HVal*dHVal;
+                    if(isfinite(HVal))
+                        a13Loop=a13Loop+m*(CStdDev(n+1,m+1)^2*rm(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*im(m-1+1)*im(m+1))*HVal*dHVal;
+                        a23Loop=a23Loop+m*(-CStdDev(n+1,m+1)^2*im(m-1+1)*rm(m+1)+SStdDev(n+1,m+1)^2*rm(m-1+1)*im(m+1))*HVal*dHVal;
+                    end
+                else
+                    didOverflow=true;
                 end
-                
-                a12Loop=a12Loop+m^2*rm(m-1+1)*im(m-1+1)*(SStdDev(n+1,m+1)^2-CStdDev(n+1,m+1)^2)*HVal^2;
             end
             
             a11=a11+nCoeff(n+1)^2*a11Loop;
@@ -320,9 +361,9 @@ for curPoint=1:numPoints
         
         temp=c/(r^2*scalFactor);
 
-        Sigma(:,:,curPoint)=temp*temp*[s11,s12,s13;
-                                       s12,s22,s23;
-                                       s13,s23,s33];
+        Sigma(:,:,curPoint)=temp*(temp*[s11,s12,s13;
+                                        s12,s22,s23;
+                                        s13,s23,s33]);
     end
 
 end

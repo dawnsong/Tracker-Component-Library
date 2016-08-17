@@ -19,9 +19,11 @@ function [q,nc]=randSetPartition(n,sortEntries)
 %            values that can range from 1 to n.
 %         nc The number of subsets in the random set partition.
 %
-%The algorithm is RANEQU in Chapter 12 of
-%A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
-%and Calculators, 2nd ed. New York: Academic press, 1978.
+%The algorithm is RANEQU in Chapter 12 of [1].
+%
+%REFERENCES:
+%[1] A. Nijenhuis and H. S. Wilf, Combinatorial Algorithms for Computers
+%    and Calculators, 2nd ed. New York: Academic press, 1978.
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

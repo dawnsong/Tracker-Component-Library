@@ -25,14 +25,19 @@ function c=speedOfSoundInAir(algorithm,T,input3,input4,CO2Frac)
 %                     2 P The pressure in Pascals (kg/(m*s^2)).
 %              input4 This input dependends on the algorithm chosen. For
 %                     each algorithm this is respectively:
-%                     0 gasTable A 2X1 cell array where gasTable{i,1} is a
+%                     0 gasTable An NX2 cell array where gasTable{i,1} is a
 %                       string describing the ith constituent atmospheric
 %                       element and gasTable{i,2} is the number density of
-%                       the element in particles per cubic meter. For a
+%                       the element in particles per cubic meter. Note that
+%                       only the relative number densities matter, so
+%                       multiplying all of the number densities by a
+%                       constant does not change the final result. For a
 %                       list of constituent elements that can be handled,
 %                       see the documentation for the Constants.gasProp
-%                       method. Unknown constituent elements that are
-%                       passed will be ignored.
+%                       method. See the sample code in the comments below
+%                       for an example of how this input is used. Unknown
+%                       constituent elements that are passed will be
+%                       ignored.
 %                     1 This input is not used.
 %                     2 H2OFrac The water vapor mole fraction. This is the
 %                       fraction of H2O molecules per cubic meter to total
@@ -51,25 +56,14 @@ function c=speedOfSoundInAir(algorithm,T,input3,input4,CO2Frac)
 %
 %If no inputs are provided, then the value for the speed of sound is the
 %value taken at standard temperature and pressure (0 degrees Centrigrade,
-%no humidity, 1 atmosphere [101325 Pascals])
-%D. H. Smith and R. G. Harlow, "The velocity of sound in air, nitrogen and
-%argon," British Journal of Applied Physics, vol. 14, no. 2, pp.
-%102-106, Feb. 1963.
+%no humidity, 1 atmosphere [101325 Pascals]) as in [1].
 %
 %If algorithm 0 is chosen, then the solution based upon individual gas
-%concentrations at 1 atmosphere pressure from
-%O. Cramer, "The variation of the specific heat ratio and the speed of
-%sound in air with temperature, pressure, humidity, and CO2 concentration,"
-%Journal of the Acoustical Society of America, vol. 93, no. 5, pp.
-%2510-2516, May 1993.
-%is used where the necessary physical constants are taken from the
-%Constants class.
+%concentrations at 1 atmosphere pressure from [2] is used where the
+%necessary physical constants are taken from the Constants class.
 %
 %If algorithm 1 is chosen, the ideal gas approximation, then the method of
-%G. S. K. Wong and T. F. W. Embleton, "Variation of the speed of sound in
-%air with humidity and temperature," Journal of the Acoustical Society of
-%America, vol. 77, no. 5, pp. 1710-1712, May 1985.
-%is used. The algorithm assumes a standard atmospheric pressure of
+%[3] is used. The algorithm assumes a standard atmospheric pressure of
 %101325Pa.
 %
 %If algorithm 2 is chosen, then the simple polynomial approximation of the
@@ -95,6 +89,69 @@ function c=speedOfSoundInAir(algorithm,T,input3,input4,CO2Frac)
 %c=speedOfSoundInAir(1,T,relHumid);
 %or
 %c=speedOfSoundInAir(2,T,P,H2OFrac,CO2Frac);
+%
+%EXAMPLE: Suppose that we would like to provide a table of constituent
+%gasses based on a standard atmospheric model (The NRLMSISE-00 model).
+%Given a temperature, the number densities implied by the model imply a
+%pressure. However, we would like to use a measured local pressure. Also,
+%we have a local measurement of the humidity (the NRLMSISE-00 model assumes
+%zero humidity). The model depends on the observer's location and the time.
+%For example:
+% %0:00 UTC on 1 January 2000 (Gregorian calendar)
+% year=2000;
+% month=1;
+% day=1;
+% hour=0;
+% minute=0;
+% second=0;
+% [Jul1,Jul2]=Cal2UTC(year,month,day,hour,minute,second);
+% [~,dayCount,secondInDay]=UTC2DayCount(Jul1,Jul2);
+% 
+% %The latitude and longitude of the Mauna Kea Observatory in Hilo, Hawaii.
+% phi=19.823*pi/180;%North latitude in radians.
+% lambda=-155.470*pi/180;%East longitude in radians.
+% height=4200;%Assume around 4.2km ellipsoidal height
+% 
+% %Get the standard atmospheric parameters for the given location and time.
+% [gasTable,t,d]=NRLMSISE00GasTemp(dayCount,secondInDay,[phi;lambda;height]);
+% 
+% %Let's assume that the temperature at the observer is 10 degrees C,
+% %rather than the standard temperature that could have been returned by
+% %the NRLMSISE00GasTemp function.
+% TC=10;%10 degrees centigrade
+% T=convertTemperatureUnits(TC,'C','K');%Convert to Kelvin
+% 
+% %The standard atmospheric parameters assume zero humidity. Let's assume
+% %that we measured the humidity to be 10%. We need the number density of
+% %the H2O in the air.
+% relHumid=0.1;
+% absHumid=relHumid2AbsHumid(relHumid,T);
+% numberDensH2O=absHumid2NumberDensH2O(absHumid);
+% %We will add the water to the gas table.
+% gasTable{end+1,1}='H2O';
+% gasTable{end,2}=numberDensH2O;
+% 
+% %We need the air pressure. The pressure implied by the temperatue and the
+% %table of gasses is
+% [~,~,P]=atmosParam4GasTemp(gasTable,T);
+% %However, note that since the speedOfSoundInAir function only depends on
+% %the relative abundance of the individual gasses, one could use a
+% %different, measured air pressure, assuming that the relative abundance
+% %has not changed.
+% %Finally, we can now find the speed of sound in air
+% c=speedOfSoundInAir(0,T,P,gasTable)
+%
+%REFERENCES:
+%[1] D. H. Smith and R. G. Harlow, "The velocity of sound in air, nitrogen
+%    and argon," British Journal of Applied Physics, vol. 14, no. 2, pp.
+%    102-106, Feb. 1963.
+%[2] O. Cramer, "The variation of the specific heat ratio and the speed of
+%    sound in air with temperature, pressure, humidity, and CO2
+%    concentration," Journal of the Acoustical Society of America, vol. 93,
+%    no. 5, pp. 2510-2516, May 1993.
+%[3] G. S. K. Wong and T. F. W. Embleton, "Variation of the speed of sound
+%    in air with humidity and temperature," Journal of the Acoustical
+%    Society of America, vol. 77, no. 5, pp. 1710-1712, May 1985.
 %
 %March 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

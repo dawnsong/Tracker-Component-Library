@@ -24,9 +24,7 @@
  *
  *OUTPUTS: GMST     The Greenwhich mean sidereal time in radians. 
  *
- *GMST is defined in Section 5.5.7 of
- *G. Petit and B. Luzum, IERS Conventions (2010), International Earth
- *Rotation and Reference Systems Service Std. 36, 2010.
+ *GMST is defined in Section 5.5.7 of [1].
  *
  *This is a wrapper for the functions iauTtut1 and iauGmst82, iauGmst00,
  *and iauGmst06 in the International Astronomical Union's Standards of
@@ -41,6 +39,10 @@
  *GMST=TT2GMST(Jul1,Jul2,version);
  *or
  *GMST=TT2GMST(Jul1,Jul2,version,deltaT);
+ *
+ *REFERENCES:
+ *[1] G. Petit and B. Luzum, IERS Conventions (2010), International Earth
+ *    Rotation and Reference Systems Service Std. 36, 2010.
  *
  *January 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.
  */

@@ -89,7 +89,7 @@ function [zApex,apexPoints,exitCode]=ITRS2MagneticApex(zCart,hR,modSelParam,a,f,
 %presented in a modified form in [2], which is the form used here. In [1],
 %the third coordinate of apex coordinates is the geoid height of the
 %point; here it is related to the magnetic potential so as to form a more
-%orthogonal coordiante system as discussed in [2].
+%orthogonal coordinate system as discussed in [2].
 %
 %The centered dipole longitude coordinate of apex coordinates is just found
 %using the ITRS2CartCD and CartSphere functions. The most difficult part is
@@ -108,6 +108,7 @@ function [zApex,apexPoints,exitCode]=ITRS2MagneticApex(zCart,hR,modSelParam,a,f,
 %magnetic field line have more than one peak, requiring that one find every
 %peak to determine where the apex is.
 %
+%REFERENCES:
 %[1] T. E. VanZandt, W. L. Clark, and J. M. Warnock, "Magnetic apex
 %    coordinates: A magnetic coordinate system for the ionospheric f2
 %    layer," Journal of Geophysical Research, vol. 77, no. 13, pp. 2406-
@@ -120,7 +121,7 @@ function [zApex,apexPoints,exitCode]=ITRS2MagneticApex(zCart,hR,modSelParam,a,f,
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 if(nargin<2||isempty(hR))
-   hR=0;%Use standard Apex coordiante,s not modified coordinates. 
+   hR=0;%Use standard Apex coordinate,s not modified coordinates. 
 end
 
 if(nargin<3||isempty(modSelParam))

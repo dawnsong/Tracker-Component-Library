@@ -15,18 +15,19 @@ function intVal=ellipIntInc2Kind(phi,m)
 %
 %The formula used expresses the integral in terms of a weighted sum of a
 %symmetric integral of the first kind and a degenerate symmetric integral
-%of the third kind. The expression comes from
-%B. C. Carlson, "Numerical computation of real or complex elliptic
-%integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
-%whereby negative values are handled by switching the sign of the result.
-%The above algorithm also only considers values with magnitudes up to pi/2.
-%To get the correct result, however, for larger values, the value up to
-%pi/2 (times the number of multiples of the value up to pi/2) is added to a
-%value for a fractional part with magnitude less than pi/2. Note however,
-%that due to the odd symmetry of sin(x)^2, if the integer part is odd, then
-%the computation subtracts the fractional part from pi/2 and the
-%value added is the value of the complete integral MINUS the modified
-%fractional part.
+%of the third kind. The expression comes from [1], whereby negative values
+%are handled by switching the sign of the result. The above algorithm also
+%only considers values with magnitudes up to pi/2. To get the correct
+%result, however, for larger values, the value up to pi/2 (times the number
+%of multiples of the value up to pi/2) is added to a value for a fractional
+%part with magnitude less than pi/2. Note however, that due to the odd
+%symmetry of sin(x)^2, if the integer part is odd, then the computation
+%subtracts the fractional part from pi/2 and the value added is the value
+%of the complete integral MINUS the modified fractional part.
+%
+%REFERENCES:
+%[1] B. C. Carlson, "Numerical computation of real or complex elliptic
+%    integrals," Numerical Algorithms, vol. 10, no. 1, pp. 13-26, 1995.
 %
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.

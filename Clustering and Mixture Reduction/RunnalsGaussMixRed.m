@@ -15,13 +15,15 @@ function [w,mu,P]=RunnalsGaussMixRed(w,mu,P,K)
 %         mu    The means of the mixture after reduction.
 %         P     The covariance matrices of the mixture after reduction.
 %
-%This implements the suboptimal Gaussian mixture reduction algorithm of 
-%A. R. Runnalls, "Kullback-Leibler approach to Gaussian mixture reduction,"
-%IEEE Trans. Aerosp. Electron. Syst., vol. 43, no. 3, pp. 989-999,
-%Jul. 2007.
-%Note that a real efficient C/C++ implementation would be implemented using
-%various data structures to avoid the cost deletion and inseration of
+%This implements the suboptimal Gaussian mixture reduction algorithm of
+%[1]. Note that a real efficient C/C++ implementation would be implemented
+%using various data structures to avoid the cost deletion and inseration of
 %matrix elements that is used in the reduction algorithm.
+%
+%REFERENCES:
+%[1] A. R. Runnalls, "Kullback-Leibler approach to Gaussian mixture
+%    reduction," IEEE Trans. Aerosp. Electron. Syst., vol. 43, no. 3, pp.
+%    989-999, Jul. 2007.
 %
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -112,4 +114,3 @@ end
 %SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO INDEMNIFY THE NAVAL
 %RESEARCH LABORATORY FOR ALL THIRD-PARTY CLAIMS RESULTING FROM THE ACTIONS
 %OF RECIPIENT IN THE USE OF THE SOFTWARE.
-

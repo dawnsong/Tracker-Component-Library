@@ -20,9 +20,9 @@ function Q=quatMult(quat2,quat1,handed)
 %             is a 3X1 unit vector.
 %       quat1 A 4XN set of N quaternions that are to be left-multiplied by
 %             the corresponding quaternions in quat2.
-%     handed The handedness of the quaternions. If omitted, it is assumed
-%            that the quaternions are right-handed (the standard). Possible
-%            values are
+%     handed The handedness of the quaternions. If omitted or an empty
+%            matrix is passed,, it is assumed that the quaternions are
+%            right-handed (the standard). Possible values are
 %            'right' The default if omitted. The quaternion multiplication
 %                    is assumed right-handed (standard).
 %            'left'  The quaternion multiplication is assumed left-handed.
@@ -33,12 +33,8 @@ function Q=quatMult(quat2,quat1,handed)
 %             Q(:,i)=quat2(:,i)*quat1(:,1), where the multiplication
 %             operation is quaternion multiplication.
 %
-%Properties of quaternions including multiplication are described in 
-%Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web Resource.
-%http://mathworld.wolfram.com/Quaternion.html
-%Details of rotation using unit quaternions are given in
-%M. D. Shuster, "A survey of attitude representations," The Journal of the
-%Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.?Dec. 1993.
+%Properties of quaternions including multiplication are described in [1].
+%Details of rotation using unit quaternions are given in [2].
 %
 %The difference in multiplication between right-handed and left-handed
 %quaternions lies in the sign used for the cross product.
@@ -58,13 +54,20 @@ function Q=quatMult(quat2,quat1,handed)
 %j  k,-1,-i
 %k -j, i,-1
 %
+%REFERENCES:
+%[1] Weisstein, Eric W. "Quaternion." From MathWorld--A Wolfram Web
+%    Resource. http://mathworld.wolfram.com/Quaternion.html
+%[2] M. D. Shuster, "A survey of attitude representations," The Journal of
+%    the Astronautical Sciences, vol. 41, no. 4, pp. 439-517, Oct.-Dec.
+%    1993.
+%
 %September 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
 %The number of quaternions.
 N=size(quat2,2);
 
-if(nargin<3)
+if(nargin<3||isempty(handed))
     handed='right';
 end
 

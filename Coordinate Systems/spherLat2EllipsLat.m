@@ -16,10 +16,12 @@ function ellipsLat=spherLat2EllipsLat(spherLat,f)
 %                  -pi/2 to pi/2.
 %
 %The formula for converting between spherical and ellipsoidal latitudes is
-%in Section 3.4 of
-%R. H. Rapp, "Geometric geodesy, part I," Ohio State University
-%Department of Geodetic Science and Surveying, Tech. Rep., Apr. 1991.
-%[Online]. Available: http://hdl.handle.net/1811/24333
+%in Section 3.4 of [1].
+%
+%REFERENCES:
+%[1] R. H. Rapp, "Geometric geodesy, part I," Ohio State University
+%    Department of Geodetic Science and Surveying, Tech. Rep., Apr. 1991.
+%    [Online]. Available: http://hdl.handle.net/1811/24333
 %
 %October 2014 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
@@ -33,7 +35,7 @@ e=sqrt(2*f-f^2);
 
 %The wrapping helps deal with precision limitations that might push the
 %input value slightly above or below +/-pi/2. If the wrapping were not
-%done, then instead of getting, for example, pi/2, one will get pi/2 as a
+%done, then instead of getting, for example, -pi/2, one will get pi/2 as a
 %return value.
 spherLat=wrapRange(spherLat,-pi/2,pi/2,true);
 

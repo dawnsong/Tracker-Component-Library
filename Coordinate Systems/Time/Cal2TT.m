@@ -1,8 +1,8 @@
 function [Jul1,Jul2]=Cal2TT(year,month,day,hour,minute,second)
 %%CAL2TT  Convert dates in terms of the Gregorian calendar in years,
-%          months, days, hours, minutes and seconds with the time in
-%          universal coordinated time (UTC) to a two-part Julian
-%          date in terrestrial time (TT).
+%         months, days, hours, minutes and seconds with the time in
+%         universal coordinated time (UTC) to a two-part Julian
+%         date in terrestrial time (TT).
 %
 %INPUTS:   year    A matrix of integer  years in the Gregorian
 %                  calendar under UTC time.
@@ -32,7 +32,7 @@ function [Jul1,Jul2]=Cal2TT(year,month,day,hour,minute,second)
 [Jul1,Jul2]=UTC2TT(Jul1,Jul2);
 end
 
- %LICENSE:
+%LICENSE:
 %
 %The source code is in the public domain and not licensed or under
 %copyright. The information and software may be used freely by the public.

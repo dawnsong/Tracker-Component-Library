@@ -11,9 +11,11 @@
  *          year    A pointer to an integer to hold the year in the
  *                  Gregorian calendar under UTC time.
  *         dayCount A pointer to an integer to hold the day of the year,
- *                  accounting for leap years.
+ *                  accounting for leap years. The returned value will be
+ *                  >=1.
  *          second  A pointer to a double to hold the second of the day,
- *                  accounting for leap seconds.
+ *                  accounting for leap seconds. The returned value will be
+ *                  >=0.
  *
  *OUTPUTS:  The outputs are placed in the passed pointers for the date. The
  *          return value is that of the iauJd2cal function in the SOFA

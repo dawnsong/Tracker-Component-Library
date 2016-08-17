@@ -1,4 +1,4 @@
-function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2)
+function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2,param3)
 %%SINGLESCANUPDATE Perform the measurement update step in a single-scan
 %                  tracking algorithm that uses Gaussian approximations 
 %                  to represent the target state before and after the
@@ -44,16 +44,19 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2)
 %              4) Naïve nearest neighbor
 %              5) JPDA*
 %              6) Approximate GNN-JPDA
-%              7) Approximate JPDA
-%              
+%              7) Approximate JPDA           
 %      algSel2 An optional parameter that further specifies the algorithm
-%              used when algSel1=6-7. If omitted by algSel1 is specified, a
-%              default value of 0 is used. If both algSel1 and algSel2 are
-%              omitted, the algorithm is chosen as described below.
+%              used when algSel1=6-7. If omitted but algSel1 is specified,
+%              a default value of 0 is used. If both algSel1 and algSel2
+%              are omitted, the algorithm is chosen as described below.
 %              algSel2 chooses the approximation for the beta terms in the
-%              function calc2DAssignmentProbsApprox; it corresponds to the
-%              approxType parameter in that function and the comments to
-%              that function describe the valuesit can take.
+%              function calc2DAssignmentProbsApprox (the approxType input)
+%              when using algSel1=6,7; the comments to that function
+%              describe the values it can take.
+%       param3 For the case where algSel1=6,7 and algSel2=0, this is the
+%              optional delta input to the function
+%              calc2DAssignmentProbsApprox. If omitted or an empty matrix
+%              is passed, the default value for that function is used.
 %
 %OUTPUTS: xEst An xDimXnumTar matrix of updated target states.
 %         PEst An xDimXxDimXnumtar matrix of updated covariance matrices
@@ -70,24 +73,16 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2)
 %
 %If both algSel1 and algSel2 are omitted, then the algorithm chosen depends
 %on the size of A. If A has only one row (one target), then the JPDA is
-%used. Otherwise, the approximate GNN-JPDA with algSel2=3 is used (which is
+%used. Otherwise, the approximate GNN-JPDA with algSel2=4 is used (which is
 %actually exact if the number of targets is two).
 %
-%The JPDA is discussed in Chapter 6.2 of
-%Y. Bar-Shalom, P. K. Willett, and X. Tian, Tracking and Data Fusion.
-%Storrs, CT: YBS Publishing, 2011.
-%and the PDA is discussed in various other sections as the JPDA is a
-%generalization of the PDA. The JPDA* is discussed in
-%H. A. Blom and E. A. Bloem, "Probabilistic data association avoiding track
-%coalescence," IEEE Transactions on Automatic Control, vol. 45, no. 2, pp.
-%247-259, Feb. 2000.
-%The concept fo the GNN-JPDA is described (but not named) in
-%O. E. Drummond, "Best hypothesis target tracking and sensor fusion," in
-%Proceedings of SPIE: Signal and Data Processing of Small Targets
-%Conference, vol. 3809, Denver, CO, Oct. 1999, pp. 586-600.
-%The GNN-JPDA consists of using the global nearest neighbor estimate with a
-%covariance matrix computed as in the JPDA. Thus the same approximations
-%that can be used int eh JPDA can be used in the GNN-JPDA.
+%The JPDA is discussed in Chapter 6.2 of [1], and the PDA is discussed in
+%various other sections as the JPDA is a generalization of the PDA. The
+%JPDA* is discussed in [2]. The concept of the GNN-JPDA is described (but
+%not named) in [3]. The GNN-JPDA consists of using the global nearest
+%neighbor estimate with a covariance matrix computed as in the JPDA. Thus
+%the same approximations that can be used int eh JPDA can be used in the
+%GNN-JPDA.
 %
 %The approximate routines simply change how the target-measurement
 %association probabilities are computed. They are described in the comments
@@ -98,29 +93,45 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2)
 %regard to whether one measurmeent is assigned to multiple targets.
 %
 %One possible way to form the A matrix is to use likelihood ratios going
-%into the dimensionless score function from
-%Y. Bar-Shalom, S. S. Blackman, and R. J. Fitzgerald, "Dimensionless score
-%function for multiple hypothesis tracking," IEEE Transactions on Aerospace
-%and Electronic Systems, vol. 43, no. 1, pp. 392-400, Jan. 2007.
+%into the dimensionless score function from [4]. This is implemented for a
+%standard Cartesian/Gaussian model using makeStandardCartLRMatHyps.
+%
+%REFERENCES:
+%[1] Y. Bar-Shalom, P. K. Willett, and X. Tian, Tracking and Data Fusion.
+%    Storrs, CT: YBS Publishing, 2011.
+%[2] H. A. Blom and E. A. Bloem, "Probabilistic data association avoiding
+%    track coalescence," IEEE Transactions on Automatic Control, vol. 45,
+%    no. 2, pp. 247-259, Feb. 2000.
+%[3] O. E. Drummond, "Best hypothesis target tracking and sensor fusion,"
+%    in Proceedings of SPIE: Signal and Data Processing of Small Targets
+%    Conference, vol. 3809, Denver, CO, Oct. 1999, pp. 586-600.
+%[4] Y. Bar-Shalom, S. S. Blackman, and R. J. Fitzgerald, "Dimensionless
+%    score function for multiple hypothesis tracking," IEEE Transactions on
+%    Aerospace and Electronic Systems, vol. 43, no. 1, pp. 392-400, Jan.
+%    2007.
 %
 %March 2015 David Crouse, generalizing the basic JPDAF code of David
-%Karnick, Naval Research Laboratory, Washington D.C.
+%Karnick to many more algorithms, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
     numTar=size(A,1);
     numMeas=size(A,2)-numTar;
     numHyp=numMeas+1;
     
-    if(nargin<4)
+    if(nargin<6)
+        param3=[];
+    end
+    
+    if(nargin<4||isempty(algSel1))
         if(numTar==1)
             algSel1=1;
         else
             algSel1=6;
-            algSel2=3;
+            algSel2=4;
         end
     end
 
-    if(nargin==4)%If only algSel2 was omitted.
+    if(nargin==4||isempty(algSel2))%If only algSel2 was omitted.
         algSel2=0;
     end
     xDim=size(xHyp,1);
@@ -258,7 +269,7 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2)
             end
             
             %Compute the approximate JPDAF probabilities.
-            beta=calc2DAssignmentProbsApprox(A,algSel2);
+            beta=calc2DAssignmentProbsApprox(A,algSel2,true,param3);
             
             %Compute the covariance matrix in the manner of the JPDAF, but
             %about the ML estimate, so the result is a MSE matrix estimate.
@@ -272,7 +283,7 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2)
             %the betas is different.
             
             %Compute the approximate JPDAF probabilities.
-            beta=calc2DAssignmentProbsApprox(A,algSel2);
+            beta=calc2DAssignmentProbsApprox(A,algSel2,true,param3);
             
             %The JPDAF* is just the mixture mean and covariance matrix.
             for curTar=1:numTar
@@ -286,7 +297,7 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2)
                 logLikes=logLikefromABeta(A,beta);
             end
         otherwise
-            error('Unknown algorithm Selected')
+            error('Unknown algorithm selected.')
     end
 end
 
