@@ -170,8 +170,8 @@ figure(2)
 clf
 hold on
 plot(mode-1,'-k')
-h1=xlabel('Maneuver mode');
-h2=ylabel('Discrete Step');
+h1=xlabel('Discrete Step');
+h2=ylabel('Maneuver mode');
 h3=title('Indicating when the target is performing maneuvers.');
 set(gca,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h1,'FontSize',14,'FontWeight','bold','FontName','Times')
@@ -324,8 +324,8 @@ plot(absErrKalmanGM,'-c','linewidth',2)
 plot(absErrRedState,'--b','linewidth',2)
 plot(absErrSCF,'-.m','linewidth',2)
 
-h1=xlabel('Absolute distance error');
-h2=ylabel('Discrete Step');
+h1=xlabel('Discrete Step');
+h2=ylabel('Absolute distance error');
 set(gca,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h1,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h2,'FontSize',14,'FontWeight','bold','FontName','Times')
