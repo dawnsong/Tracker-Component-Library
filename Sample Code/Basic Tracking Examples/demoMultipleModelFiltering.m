@@ -170,8 +170,8 @@ figure(2)
 clf
 hold on
 plot(mode-1,'-k')
-h1=xlabel('Maneuver mode');
-h2=ylabel('Discrete Step');
+h1=xlabel('Discrete Step');
+h2=ylabel('Maneuver mode');
 h3=title('Indicating when the target is performing maneuvers.');
 set(gca,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h1,'FontSize',14,'FontWeight','bold','FontName','Times')
@@ -187,7 +187,7 @@ display('reduced state estimator.')
 
 %A direct-discrete model with a 1m/2s^2 process noise standard deviation is
 %used (normally, a discretized model is preferred, because it is
-%more consistent when using a varuable sampling rate, and the covariance
+%more consistent when using a variable sampling rate, and the covariance
 %matrix is not singular).
 Q=QPolyKalDirectDisc(T,zeros(4,1),1,1^2);%1m/s^2 process noise
 
@@ -324,8 +324,8 @@ plot(absErrKalmanGM,'-c','linewidth',2)
 plot(absErrRedState,'--b','linewidth',2)
 plot(absErrSCF,'-.m','linewidth',2)
 
-h1=xlabel('Absolute distance error');
-h2=ylabel('Discrete Step');
+h1=xlabel('Discrete Step');
+h2=ylabel('Absolute distance error');
 set(gca,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h1,'FontSize',14,'FontWeight','bold','FontName','Times')
 set(h2,'FontSize',14,'FontWeight','bold','FontName','Times')
@@ -406,7 +406,7 @@ A=[-0.01/2, 0.01/2;
     0.02*2, -0.02*2];
  
 %Compute the mode transition probability matrix for the given time between
-%samples. because the sample interval is constant, this does not change 
+%samples. Because the sample interval is constant, this does not change 
 %over time.
 LambdaL=getMarkovPTransProbMat(A,T);
 
