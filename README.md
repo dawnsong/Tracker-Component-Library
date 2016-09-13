@@ -3,9 +3,9 @@ https://github.com/DavidFCrouse/Tracker-Component-Library
 
 These are the release notes for the second release of the Tracker Component
 Library. The Tracker Component Library is a collection of Matlab routines
-(some written inC/C++ requiring compilation compilation) for simulating and
-tracking targets in various scenarios. Due to the complexity of the target
-tracking problem, a great many routines can find use in other areas
+(some written in C/C++ requiring compilation compilation) for simulating
+and tracking targets in various scenarios. Due to the complexity of the
+target tracking problem, a great many routines can find use in other areas
 including combinatorics, astronomy, and statistics.
 
 Those looking to get a quick idea of a very simple end-to-end tracking
@@ -88,14 +88,14 @@ be placed into ./Terrain/data . Though data files to degree and order
 spherHarmonicEval does not use extended precision arithmetic, which is
 required to avoid overflows when using the model.
 
-1) EGM2008 terrain model (The DTM2006.0 model):
+2) EGM2008 terrain model (The DTM2006.0 model):
 http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/first_release.html
 The file Coeff_Height_and_Depth_to2190_DTM2006.0 should be placed into 
 ./Terrain/data . The first time using the getEGM2008TerrainCoeffs function
 will be significantly slower than subsequent calls, assuming the full model
 is loaded the first time.
 
-4) The EMM2015 magnetic field coefficients:
+3) The EMM2015 magnetic field coefficients:
 https://www.ngdc.noaa.gov/geomag/EMM/
 The coefficients are included with the software that is provided. The files
 having names like EMM2015.COF and EMM2000.COF should all be zipped into an
@@ -106,62 +106,62 @@ into ./Magnetism/data . If all of the data for a single year is loaded,
 then a .mat file containing the data is placed in  the data folder to speed
 up subsequent calls to the function.
 
-5) The IGRF12 magnetic field coefficients:
+4) The IGRF12 magnetic field coefficients:
 http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
 The file http://www.ngdc.noaa.gov/IAGA/vmod/igrf12coeffs.txt can be
 downloaded and placed into the folder ./Magnetism/data .
 
-6) The WMM magnetic field coefficients:
+5) The WMM magnetic field coefficients:
 https://www.ngdc.noaa.gov/geomag/WMM/soft.shtml
 The coefficient file WMM2015COF.zip shown be downloaded, unzipped and the
 file WMM.COF placed into ./Magnetism/data .
 
-7) EGM2008 gravitational coefficients
+6) EGM2008 gravitational coefficients
 http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/egm08_wgs84.html
 Download the file  EGM2008_to2190_TideFree.gz, which is under "EGM2008 Tide
 Free Spherical Harmonic Coefficients". Decompress the file and place it in
 ./Gravity/data .
 
-8) EGM96 gravitational coefficients
+7) EGM96 gravitational coefficients
 http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/egm96.html
 The file egm96.z should be downloaded and decompressed, resulting in a file
 names egm96 without an extension, which should be placed in
 ./Gravity/data .
 
-9) EGM2008 parameters needed to convert height anomalies to geoid
+8) EGM2008 parameters needed to convert height anomalies to geoid
    undulations:
 http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/egm08_wgs84.html
 The "Correction Model" file Zeta-to-N_to2160_egm2008.gz should be
 downloaded, ungzipped and placed in ./Gravity/data .
 
-10) EGM96 parameters needed to convert height anomalies to geoid
+9) EGM96 parameters needed to convert height anomalies to geoid
    undulations:
 http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/egm96.html
 The file corrcoef.z should be decompressed and placed in ./Gravity/data .
 
-11) NASA JPL's GL0900C gravitational model of the Moon
+10) NASA JPL's GL0900C gravitational model of the Moon
 http://pds-geosciences.wustl.edu/missions/grail/default.htm
 Download the file jggrx_0900c_sha.tab and place it in ./Gravity/data .
 
-12) The FES2004 tide model of the effects of ocean Earth tides.
+11) The FES2004 tide model of the effects of ocean Earth tides.
 http://maia.usno.navy.mil/conv2010/convupdt/convupdt_c6.html
 The file fes2004_Cnm-Snm.dat should be downloaded and placed in
 ./Gravity/Tides/data .
 
-13) The DE430 planetary/solar ephemerides
+12) The DE430 planetary/solar ephemerides
 http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/
 Place the file de430.bsp in ./Astronomical Code/data .
 
-14) The DE 421 Lunar ephemerides
+13) The DE 421 Lunar ephemerides
 http://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/
 The file file moon_pa_de421_1900-2050.bpc should be downloaded and placed
 in ./Astronomical Code/data .
 
-15) The definitions of the lunar coordinate systems in the DE 421 
+14) The definitions of the lunar coordinate systems in the DE 421 
 http://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/
 The file moon_080317.tf should be downloaded and placed in
 ./Astronomical Code/data .
  
-16) The Hipparcos 2 Star Catalog
+15) The Hipparcos 2 Star Catalog
 http://cdsarc.u-strasbg.fr/viz-bin/Cat?I/311
 Place the file hip2.dat in ./Astronomical Code/data .
