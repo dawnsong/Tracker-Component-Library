@@ -52,15 +52,15 @@ function [xPred, SPred]=sqrtDiscCubKalNonAdditivePred(xPrev,SPrev,f,SQ,xi,w,stat
 %October 2013 David F. Crouse, Naval Research Laboratory, Washington D.C.
 %(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.
 
-    if(nargin<7)
+    if(nargin<7||isempty(stateDiffTrans))
         stateDiffTrans=@(x)x;
     end
     
-    if(nargin<8)
+    if(nargin<8||isempty(stateAvgFun))
         stateAvgFun=@(x,w)calcMixtureMoments(x,w);
     end
     
-    if(nargin<9)
+    if(nargin<9||isempty(stateTrans))
         stateTrans=@(x)x;
     end
     
@@ -70,7 +70,7 @@ function [xPred, SPred]=sqrtDiscCubKalNonAdditivePred(xPrev,SPrev,f,SQ,xi,w,stat
     
     %This let's allows us to parameterize the function either with the
     %noise stacked on the state or as two separate inputs.
-    if(nargin(h)>1)
+    if(nargin(f)>1)
         fStacked=@(x)f(x(1:xDim),x((xDim+1):end));
     else
         fStacked=f;

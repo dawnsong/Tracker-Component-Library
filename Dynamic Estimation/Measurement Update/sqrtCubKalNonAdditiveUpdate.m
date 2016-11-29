@@ -115,7 +115,6 @@ function [xUpdate, SUpdate,innov,Szz]=sqrtCubKalNonAdditiveUpdate(xPred,SPred,z,
        stateTrans=@(x)x; 
     end
     
-
     numCubPoints=size(xi,2);
     sqrtW=sqrt(w);
     
@@ -164,7 +163,7 @@ function [xUpdate, SUpdate,innov,Szz]=sqrtCubKalNonAdditiveUpdate(xPred,SPred,z,
     xUpdate=stateTrans(xPred+W*innov);
 
     %Updated state root covariance
-    SUpdate=tria(stateDiffTrans(xPredCenPoints-W*zPredCenPoints));
+    SUpdate=tria([stateDiffTrans(xPredCenPoints-W*zPredCenPoints),W*SR]);
 end
 
 %LICENSE:

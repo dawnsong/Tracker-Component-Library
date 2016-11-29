@@ -44,7 +44,7 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2,param
 %              4) Naïve nearest neighbor
 %              5) JPDA*
 %              6) Approximate GNN-JPDA
-%              7) Approximate JPDA           
+%              7) Approximate JPDA 
 %      algSel2 An optional parameter that further specifies the algorithm
 %              used when algSel1=6-7. If omitted but algSel1 is specified,
 %              a default value of 0 is used. If both algSel1 and algSel2
@@ -52,7 +52,9 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2,param
 %              algSel2 chooses the approximation for the beta terms in the
 %              function calc2DAssignmentProbsApprox (the approxType input)
 %              when using algSel1=6,7; the comments to that function
-%              describe the values it can take.
+%              describe the values it can take. If algSel1=8 (Set JPDAF),
+%              this is the number of position components in the state (the
+%              posDim input in the calcSetJPDAUpdate function).
 %       param3 For the case where algSel1=6,7 and algSel2=0, this is the
 %              optional delta input to the function
 %              calc2DAssignmentProbsApprox. If omitted or an empty matrix
@@ -69,7 +71,8 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2,param
 %              defined (it is just the entry in A assigned to that target).
 %              For soft assignments in the JPDA, JPDA*, PDA, and
 %              approximate JPDA this is the expected value of the
-%              log-likelihood computed as using the beta terms.
+%              log-likelihood computed as using the beta terms. If the Set
+%              JPDAF is chosen, an empty matrix is returned for logLike.
 %
 %If both algSel1 and algSel2 are omitted, then the algorithm chosen depends
 %on the size of A. If A has only one row (one target), then the JPDA is
@@ -81,8 +84,8 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2,param
 %JPDA* is discussed in [2]. The concept of the GNN-JPDA is described (but
 %not named) in [3]. The GNN-JPDA consists of using the global nearest
 %neighbor estimate with a covariance matrix computed as in the JPDA. Thus
-%the same approximations that can be used int eh JPDA can be used in the
-%GNN-JPDA.
+%the same approximations that can be used in the JPDA can be used in the
+%GNN-JPDA. The Set JPDA is described in 
 %
 %The approximate routines simply change how the target-measurement
 %association probabilities are computed. They are described in the comments
@@ -202,7 +205,7 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2,param
             end
         case 3%Paralle single-target PDAs
             %This is just a bunch of independent PDAFs for each target.
-            beta=zeros(numtar,numHyp);
+            beta=zeros(numTar,numHyp);
             for curTar=1:numTar
                 hypIdx=[1:numMeas,numMeas+curTar];
                 beta(curTar,:)=calc2DAssignmentProbs(A(curTar,hypIdx),true);
@@ -221,12 +224,13 @@ function [xEst,PEst,logLikes]=singleScanUpdate(xHyp,PHyp,A,algSel1,algSel2,param
             for curTar=1:numTar
                 [maxVal,maxIdx]=max(A(curTar,:));
                 %If the missed detection hypothesis is the most likely.
-                if(maxIdx>numTar)
-                    maxIdx=numTar+1;
+                if(maxIdx>numMeas)
+                    maxIdx=numMeas+1;
                 end
-                
+
                 xEst(:,curTar)=xHyp(:,curTar,maxIdx);
                 PEst(:,:,curTar)=PHyp(:,:,curTar,maxIdx);
+                
                 logLikes(curTar)=log(maxVal);
             end
         case 5%JPDA*
