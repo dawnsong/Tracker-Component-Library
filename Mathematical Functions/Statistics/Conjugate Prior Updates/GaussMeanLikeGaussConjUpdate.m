@@ -45,8 +45,10 @@ function [muEst,SigmaEstInv]=GaussMeanLikeGaussConjUpdate(xMeas,SigmaMeasInv,muE
 
 numMeas=size(xMeas,2);
 
+SigmaEstInvPrev=SigmaEstInv;
+
 SigmaEstInv=SigmaEstInv+numMeas*SigmaMeasInv;
-muEst=SigmaEstInv\(SigmaEstInv*muEst+SigmaEstInv*sum(xMeas,2));
+muEst=SigmaEstInv\(SigmaEstInvPrev*muEst+SigmaMeasInv*sum(xMeas,2));
 
 end
 
