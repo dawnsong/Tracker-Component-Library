@@ -175,3 +175,88 @@ End of Updates
 2016 April 8
 CYH/SAB
 + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+
+
+                 Updates for SOFA Release 12a : 2016 July
+                 - - - - - - - - - - - - - - - - - - - - -
+
+Summary of Changes
+------------------
+
+Changes/updates for this minor release (12a) fall into the following 
+categories:
+
+1. A leap second at the end of December 2016, requires updates to the
+   iau_DAT (dat.for) and iauDat (Dat.c) routines.  The test-bed        
+   programs t_sofa_f.for and t_sofa_c.c are also updated to test this 
+   change.
+   
+2. The routines iau_LDSUN and iauLdsun, that calculate the deflection 
+   of starlight by the Sun, have changed, though without affecting 
+   the results for normal use.  As a defensive measure, an internal 
+   threshold value tapers off the returned value for cases close to 
+   the center of the solar disk so that it becomes zero rather than
+   infinity at the center.  By making the formerly fixed threshold 
+   value depend on observer location, it has been possible to make 
+   the onset of the defensive measure less abrupt, which has greatly 
+   improved round-trip closure even for impossible (i.e. occulted) 
+   cases.  For a terrestrial observer, the new threshold corresponds 
+   to a distance of about 5 arcminutes (formerly 9 arcseconds) from 
+   the center of the disk.     
+ 
+3. Documentation updates and corrections.
+
++ + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+
+
+FORTRAN Routines
+----------------
+
+iau_DAT      a leap second is now required in UTC for 2016 December 31.
+
+iau_LDSUN    internal threshold value changed from 1D-9 to DLIM, where
+             DLIM = 1D-6 / MAX(EM*EM,1D0) and EM is the dstance in au
+             from the Sun to the observer.
+
+t_sofa_f     this test program has been modified to test the updated
+             leap second routine.
+             
+Documentation
+-------------
+
+sofa_ast_f   Astrometry cookbook has been modified to take account of 
+             the updated LDSUN routine. 
+                    
+sofa_ts_f    Version number of this cookbook corrected.
+
+
++ + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+
+ANSI C:
+-------
+
+iauDat       a leap second is now required in UTC for 2016 December 31.
+
+iauLdsun     internal threshold value changed from 1e-9 to dlim, where
+             dlim = 1e-6 / (em*em > 1.0 ? em*em : 1.0) and em is the 
+             dstance in au from the Sun to the observer.
+
+Cr           In the list of "Returned:" arguments listed in the
+             documentation the one argument was listed as "char[]"
+             rather than just "c".
+
+t_sofa_c     this test program has been modified to test the updated
+             leap second routine.
+
+Documentation
+-------------
+
+sofa_ast_c   Astrometry cookbook has been modified to take account of
+             the updated Ldsun routine.
+
+sofa_ts_c    Version number of this cookbook corrected.
+
++ + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+End of Updates
+2016 July 18
++ + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +

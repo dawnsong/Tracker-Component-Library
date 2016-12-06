@@ -5907,7 +5907,7 @@ void iauCr(double r[3][3], double c[3][3])
 **     r        double[3][3]    r-matrix to be copied
 **
 **  Returned:
-**   char[]     double[3][3]    copy
+**     c        double[3][3]    copy
 **
 **  Called:
 **     iauCp        copy p-vector
@@ -6088,7 +6088,7 @@ int iauDat(int iy, int im, int id, double fd, double *deltat )
 **     :  even if no leap seconds have been       :
 **     :  added.                                  :
 **     :                                          :
-**     :  Latest leap second:  2015 June 30       :
+**     :  Latest leap second:  2016 December 31   :
 **     :                                          :
 **     :__________________________________________:
 **
@@ -9886,9 +9886,10 @@ void iauLdsun(double p[3], double e[3], double em, double p1[3])
 **     the same.
 **
 **  2) The deflection is restrained when the angle between the star and
-**     the center of the Sun is less than about 9 arcsec, falling to
-**     zero for zero separation. (The chosen threshold is within the
-**     solar limb for all solar-system applications.)
+**     the center of the Sun is less than a threshold value, falling to
+**     zero deflection for zero separation.  The chosen threshold value
+**     is within the solar limb for all solar-system applications, and
+**     is about 5 arcminutes for the case of a terrestrial observer.
 **
 **  3) The arguments p and p1 can be the same array.
 **
