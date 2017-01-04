@@ -12,6 +12,11 @@
 
 void separateMessageAndTimestamp(const std::string &fullMessage,std::string &messagePart,std::string &endPart);
 double getEndTimestamp(const std::string &theString);
+
+//dawnsong
+#include <limits>
+#include <stdexcept>
+
 #endif
 
 /*LICENSE:

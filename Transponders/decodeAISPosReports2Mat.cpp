@@ -14,7 +14,7 @@
  *                 structures is significantly faster in Matlab, which is
  *                 why one might prefer this function to decodeAISString
  *                 when only simple position reports are needed.
- * 
+ *
  *INPUTS: NMEAStrings A character string containing one or more Automatic
  *                 Identification System (AIS) messages given as National
  *                 Marine Electronics Association (NMEA) formatted ASCII
@@ -28,7 +28,7 @@
  *                 converted to radians per second North of East, all
  *                 rather than using typical nautical units. The default if
  *                 omitted is true.
- * 
+ *
  *decodedMsgs A 14XN matrix of the N successfully decoded position reports.
  *            The 14 fields that are decoded are stored in the matrix as:
  *                     1) The maritime mobile service identity (MMSI)
@@ -81,7 +81,7 @@
  *                    10) The second number within the universal
  *                        coordinated time (UTC) minute when the ship's
  *                        transmitter sent the position report. NOTE that
- *                        if this is 61 or greater, than this means that the 
+ *                        if this is 61 or greater, than this means that the
  *                        the positioning system is broken or in dead
  *                        reckoning mode, so the return is likely to be
  *                        inaccurate. Also, the standard does not properly
@@ -122,12 +122,12 @@
  *                     received part in the sequence. If no time can be
  *                     decoded, then
  *
- *This function relies on libais from 
+ *This function relies on libais from
  *https://github.com/schwehr/libais
  *The library probably does not work on big-endian processors (Intel
  *processors are little-endian).
  *
- *The algorithm can be compiled for use in Matlab using the 
+ *The algorithm can be compiled for use in Matlab using the
  *CompileCLibraries function.
  *
  *The algorithm is run in Matlab using the command format
@@ -225,6 +225,10 @@
 #include <sstream>
 #include <string>
 
+
+//dawnsong
+#include "decodeAISString.hpp"
+
 //Multiple a value in degrees by deg2Rad to get its value in radians.
 const double deg2Rad=0.0174532925199432957692369076849;
 const double halfPi=1.57079632679489661923132169164;
@@ -237,10 +241,10 @@ const double hour2Sec=60*60;
 void decodeCharacterStrings(const char*msgChars,bool hasEndTimeStamps,bool convert2Metric,mxArray *&retMat, mxArray *&timeMat);
 bool extractSinglePosReport(std::unique_ptr<libais::AisMsg> &curAisMsg,double *retData);
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) { 
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     bool hasEndTimestamps=false;
     bool convert2Metric=true;
-    
+
     if(nrhs!=1&&nrhs>2) {
         mexErrMsgTxt("Wrong number of inputs.");
         return;
@@ -249,29 +253,29 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if(nlhs>1) {
         hasEndTimestamps=true;
     }
-    
+
     if(nrhs>1) {
         convert2Metric=getBoolFromMatlab(prhs[1]);
     }
-            
+
     if(nlhs>2) {
         mexErrMsgTxt("Wrong number of outputs.");
         return;
     }
-    
+
     if(mxGetN(prhs[0])!=1&&mxGetM(prhs[0])!=1) {
         mexErrMsgTxt("The input has an invalid dimensionality.");
         return;
     }
-    
+
     if(mxIsChar(prhs[0])) {//If a character string is passed.
         mxArray *retMat, *timeMat;
         char *theData;
-        
+
         theData=mxArrayToString(prhs[0]);
         decodeCharacterStrings(theData,hasEndTimestamps,convert2Metric,retMat,timeMat);
         mxFree(theData);
-        
+
         plhs[0]=retMat;
         if(nlhs>1) {
             plhs[1]=timeMat;
@@ -289,9 +293,9 @@ void decodeCharacterStrings(const char*msgChars,bool hasEndTimeStamps,bool conve
  *
  *November 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
-    
+
     libais::VdmStream decodedAISData;//To decode a set of messages at once.
-    
+
     double *retData, *timeData=nullptr;
     const size_t numRowsInOutput=14;
     size_t maxNumMessages;
@@ -299,14 +303,14 @@ void decodeCharacterStrings(const char*msgChars,bool hasEndTimeStamps,bool conve
     std::string allMsg(msgChars);
     std::string curString;
     std::istringstream ss(allMsg);//To parse a bunch of AIS strings
-    
+
     //The maximum possible number of messages to decode.
     maxNumMessages=std::count(allMsg.begin(), allMsg.end(), '\n')+1;
-    
+
     //Allocate space for the maximum possible number of items to return
     retMat=mxCreateDoubleMatrix(numRowsInOutput,maxNumMessages,mxREAL);
     retData=reinterpret_cast<double*>(mxGetData(retMat));
-    
+
     if(hasEndTimeStamps) {
         timeMat=mxCreateDoubleMatrix(maxNumMessages,1,mxREAL);
         timeData=reinterpret_cast<double*>(mxGetData(timeMat));
@@ -321,16 +325,16 @@ void decodeCharacterStrings(const char*msgChars,bool hasEndTimeStamps,bool conve
         bool pushSucceeded;
         size_t numBeforeAdd=decodedAISData.size();
         std::string messagePart, endPart;
-                
+
         //We want to separate everything that comes after the checksum (if
         //anything comes after the checksum).
         separateMessageAndTimestamp(curString,messagePart,endPart);
-        
+
         //If the message is invalid, then skip it.
         if(messagePart.length()==0) {
             continue;
         }
-        
+
         //Try to extract a timestamp from the end of the end part.
         timeStamp=getEndTimestamp(endPart);
 
@@ -348,16 +352,16 @@ void decodeCharacterStrings(const char*msgChars,bool hasEndTimeStamps,bool conve
 
                 //Get rid of the popped message.
                 curAisMsg=nullptr;
-                
+
                 if(decodingSucceeded) {
                     if(hasEndTimeStamps) {
                         timeData[numMsgDecoded]=timeStamp;
                     }
-                    
+
                     if(convert2Metric) {
                         //Convert turn rate from degrees per minute East of North to
                         //radians per second North of East
-                        retData[outputOffset+2]=-deg2Rad*retData[outputOffset+2]/min2Sec;                    
+                        retData[outputOffset+2]=-deg2Rad*retData[outputOffset+2]/min2Sec;
 
                         //Convert speed over ground from knots to meters per second.
                         retData[outputOffset+3]=retData[outputOffset+3]*knot2Metph/hour2Sec;
@@ -380,7 +384,7 @@ void decodeCharacterStrings(const char*msgChars,bool hasEndTimeStamps,bool conve
             }
         }
     }
-    
+
     //Resize the matrices to match the actual number of things decoded.
     mxSetN(retMat,numMsgDecoded);
     if(hasEndTimeStamps) {

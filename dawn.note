@@ -1,0 +1,5 @@
+#change default gcc 5.4 to 4.8 for Matlab 2016b compatibility
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+
+sudo update-alternatives --config gcc

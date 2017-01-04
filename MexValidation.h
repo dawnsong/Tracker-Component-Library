@@ -134,6 +134,9 @@
 #include "matrix.h"
 #include "mex.h"
 
+//dawnsong, 20170104
+#include <stdint.h> //http://www.cvsnt.org/pipermail/cvsnt/2006-February/023801.html
+
 #ifdef __cplusplus
 //For memcpy
 #include <cstring>
@@ -232,15 +235,15 @@ void checkRealDoubleArray(const mxArray * const val){
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles has complex components.");
     }
-    
+
     if(mxIsEmpty(val)) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles is empty.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2){
         mexErrMsgTxt("A parameter has too many dimensions.");
     }
-    
+
     if(mxGetClassID(val)!=mxDOUBLE_CLASS) {
         mexErrMsgTxt("A parameter that should be a real double is of a different data type.");
     }
@@ -250,11 +253,11 @@ void verifySizeReal(const size_t M, const size_t N, const mxArray * const val) {
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real matrix has complex components.");
     }
-    
+
     if(mxGetM(val)!=M||mxGetN(val)!=N) {
         mexErrMsgTxt("A parameter has the wrong dimensionality.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2){
         mexErrMsgTxt("A parameter has too many dimensions.");
     }
@@ -264,25 +267,25 @@ mxArray *convert2DReal2DoubleMat(const mxArray * const val) {
     mxArray *retMat;
     double *retData;
     size_t M,N,numElements,i;
-    
+
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles has complex components.");
     }
-    
+
     if(mxIsEmpty(val)) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles is empty.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2){
         mexErrMsgTxt("A parameter has too many dimensions.");
     }
-    
+
     M=mxGetM(val);
     N=mxGetN(val);
     numElements=M*N;
     retMat=mxCreateDoubleMatrix(M,N,mxREAL);
     retData=(double*)mxGetData(retMat);
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
         {
@@ -390,7 +393,7 @@ mxArray *convert2DReal2DoubleMat(const mxArray * const val) {
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
-    
+
     return retMat;
 }
 
@@ -398,26 +401,26 @@ mxArray *convert2DReal2SignedIntMat(const mxArray * const val) {
     mxArray *retMat;
     int *retData;
     size_t M,N,numElements,i;
-    
+
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles has complex components.");
     }
-    
+
     if(mxIsEmpty(val)) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles is empty.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2){
         mexErrMsgTxt("A parameter has too many dimensions.");
     }
-    
+
     M=mxGetM(val);
     N=mxGetN(val);
     numElements=M*N;
-    
+
     retMat=allocSignedIntMatInMatlab(M,N);
     retData=(int*)mxGetData(retMat);
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
         {
@@ -525,7 +528,7 @@ mxArray *convert2DReal2SignedIntMat(const mxArray * const val) {
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
-    
+
     return retMat;
 }
 
@@ -533,26 +536,26 @@ mxArray *convert2DReal2UnsignedIntMat(const mxArray * const val) {
     mxArray *retMat;
     unsigned int *retData;
     size_t M,N,numElements,i;
-    
+
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles has complex components.");
     }
-    
+
     if(mxIsEmpty(val)) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles is empty.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2){
         mexErrMsgTxt("A parameter has too many dimensions.");
     }
-    
+
     M=mxGetM(val);
     N=mxGetN(val);
     numElements=M*N;
-    
+
     retMat=allocUnsignedIntMatInMatlab(M,N);
     retData=(unsigned int*)mxGetData(retMat);
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
         {
@@ -660,7 +663,7 @@ mxArray *convert2DReal2UnsignedIntMat(const mxArray * const val) {
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
-    
+
     return retMat;
 }
 
@@ -668,26 +671,26 @@ mxArray *convert2DReal2SignedSizeMat(const mxArray * const val) {
     mxArray *retMat;
     ptrdiff_t *retData;
     size_t M,N,numElements,i;
-    
+
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles has complex components.");
     }
-    
+
     if(mxIsEmpty(val)) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles is empty.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2){
         mexErrMsgTxt("A parameter has too many dimensions.");
     }
-    
+
     M=mxGetM(val);
     N=mxGetN(val);
     numElements=M*N;
-    
+
     retMat=allocSignedSizeMatInMatlab(M,N);
     retData=(ptrdiff_t*)mxGetData(retMat);
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
         {
@@ -795,7 +798,7 @@ mxArray *convert2DReal2SignedSizeMat(const mxArray * const val) {
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
-    
+
     return retMat;
 }
 
@@ -803,26 +806,26 @@ mxArray *convert2DReal2UnsignedSizeMat(const mxArray * const val) {
     mxArray *retMat;
     size_t *retData;
     size_t M,N,numElements,i;
-    
+
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles has complex components.");
     }
-    
+
     if(mxIsEmpty(val)) {
         mexErrMsgTxt("A parameter that should be real matrix of doubles is empty.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2){
         mexErrMsgTxt("A parameter has too many dimensions.");
     }
-    
+
     M=mxGetM(val);
     N=mxGetN(val);
     numElements=M*N;
-    
+
     retMat=allocUnsignedSizeMatInMatlab(M,N);
     retData=(size_t*)mxGetData(retMat);
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
         {
@@ -930,7 +933,7 @@ mxArray *convert2DReal2UnsignedSizeMat(const mxArray * const val) {
         default:
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
-    
+
     return retMat;
 }
 
@@ -939,11 +942,11 @@ int getIntFromMatlab(const mxArray * const val) {
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real has complex components.");
     }
-    
+
     if(mxGetNumberOfElements(val)!=1) {
         mexErrMsgTxt("A parameter that should be scalar is not.");
     }
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
             retVal=(int)*(mxChar*)mxGetData(val);
@@ -999,11 +1002,11 @@ size_t getSizeTFromMatlab(const mxArray * const val) {
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real has complex components.");
     }
-    
+
     if(mxGetNumberOfElements(val)!=1) {
         mexErrMsgTxt("A parameter that should be scalar is not.");
     }
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
             retVal=(size_t)*(mxChar*)mxGetData(val);
@@ -1095,18 +1098,18 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
     size_t M,N,i;
     size_t numEl=0;
     size_t *retVal=NULL;
-    
+
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real has complex components.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2) {
         mexErrMsgTxt("A parameter that should be an array has extra dimensions.");
     }
-    
+
     M=mxGetM(val);
     N=mxGetN(val);
-    
+
     if(M==1&&N>=1) {
         numEl=N;
     } else if(M>1&&N==1){
@@ -1114,15 +1117,15 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
     } else {
         mexErrMsgTxt("A parameter that should be an array has an incorrect dimensionality.");
     }
-    
+
     *arrayLen=numEl;
-    retVal=(size_t*)mxMalloc(numEl*sizeof(size_t));    
-            
+    retVal=(size_t*)mxMalloc(numEl*sizeof(size_t));
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
         {
             mxChar *mexData=(mxChar*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(size_t)mexData[i];
             }
@@ -1131,7 +1134,7 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxLOGICAL_CLASS:
         {
             mxLogical *mexData=(mxLogical*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(size_t)mexData[i];
             }
@@ -1140,13 +1143,13 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxDOUBLE_CLASS:
         {
             double *mexData=(double*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 if(mexData[i]<0) {
                     mxFree(retVal);
                     mexErrMsgTxt("A parameter that should be positive is not.");
                 }
-                
+
                 retVal[i]=(size_t)mexData[i];
             }
             break;
@@ -1154,13 +1157,13 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxSINGLE_CLASS:
         {
             float *mexData=(float*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 if(mexData[i]<0) {
                     mxFree(retVal);
                     mexErrMsgTxt("A parameter that should be positive is not.");
                 }
-                
+
                 retVal[i]=(size_t)mexData[i];
             }
             break;
@@ -1168,13 +1171,13 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT8_CLASS:
         {
             int8_T *mexData=(int8_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 if(mexData[i]<0) {
                     mxFree(retVal);
                     mexErrMsgTxt("A parameter that should be positive is not.");
                 }
-                
+
                 retVal[i]=(size_t)mexData[i];
             }
             break;
@@ -1182,7 +1185,7 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT8_CLASS:
         {
             uint8_T *mexData=(uint8_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(size_t)mexData[i];
             }
@@ -1191,13 +1194,13 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT16_CLASS:
         {
             int16_T *mexData=(int16_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 if(mexData[i]<0) {
                     mxFree(retVal);
                     mexErrMsgTxt("A parameter that should be positive is not.");
                 }
-                
+
                 retVal[i]=(size_t)mexData[i];
             }
             break;
@@ -1205,7 +1208,7 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT16_CLASS:
         {
             uint16_T *mexData=(uint16_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(size_t)mexData[i];
             }
@@ -1214,13 +1217,13 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT32_CLASS:
         {
             int32_T *mexData=(int32_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 if(mexData[i]<0) {
                     mxFree(retVal);
                     mexErrMsgTxt("A parameter that should be positive is not.");
                 }
-                
+
                 retVal[i]=(size_t)mexData[i];
             }
             break;
@@ -1228,7 +1231,7 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT32_CLASS:
         {
             uint32_T *mexData=(uint32_T*)mxGetData(val);
-            
+
             if(sizeof(size_t)==sizeof(uint64_T)) {
                 memcpy(retVal,mexData,numEl*sizeof(uint32_T));
             } else {
@@ -1241,14 +1244,14 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT64_CLASS:
         {
             int64_T *mexData=(int64_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 if(mexData[i]<0) {
                     mxFree(retVal);
-                    
+
                     mexErrMsgTxt("A parameter that should be positive is not.");
                 }
-                
+
                 retVal[i]=(size_t)mexData[i];
             }
             break;
@@ -1256,7 +1259,7 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT64_CLASS:
         {
             uint64_T *mexData=(uint64_T*)mxGetData(val);
-            
+
             if(sizeof(size_t)==sizeof(uint64_T)) {
                 memcpy(retVal,mexData,numEl*sizeof(uint64_T));
             } else {
@@ -1275,10 +1278,10 @@ size_t *copySizeTArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxOBJECT_CLASS:
         default:
             mxFree(retVal);
-            
+
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
-    
+
     return retVal;
 }
 
@@ -1287,18 +1290,18 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
     size_t M,N,i;
     size_t numEl=0;
     bool *retVal=NULL;
-    
+
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real has complex components.");
     }
-    
+
     if(mxGetNumberOfDimensions(val)>2) {
         mexErrMsgTxt("A parameter that should be an array has extra dimensions.");
     }
-    
+
     M=mxGetM(val);
     N=mxGetN(val);
-    
+
     if(M==1&&N>=1) {
         numEl=N;
     } else if(M>1&&N==1){
@@ -1306,15 +1309,15 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
     } else {
         mexErrMsgTxt("A parameter that should be an array has an incorrect dimensionality.");
     }
-    
+
     *arrayLen=numEl;
-    retVal=(bool*)mxMalloc(numEl*sizeof(bool));  
-            
+    retVal=(bool*)mxMalloc(numEl*sizeof(bool));
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
         {
             mxChar *mexData=(mxChar*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1323,7 +1326,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxLOGICAL_CLASS:
         {
             mxLogical *mexData=(mxLogical*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1332,7 +1335,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxDOUBLE_CLASS:
         {
             double *mexData=(double*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1341,7 +1344,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxSINGLE_CLASS:
         {
             float *mexData=(float*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1350,7 +1353,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT8_CLASS:
         {
             int8_T *mexData=(int8_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1359,7 +1362,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT8_CLASS:
         {
             uint8_T *mexData=(uint8_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1368,7 +1371,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT16_CLASS:
         {
             int16_T *mexData=(int16_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1377,7 +1380,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT16_CLASS:
         {
             uint16_T *mexData=(uint16_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1386,7 +1389,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT32_CLASS:
         {
             int32_T *mexData=(int32_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1395,7 +1398,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT32_CLASS:
         {
             uint32_T *mexData=(uint32_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1404,7 +1407,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxINT64_CLASS:
         {
             int64_T *mexData=(int64_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1413,7 +1416,7 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxUINT64_CLASS:
         {
             uint64_T *mexData=(uint64_T*)mxGetData(val);
-            
+
             for(i=0;i<numEl;i++) {
                 retVal[i]=(bool)mexData[i];
             }
@@ -1428,10 +1431,10 @@ bool *copyBoolArrayFromMatlab(const mxArray * const val, size_t *arrayLen) {
         case mxOBJECT_CLASS:
         default:
             mxFree(retVal);
-            
+
             mexErrMsgTxt("A parameter is of a data type that can not be used.");
     }
-    
+
     return retVal;
 }
 
@@ -1442,11 +1445,11 @@ double getDoubleFromMatlab(const mxArray * const val) {
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real has complex components.");
     }
-    
+
     if(mxGetNumberOfElements(val)!=1) {
         mexErrMsgTxt("A parameter that should be scalar is not.");
     }
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
             retVal=(double)*(mxChar*)mxGetData(val);
@@ -1502,11 +1505,11 @@ bool getBoolFromMatlab(const mxArray * const val) {
     if(mxIsComplex(val)==true) {
         mexErrMsgTxt("A parameter that should be real has complex components.");
     }
-    
+
     if(mxGetNumberOfElements(val)!=1) {
         mexErrMsgTxt("A parameter that should be scalar is not.");
     }
-    
+
     switch(mxGetClassID(val)){
         case mxCHAR_CLASS:
             retVal=*(mxChar*)mxGetData(val)!=0.0;
@@ -1560,7 +1563,7 @@ bool getBoolFromMatlab(const mxArray * const val) {
 mxArray *doubleMat2Matlab(const double * const arr,const size_t numRow, const size_t numCol) {
     mxArray *retMat;
     void *dataPtr;
-    
+
     retMat=mxCreateDoubleMatrix(numRow,numCol,mxREAL);
     dataPtr=mxGetData(retMat);
     memcpy(dataPtr,arr,numRow*numCol*sizeof(double));
@@ -1573,7 +1576,7 @@ mxArray *floatMat2MatlabDoubles(const float * const arr,const size_t numRow, con
     double *dataPtr;
     const size_t totalNumEl=numRow*numCol;
     size_t i;
-    
+
     retMat=mxCreateDoubleMatrix(numRow,numCol,mxREAL);
     dataPtr=(double*)mxGetData(retMat);
     for(i=0;i<totalNumEl;i++) {
@@ -1588,10 +1591,10 @@ mxArray *intMat2MatlabDoubles(const int * const arr,const size_t numRow, const s
     double *dataPtr;
     const size_t totalNumEl=numRow*numCol;
     size_t i;
-    
+
     retMat=mxCreateDoubleMatrix(numRow,numCol,mxREAL);
     dataPtr=(double*)mxGetData(retMat);
-    
+
     for(i=0;i<totalNumEl;i++) {
         dataPtr[i]=(double)arr[i];
     }
@@ -1604,10 +1607,10 @@ mxArray *boolMat2Matlab(const bool * const arr,const size_t numRow, const size_t
     mxLogical *dataPtr;
     const size_t totalNumEl=numRow*numCol;
     size_t i;
-    
+
     retMat=mxCreateLogicalMatrix(numRow,numCol);
     dataPtr=mxGetLogicals(retMat);
-    
+
     for(i=0;i<totalNumEl;i++) {
         dataPtr[i]=(mxLogical)arr[i];
     }
@@ -1618,7 +1621,7 @@ mxArray *boolMat2Matlab(const bool * const arr,const size_t numRow, const size_t
 
 mxArray *allocUnsignedSizeMatInMatlab(const size_t numRow, const size_t numCol) {
     mxArray *retMat=NULL;
-    
+
     switch(sizeof(size_t)) {
         case 4:
             retMat = mxCreateNumericMatrix(numRow,numCol,mxUINT32_CLASS,mxREAL);
@@ -1629,13 +1632,13 @@ mxArray *allocUnsignedSizeMatInMatlab(const size_t numRow, const size_t numCol) 
         default:
             mexErrMsgTxt("The integer size of this computer is neither 64 nor 32 bit. Thus, the Matlab data type for pointer conversion could not be determined.");
     }
-    
+
     return retMat;
 }
 
 mxArray *allocSignedSizeMatInMatlab(const size_t numRow, const size_t numCol) {
     mxArray *retMat=NULL;
-    
+
     switch(sizeof(ptrdiff_t)) {
         case 4:
             retMat = mxCreateNumericMatrix(numRow,numCol,mxINT32_CLASS,mxREAL);
@@ -1646,7 +1649,7 @@ mxArray *allocSignedSizeMatInMatlab(const size_t numRow, const size_t numCol) {
         default:
             mexErrMsgTxt("The integer size of this computer is neither 64 nor 32 bit. Thus, the Matlab data type for pointer conversion could not be determined.");
     }
-    
+
     return retMat;
 }
 
@@ -1656,7 +1659,7 @@ mxArray *allocUnsignedCharMatInMatlab(const size_t numRow, const size_t numCol) 
 
 mxArray *allocUnsignedIntMatInMatlab(const size_t numRow, const size_t numCol) {
     mxArray *retMat=NULL;
-    
+
     switch(sizeof(unsigned int)) {
         case 4:
             retMat = mxCreateNumericMatrix(numRow,numCol,mxUINT32_CLASS,mxREAL);
@@ -1667,13 +1670,13 @@ mxArray *allocUnsignedIntMatInMatlab(const size_t numRow, const size_t numCol) {
         default:
             mexErrMsgTxt("The integer size of this computer is neither 64 nor 32 bit. Thus, the Matlab data type for pointer conversion could not be determined.");
     }
-    
+
     return retMat;
 }
 
 mxArray *allocSignedIntMatInMatlab(const size_t numRow, const size_t numCol){
     mxArray *retMat=NULL;
-    
+
     switch(sizeof(int)) {
         case 4:
             retMat = mxCreateNumericMatrix(numRow,numCol,mxINT32_CLASS,mxREAL);
@@ -1684,16 +1687,16 @@ mxArray *allocSignedIntMatInMatlab(const size_t numRow, const size_t numCol){
         default:
             mexErrMsgTxt("The integer size of this computer is neither 64 nor 32 bit. Thus, the Matlab data type for pointer conversion could not be determined.");
     }
-    
+
     return retMat;
 }
 
 mxArray *unsignedSizeMat2Matlab(const size_t * const arr, const size_t numRow, const size_t numCol) {
     mxArray *retMat;
     void *dataPtr;
-    
+
     retMat=allocUnsignedSizeMatInMatlab(numRow, numCol);
-    
+
     dataPtr=mxGetData(retMat);
     memcpy(dataPtr,arr,numRow*numCol*sizeof(size_t));
 
@@ -1703,9 +1706,9 @@ mxArray *unsignedSizeMat2Matlab(const size_t * const arr, const size_t numRow, c
 mxArray *unsignedCharMat2Matlab(const unsigned char * const arr, const size_t numRow, const size_t numCol) {
     mxArray *retMat;
     void *dataPtr;
-    
+
     retMat=allocUnsignedCharMatInMatlab(numRow, numCol);
-    
+
     dataPtr=mxGetData(retMat);
     memcpy(dataPtr,arr,numRow*numCol*sizeof(unsigned char));
 
@@ -1715,9 +1718,9 @@ mxArray *unsignedCharMat2Matlab(const unsigned char * const arr, const size_t nu
 mxArray *signedSizeMat2Matlab(const ptrdiff_t * const arr, const size_t numRow, const size_t numCol) {
     mxArray *retMat;
     void *dataPtr;
-    
+
     retMat=allocSignedSizeMatInMatlab(numRow,numCol);
-    
+
     dataPtr=mxGetData(retMat);
     memcpy(dataPtr,arr,numRow*numCol*sizeof(ptrdiff_t));
 
@@ -1759,7 +1762,7 @@ mxArray *ptr2Matlab(T thePointer) {
  *           returned to Matlab between calls to mex functions.
  */
     mxArray *retArray=NULL;
-    
+
     switch(sizeof(void*)) {
         case 4:
             retArray = mxCreateNumericMatrix(1,1,mxINT32_CLASS,mxREAL);
@@ -1770,7 +1773,7 @@ mxArray *ptr2Matlab(T thePointer) {
         default:
             mexErrMsgTxt("The integer size of this computer is neither 64 nor 32 bit. Thus, the Matlab data type for pointer conversion could not be determined.");
     }
-    
+
     *reinterpret_cast<void**>(mxGetData(retArray))=reinterpret_cast<void*>(thePointer);
     return retArray;
 }
@@ -1781,7 +1784,7 @@ T Matlab2Ptr(const mxArray * const matlabPtr){
  *            using ptr2Matlab back into a pointer for use in a mex file.
  */
     T thePtr;
-    thePtr=reinterpret_cast<T>(*reinterpret_cast<void**>(mxGetData(matlabPtr)));    
+    thePtr=reinterpret_cast<T>(*reinterpret_cast<void**>(mxGetData(matlabPtr)));
     return thePtr;
 }
 
@@ -1796,12 +1799,12 @@ mxArray *mat2MatlabDoubles(T *arr,const size_t numRow,const size_t numCol){
     double *dataPtr;
     const size_t totalNumEl=numRow*numCol;
     size_t i;
-    
+
     retMat=mxCreateDoubleMatrix(numRow,numCol,mxREAL);
     dataPtr=(double*)mxGetData(retMat);
-    
+
     for(i=0;i<totalNumEl;i++) {
-        dataPtr[i]=static_cast<double>(arr[i]);   
+        dataPtr[i]=static_cast<double>(arr[i]);
     }
 
     return retMat;

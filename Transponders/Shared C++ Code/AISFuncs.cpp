@@ -20,10 +20,10 @@ void separateMessageAndTimestamp(const std::string &fullMessage,std::string &mes
  *              is no end part, then endPart is set to an empty string.
  *
  *November 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
-/*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/    
-        
+/*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
+
     //We want to separate everything that comes after the checksum (if
-    //anything comes after the checksum). 
+    //anything comes after the checksum).
     size_t astPos=fullMessage.find_first_of("*",0);
     //The asterisk will only appear in the checksum (and maybe some
     //things after it). Anything that comes after the checksum will
@@ -80,17 +80,18 @@ double getEndTimestamp(const std::string &theString) {
  *
  *November 2015 David F. Crouse, Naval Research Laboratory, Washington D.C.*/
 /*(UNCLASSIFIED) DISTRIBUTION STATEMENT A. Approved for public release.*/
-    
+
     double timeStamp=std::numeric_limits<double>::quiet_NaN();
     size_t pos=theString.find_last_of(',',std::string::npos);
-    
+
     //If there is no comma in the string, then see if the whole string is
     //the timestamp. Otherwise, extract whatever is after the comma, if
     //anything.
     if(pos==std::string::npos) {
         try {
             timeStamp=static_cast<double>(std::stoul(theString,NULL));
-        } catch(const std::invalid_argument& ia) {}
+        } catch(const std::invalid_argument& ia) {
+        }
     } else if(pos<=theString.length()-1) {
         try {
             timeStamp=static_cast<double>(std::stoul(theString.substr(pos+1),NULL));

@@ -64,8 +64,8 @@ SOFA_INC_DIR = $(INSTALL_DIR)/include/
 # for functions, CFLAGX for executables) here.
 
 CCOMPC = gcc
-CFLAGF = -c -pedantic -Wall -W -O
-CFLAGX = -pedantic -Wall -W -O
+CFLAGF = -fPIC -c -pedantic -Wall -W -O
+CFLAGX = -fPIC -pedantic -Wall -W -O
 
 #----YOU SHOULDN'T HAVE TO MODIFY ANYTHING BELOW THIS LINE---------
 
