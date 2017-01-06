@@ -42,8 +42,10 @@ installed. Additionally, to decode AIS data, the compiler must support
 C++11. As thie commands for the compilation of the AIS data are at the end
 of the CompileCLibraries function,
 
-2017 Jan 6,
+2017 Jan 6, Xiaowei Song
+
 After some minor code fixation (including some header file), I successful compiled under Ubuntu 16.04 with GCC 4.9 and Matlab 2016b.
+
 
 EXTERNAL SOLVERS:
 
